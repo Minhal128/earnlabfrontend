@@ -1,5 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import { updateProfileFields } from "@/store/userSlice";
 
 interface PreferenceItem {
     id: string;
@@ -26,14 +30,66 @@ const preferences: PreferenceItem[] = [
 ];
 
 const PreferencesComponent = () => {
+    const profile = useSelector((s: RootState) => s.user.profile);
+    const dispatch = useDispatch();
+    
     const [enabled, setEnabled] = useState<Record<string, boolean>>({
-        notifications: false,
-        darkMode: true,
-        autoUpdate: false,
+        "Private Profile": false,
+        "Activity Bar": false,
+        "Display in USD": true,
     });
 
-    const toggleSwitch = (id: string) => {
-        setEnabled((prev) => ({ ...prev, [id]: !prev[id] }));
+    // Load initial privacy setting from profile
+    useEffect(() => {
+        if (profile?.profilePrivacy) {
+            setEnabled((prev) => ({
+                ...prev,
+                "Private Profile": profile.profilePrivacy === "private",
+            }));
+        }
+    }, [profile]);
+
+    const toggleSwitch = async (id: string) => {
+        const newValue = !enabled[id];
+        setEnabled((prev) => ({ ...prev, [id]: newValue }));
+
+        // If toggling Private Profile, update backend
+        if (id === "Private Profile") {
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            if (!token) {
+                toast.error("Please sign in to update preferences");
+                return;
+            }
+
+            try {
+                const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                const res = await fetch(`${api}/api/v1/user/profile`, {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        profilePrivacy: newValue ? "private" : "public",
+                    }),
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    dispatch(updateProfileFields({ profilePrivacy: newValue ? "private" : "public" }));
+                    toast.success(`Profile is now ${newValue ? "private" : "public"}`);
+                } else {
+                    toast.error("Failed to update privacy setting");
+                    // Revert on error
+                    setEnabled((prev) => ({ ...prev, [id]: !newValue }));
+                }
+            } catch (err) {
+                console.error("Error updating privacy:", err);
+                toast.error("Failed to update privacy setting");
+                // Revert on error
+                setEnabled((prev) => ({ ...prev, [id]: !newValue }));
+            }
+        }
     };
 
     return (

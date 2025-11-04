@@ -41,11 +41,14 @@ const ProfileControls: React.FC = () => {
       const res = await fetch(`${getApi()}/api/v1/user/daily-checkin`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
-      if (!res.ok) throw res;
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to fetch daily checkin: ${res.status} ${res.statusText} - ${errorText}`);
+      }
       const data = await res.json();
       setDaily(data);
     } catch (err) {
-      console.error('fetchDaily error', err);
+      console.error('fetchDaily error:', err instanceof Error ? err.message : err);
       setDaily(null);
     } finally { setLoadingDaily(false); }
   }
@@ -64,18 +67,23 @@ const ProfileControls: React.FC = () => {
       toast.success(body?.message || 'Claimed!');
       fetchDaily();
     } catch (err) {
-      console.error(err); toast.error('Claim failed');
+      console.error('claimDaily error:', err instanceof Error ? err.message : err);
+      toast.error('Claim failed');
     }
   }
 
   async function fetchRedBlack() {
     try {
       const res = await fetch(`${getApi()}/api/v1/games/red-or-black`);
-      if (!res.ok) throw res;
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to fetch red-or-black: ${res.status} ${res.statusText} - ${errorText}`);
+      }
       const data = await res.json();
       setRedBlack(data);
     } catch (err) {
-      console.error('fetchRedBlack', err); setRedBlack(null);
+      console.error('fetchRedBlack error:', err instanceof Error ? err.message : err);
+      setRedBlack(null);
     }
   }
 
@@ -92,17 +100,26 @@ const ProfileControls: React.FC = () => {
       toast.success(data?.message || 'Play result received');
       fetchRedBlack();
       fetchDaily();
-    } catch (err) { console.error(err); toast.error('Play failed'); }
+    } catch (err) {
+      console.error('playRedBlack error:', err instanceof Error ? err.message : err);
+      toast.error('Play failed');
+    }
     finally { setPlaying(false); }
   }
 
   async function fetchLeaderboard() {
     try {
       const res = await fetch(`${getApi()}/api/v1/leaderboard/monthly`);
-      if (!res.ok) throw res;
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to fetch leaderboard: ${res.status} ${res.statusText} - ${errorText}`);
+      }
       const data = await res.json();
       setLeaderboard(Array.isArray(data?.leaders) ? data.leaders : []);
-    } catch (err) { console.error('fetchLeaderboard', err); setLeaderboard([]); }
+    } catch (err) {
+      console.error('fetchLeaderboard error:', err instanceof Error ? err.message : err);
+      setLeaderboard([]);
+    }
   }
 
   async function redeemCode() {
@@ -117,15 +134,25 @@ const ProfileControls: React.FC = () => {
       toast.success(data?.message || 'Redeemed');
       setCode('');
       fetchDaily();
-    } catch (err) { console.error(err); toast.error('Redeem failed'); }
+    } catch (err) {
+      console.error('redeemCode error:', err instanceof Error ? err.message : err);
+      toast.error('Redeem failed');
+    }
   }
 
   async function fetchTasks() {
     try {
       const res = await fetch(`${getApi()}/api/v1/tasks?limit=5`);
-      const data = await res.json().catch(()=>({}));
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`Failed to fetch tasks: ${res.status} ${res.statusText} - ${errorText}`);
+      }
+      const data = await res.json();
       setTasks(Array.isArray(data?.tasks) ? data.tasks : []);
-    } catch (err) { console.error('fetchTasks', err); setTasks([]); }
+    } catch (err) {
+      console.error('fetchTasks error:', err instanceof Error ? err.message : err);
+      setTasks([]);
+    }
   }
 
   return (
@@ -161,9 +188,13 @@ const ProfileControls: React.FC = () => {
         <div className="bg-[#0f172a] p-4 rounded">
           <h4 className="text-sm font-semibold text-white">Monthly Leaders</h4>
           <ul className="mt-2 text-xs space-y-2">
-            {leaderboard.slice(0,5).map((l:any, i:number)=> (
-              <li key={i} className="flex justify-between"><span className="text-white">{l.username ?? l.name ?? 'Anonymous'}</span><span className="text-white">{l.score ?? l.points ?? ''}</span></li>
-            ))}
+            {leaderboard.length === 0 ? (
+              <li className="text-gray-400">No leaders yet</li>
+            ) : (
+              leaderboard.slice(0,5).map((l:any, i:number)=> (
+                <li key={i} className="flex justify-between"><span className="text-white">{l.username ?? l.name ?? 'Anonymous'}</span><span className="text-white">{l.score ?? l.points ?? ''}</span></li>
+              ))
+            )}
           </ul>
         </div>
 

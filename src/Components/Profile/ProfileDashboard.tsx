@@ -14,6 +14,7 @@ import {
   setProfile as setProfileAction,
   setToken as setTokenAction,
 } from "@/store/userSlice";
+import UserProfileModal from "../UserProfileModal";
 
 import ProfileImg from "../../../public/assets/profile.png";
 import Af1 from "../../../public/assets/af1.png";
@@ -24,14 +25,16 @@ import Af4 from "../../../public/assets/af4.png";
 import SettingsDashboard from "./SettingsDashboard";
 import TransactionDashboard from "./TransactionDashboard";
 import WithdrawDashboard from "./WithdrawDashboard";
+import ProfileOverview from "./ProfileOverview";
 
 interface TabProps {
   currentTab: string;
   setCurrentTab: (t: string) => void;
   tasks: any[];
+  onUserClick?: (userId: string) => void;
 }
 
-const TaskTabs: React.FC<TabProps> = ({ currentTab, setCurrentTab, tasks }) => {
+const TaskTabs: React.FC<TabProps> = ({ currentTab, setCurrentTab, tasks, onUserClick }) => {
   return (
     <div className="w-full">
       {/* Tabs */}
@@ -157,7 +160,7 @@ const TaskTabs: React.FC<TabProps> = ({ currentTab, setCurrentTab, tasks }) => {
 };
 
 const ProfileDashboard: React.FC = () => {
-  const [activeSection, setActiveSection] = useState("Tasks");
+  const [activeSection, setActiveSection] = useState("Overview");
   const [currentTab, setCurrentTab] = useState("Completed");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profile, setProfile] = useState<any | null>(null);
@@ -169,6 +172,13 @@ const ProfileDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>({});
   const [tasks, setTasks] = useState<any[]>([]);
   const { socket } = useSocket();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowProfileModal(true);
+  };
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -303,7 +313,7 @@ const ProfileDashboard: React.FC = () => {
   }, [socket, token]);
 
   const sections = [
-    { name: "Tasks", icon: <BiTask className="text-lg" /> },
+    { name: "Overview", icon: <BiTask className="text-lg" /> },
     { name: "Settings", icon: <RiSettingsLine className="text-lg" /> },
     { name: "Transactions", icon: <LuArrowUpDown className="text-lg" /> },
     { name: "Withdrawals", icon: <BsCreditCard2Back className="text-lg" /> },
@@ -534,19 +544,23 @@ const ProfileDashboard: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto">
           <div className="bg-[#151728] px-6 pt-3 pb-6 rounded-xl shadow-md">
-            {activeSection === "Tasks" && (
-              <TaskTabs
-                currentTab={currentTab}
-                setCurrentTab={setCurrentTab}
-                tasks={tasks}
-              />
-            )}
+            {activeSection === "Overview" && <ProfileOverview />}
             {activeSection === "Settings" && <SettingsDashboard />}
             {activeSection === "Transactions" && <TransactionDashboard />}
             {activeSection === "Withdrawals" && <WithdrawDashboard />}
           </div>
         </main>
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal 
+        userId={selectedUserId}
+        isOpen={showProfileModal}
+        onClose={() => {
+          setShowProfileModal(false);
+          setSelectedUserId(null);
+        }}
+      />
     </div>
   );
 };

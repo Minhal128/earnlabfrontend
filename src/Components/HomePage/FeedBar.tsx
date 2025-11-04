@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from '@/contexts/SocketProvider';
 import Image from "next/image";
+import UserProfileModal from "../UserProfileModal";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
@@ -15,13 +16,24 @@ type FeedEvent = {
     text?: string;
     amountCents?: number | null;
     createdAt?: string | Date;
+    userId?: string;
+    username?: string;
 };
 
 const FeedBar: React.FC = () => {
     const [events, setEvents] = useState<FeedEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
     const { socket } = useSocket();
+
+    const handleUserClick = (userId?: string) => {
+        if (userId) {
+            setSelectedUserId(userId);
+            setShowProfileModal(true);
+        }
+    };
 
     useEffect(() => {
         const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -88,7 +100,8 @@ const FeedBar: React.FC = () => {
                 {!loading && events.map((ev, idx) => (
                     <div
                         key={ev._id || idx}
-                        className="flex items-center cursor-pointer gap-3 bg-[#26293E] text-white rounded-lg md:px-6 md:py-4 px-4 py-3 md:min-w-[250px] min-w-[200px] shadow-md"
+                        onClick={() => handleUserClick(ev.userId)}
+                        className="flex items-center cursor-pointer gap-3 bg-[#26293E] text-white rounded-lg md:px-6 md:py-4 px-4 py-3 md:min-w-[250px] min-w-[200px] shadow-md hover:bg-[#2f3247] transition-colors"
                     >
                         <div className="flex-shrink-0">
                             <Image
@@ -108,6 +121,16 @@ const FeedBar: React.FC = () => {
                     </div>
                 ))}
             </div>
+
+            {/* User Profile Modal */}
+            <UserProfileModal 
+                userId={selectedUserId}
+                isOpen={showProfileModal}
+                onClose={() => {
+                    setShowProfileModal(false);
+                    setSelectedUserId(null);
+                }}
+            />
         </div>
     );
 };

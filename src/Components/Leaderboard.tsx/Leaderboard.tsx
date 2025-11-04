@@ -2,9 +2,19 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
 import dotsBg from "../../../public/assets/drop.png";
 import leaderTop from "../../../public/assets/leadertop.png";
 import Avatar from "../../../public/assets/avatar.png";
+
+interface LeaderboardUser {
+    uuid: string;
+    username: string;
+    displayName?: string;
+    avatarUrl?: string;
+    balanceCents: number;
+    profilePrivacy?: 'public' | 'private';
+}
 
 const LeaderBoard = () => {
     const targetDate = useMemo(() => {
@@ -36,48 +46,89 @@ const LeaderBoard = () => {
         return () => clearInterval(timer);
     }, [targetDate]);
 
-    const topWinners = [
-        {
-            id: 2,
-            name: "Anonymous",
-            points: 130000,
-            reward: 250,
-            img: "/assets/avatar.png",
-            badgeImg: "/assets/bluedolar.png",
-            cardImg: "/assets/first.png",
-            gradient: "from-[#30CFFF] via-blue-300 to-transparent",
-        },
-        {
-            id: 1,
-            name: "Anonymous",
-            points: 230000,
-            reward: 500,
-            img: "/assets/avatar.png",
-            badgeImg: "/assets/bluedolar.png",
-            cardImg: "/assets/second.png",
-            gradient: "from-[#FFB255] via-yellow-300 to-transparent",
-        },
-        {
-            id: 3,
-            name: "Anonymous",
-            points: 200000,
-            reward: 350,
-            img: "/assets/avatar.png",
-            badgeImg: "/assets/bluedolar.png",
-            cardImg: "/assets/third.png",
-            gradient: "from-[#30CFFF] via-blue-300 to-transparent",
-        },
+    const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
-    ];
+    // Fetch leaderboard data
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                const res = await fetch(`${api}/api/v1/games/leaderboard/monthly`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.top && Array.isArray(data.top)) {
+                        setLeaderboardData(data.top);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch leaderboard:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const otherPlayers = [
-        { id: 4, name: "James Bond", points: 180000, reward: 200 },
-        { id: 5, name: "James Bond", points: 180000, reward: 200 },
-        { id: 6, name: "James Bond", points: 180000, reward: 200 },
-        { id: 7, name: "James Bond", points: 180000, reward: 200 },
-        { id: 8, name: "James Bond", points: 180000, reward: 200 },
-        { id: 9, name: "James Bond", points: 180000, reward: 200 },
-    ];
+        fetchLeaderboard();
+    }, []);
+
+    // Handle user click
+    const handleUserClick = async (userId: string) => {
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/games/user/${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.isPrivate) {
+                    toast.info(data.message || "This profile is private");
+                } else {
+                    setSelectedUser(data.profile);
+                    setShowProfileModal(true);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to fetch user profile:", err);
+            toast.error("Failed to load user profile");
+        }
+    };
+
+    // Prepare top 3 winners
+    const topWinners = leaderboardData.slice(0, 3).map((user, idx) => {
+        const rewards = [500, 250, 350]; // 1st, 2nd, 3rd place rewards
+        const cardImgs = ["/assets/second.png", "/assets/first.png", "/assets/third.png"];
+        const gradients = [
+            "from-[#FFB255] via-yellow-300 to-transparent",
+            "from-[#30CFFF] via-blue-300 to-transparent",
+            "from-[#30CFFF] via-blue-300 to-transparent",
+        ];
+        
+        return {
+            id: idx + 1,
+            uuid: user.uuid,
+            name: user.displayName || user.username,
+            points: user.balanceCents,
+            reward: rewards[idx],
+            img: user.avatarUrl || "/assets/avatar.png",
+            badgeImg: "/assets/bluedolar.png",
+            cardImg: cardImgs[idx],
+            gradient: gradients[idx],
+        };
+    });
+
+    // Reorder for podium display (2nd, 1st, 3rd)
+    const podiumOrder = topWinners.length >= 3 
+        ? [topWinners[1], topWinners[0], topWinners[2]]
+        : topWinners;
+
+    const otherPlayers = leaderboardData.slice(3).map((user, idx) => ({
+        id: idx + 4,
+        uuid: user.uuid,
+        name: user.displayName || user.username,
+        points: user.balanceCents,
+        reward: Math.max(50, 200 - (idx * 20)), // Decreasing rewards
+        img: user.avatarUrl || "/assets/avatar.png",
+    }));
 
     return (
         <div className="relative min-h-screen bg-[#1E2133] text-white flex flex-col items-center justify-start overflow-hidden">
@@ -126,13 +177,17 @@ const LeaderBoard = () => {
 
                 {/* Podium */}
                 <div className="relative w-full mt-12 px-6 py-12 rounded-2xl overflow-hidden">
+                    {loading ? (
+                        <div className="text-center text-gray-400">Loading leaderboard...</div>
+                    ) : (
                     <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-center gap-6 w-full">
-                        {topWinners.map((winner) => {
+                        {podiumOrder.map((winner) => {
                             const isCenter = winner.id === 1;
                             return (
                                 <div
                                     key={winner.id}
-                                    className={`relative bg-[#3A3E57] rounded-xl flex items-center justify-center w-full ${isCenter
+                                    onClick={() => handleUserClick(winner.uuid)}
+                                    className={`relative bg-[#3A3E57] rounded-xl flex items-center justify-center w-full cursor-pointer hover:scale-105 transition-transform ${isCenter
                                         ? "md:w-80 md:h-[470px] h-[400px]"
                                         : "md:w-64 md:h-[360px] h-[300px]"
                                         }`}
@@ -192,12 +247,17 @@ const LeaderBoard = () => {
                             );
                         })}
                     </div>
+                    )}
                 </div>
 
                 {/* Other Players */}
                 <div className="w-full mt-10 space-y-3">
                     {otherPlayers.map((player, idx) => (
-                        <div key={player.id} className="flex items-center md:gap-40 gap-5 px-4 py-4 bg-[#26293E] rounded-lg" >
+                        <div 
+                            key={player.id} 
+                            onClick={() => handleUserClick(player.uuid)}
+                            className="flex items-center md:gap-40 gap-5 px-4 py-4 bg-[#26293E] rounded-lg cursor-pointer hover:bg-[#2f3247] transition-colors"
+                        >
                             <span className="text-sm text-[#B3B6C7]">#{idx + 4}</span>
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 flex items-center justify-center text-sm">
@@ -214,6 +274,73 @@ const LeaderBoard = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Profile Modal */}
+            {showProfileModal && selectedUser && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowProfileModal(false)}
+                >
+                    <div 
+                        className="bg-[#1E2133] rounded-xl p-8 max-w-md w-full shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold">User Profile</h2>
+                            <button 
+                                onClick={() => setShowProfileModal(false)}
+                                className="text-gray-400 hover:text-white text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="flex flex-col items-center gap-4">
+                            {selectedUser.avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img 
+                                    src={selectedUser.avatarUrl} 
+                                    alt={selectedUser.username}
+                                    className="w-24 h-24 rounded-full"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 rounded-full bg-[#2A2D44] flex items-center justify-center text-3xl">
+                                    {(selectedUser.displayName || selectedUser.username).charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            
+                            <div className="text-center">
+                                <h3 className="text-xl font-semibold mb-1">
+                                    {selectedUser.displayName || selectedUser.username}
+                                </h3>
+                                <p className="text-gray-400 text-sm">@{selectedUser.username}</p>
+                            </div>
+
+                            <div className="w-full bg-[#26293E] rounded-lg p-4 mt-4">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-gray-400">Total Earned</span>
+                                    <span className="text-xl font-bold text-green-400">
+                                        ${(selectedUser.balanceCents / 100).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-400">Joined</span>
+                                    <span className="text-sm">
+                                        {new Date(selectedUser.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowProfileModal(false)}
+                                className="w-full mt-4 py-3 bg-gradient-to-r from-[#099F86] to-[#0EA88F] rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

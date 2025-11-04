@@ -8,6 +8,7 @@ import FeaturedSurvey from "@/Components/HomePage/FeaturedSurvey";
 import ServeyWalls from "@/Components/Servey/ServeyWalls";
 import WatchWalls from "@/Components/HomePage/WatchWalls";
 import FeedBar from "@/Components/HomePage/FeedBar";
+import RedOrBlackGame from "@/Components/HomePage/RedOrBlackGame";
 
 export default function Home() {
     return (
@@ -15,6 +16,9 @@ export default function Home() {
             <TopBar />
             <main className="md:p-6 p-3 bg-[#1E2133] min-h-screen">
                 <FeedBar />
+
+                {/* Red or Black Daily Bonus Game */}
+                <RedOrBlackGame />
 
                 {/* Page Content */}
                 <FeaturedTask />

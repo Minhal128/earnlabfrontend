@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, Loader2 } from "lucide-react";
 import { BiSolidWallet } from "react-icons/bi";
 import Select, { SingleValue } from "react-select";
 import countryList from "react-select-country-list";
 import ReactCountryFlag from "react-country-flag";
 import Image, { StaticImageData } from "next/image";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { updateProfileFields } from "@/store/userSlice";
 
 // Assets
 import Old from "../../../public/assets/visacard.png";
@@ -49,12 +52,78 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<"general" | "task">("general");
     const [value, setValue] = useState<CountryOption | null>(null);
     const [selectedMethod, setSelectedMethod] = useState<Method | null>(null);
+    const [promoCode, setPromoCode] = useState("");
+    const [isRedeeming, setIsRedeeming] = useState(false);
+    const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+    const [customAmount, setCustomAmount] = useState("");
+    const dispatch = useDispatch();
+
+    // Check if selected method is Virtual Visa (cash) or Crypto
+    const isVirtualVisa = selectedMethod?.name === "Virtual Visa";
+    const isCrypto = selectedMethod && !isVirtualVisa;
+
+    // Amount presets for Virtual Visa (in euros)
+    const amountPresets = [10, 25, 50, 100];
 
     const options: CountryOption[] = useMemo(() => countryList().getData(), []);
 
     const handleChange = (val: SingleValue<CountryOption> | null) => {
         setValue(val);
         setSelectedMethod({ name: "Virtual Visa", icon: Old });
+    };
+
+    const handleRedeemPromo = async () => {
+        if (!promoCode.trim()) {
+            toast.error("Please enter a promo code");
+            return;
+        }
+
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+            toast.error("Please sign in to redeem promo codes");
+            return;
+        }
+
+        setIsRedeeming(true);
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/games/user/bonus-code/redeem`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ code: promoCode.trim() }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(`🎉 ${data.message || "Promo code redeemed successfully"}! +$${(data.rewardCents / 100).toFixed(2)}`);
+                
+                // Update balance in Redux
+                if (typeof data.newBalanceCents === "number") {
+                    dispatch(updateProfileFields({ balanceCents: data.newBalanceCents }));
+                }
+
+                // Clear the input
+                setPromoCode("");
+
+                // Emit event to update balance in Topbar
+                if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("balance-updated", { 
+                        detail: { balanceCents: data.newBalanceCents } 
+                    }));
+                }
+            } else {
+                toast.error(data.message || "Failed to redeem promo code");
+            }
+        } catch (err) {
+            console.error("Error redeeming promo code:", err);
+            toast.error("Failed to redeem promo code");
+        } finally {
+            setIsRedeeming(false);
+        }
     };
 
     return (
@@ -167,9 +236,9 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
             <div className="max-h-[70%] overflow-y-auto px-4 py-3 custom-scrollbar">
                 {selectedMethod ? (
                     <div className="space-y-4">
-                        {/* Chain Info */}
+                        {/* Chain/Method Info */}
                         <div>
-                            <label className="text-sm mb-1 block">Chain</label>
+                            <label className="text-sm mb-1 block">{isVirtualVisa ? "Payment Method" : "Chain"}</label>
                             <div className="flex items-center justify-between bg-[#26293E] border border-gray-700 rounded-md px-3 py-3">
                                 <div className="flex items-center gap-2">
                                     <Image
@@ -184,31 +253,77 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        {/* Wallet Address */}
-                        <div>
-                            <label className="text-sm mb-1 block">Wallet address</label>
-                            <input
-                                type="text"
-                                className="w-full px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white"
-                            />
-                        </div>
+                        {/* Wallet Address - Only for Crypto */}
+                        {isCrypto && (
+                            <div>
+                                <label className="text-sm mb-1 block">Wallet address</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter your wallet address"
+                                    className="w-full px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
+                                />
+                            </div>
+                        )}
 
                         {/* Amount */}
                         <div>
                             <label className="text-sm mb-1 block">Amount</label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    className="flex-1 px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white"
-                                />
-                                <button className="px-4 py-3 bg-[#6B6E8A] text-sm rounded-md">
-                                    Max
-                                </button>
-                            </div>
+                            
+                            {/* Virtual Visa: Show preset buttons */}
+                            {isVirtualVisa ? (
+                                <>
+                                    <div className="grid grid-cols-2 gap-2 mb-3">
+                                        {amountPresets.map((amount) => (
+                                            <button
+                                                key={amount}
+                                                onClick={() => {
+                                                    setSelectedAmount(amount);
+                                                    setCustomAmount("");
+                                                }}
+                                                className={`px-4 py-3 rounded-md text-sm font-medium transition ${
+                                                    selectedAmount === amount
+                                                        ? "bg-teal-500 text-white"
+                                                        : "bg-[#26293E] text-gray-300 hover:bg-[#2f3247]"
+                                                }`}
+                                            >
+                                                €{amount}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-400">Or enter custom amount:</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <span className="text-sm text-gray-400">€</span>
+                                        <input
+                                            type="number"
+                                            value={customAmount}
+                                            onChange={(e) => {
+                                                setCustomAmount(e.target.value);
+                                                setSelectedAmount(null);
+                                            }}
+                                            placeholder="Custom amount"
+                                            className="flex-1 px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                /* Crypto: Show input with Max button */
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter amount"
+                                        className="flex-1 px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
+                                    />
+                                    <button className="px-4 py-3 bg-[#6B6E8A] text-sm rounded-md hover:bg-[#7a7f9a] transition">
+                                        Max
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Create Withdrawal */}
-                        <button className="w-full cursor-pointer px-4 py-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] text-sm rounded-md transition">
+                        <button className="w-full cursor-pointer px-4 py-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] text-sm rounded-md transition hover:opacity-90">
                             Create withdrawal
                         </button>
                     </div>
@@ -347,11 +462,25 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                     <div className="flex flex-col gap-3">
                         <input
                             type="text"
+                            value={promoCode}
+                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                             placeholder="Enter your promo code"
                             className="px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white"
+                            disabled={isRedeeming}
                         />
-                        <button className="w-full cursor-pointer px-4 py-3 bg-[#099F86] text-sm rounded-md transition">
-                            Apply
+                        <button 
+                            onClick={handleRedeemPromo}
+                            disabled={isRedeeming || !promoCode.trim()}
+                            className="w-full cursor-pointer px-4 py-3 bg-[#099F86] text-sm rounded-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {isRedeeming ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={16} />
+                                    Redeeming...
+                                </>
+                            ) : (
+                                "Apply Promo Code"
+                            )}
                         </button>
                     </div>
                 )}
