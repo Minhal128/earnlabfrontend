@@ -29,6 +29,10 @@ import Footer from "@/Components/Landing/Footer";
 import SignInModal from "../../Components/HomePage/SigninModal";
 import SignUpModal from "../../Components/HomePage/SignupModal";
 import ForgotPasswordModal from "../../Components/HomePage/ForgotPasswordModal";
+import EarningsTicker from "@/Components/Shared/EarningsTicker";
+import PayoutMethods from "@/Components/Shared/PayoutMethods";
+import LiveStatsToggle from "@/Components/Shared/LiveStatsToggle";
+import ModernAuthButtons from "@/Components/Shared/ModernAuthButtons";
 
 interface Notification {
     id: number;
@@ -54,6 +58,7 @@ export default function Landing() {
     const [forgotOpen, setForgotOpen] = useState(false);
     const [langOpen, setLangOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [liveStatsEnabled, setLiveStatsEnabled] = useState(true);
 
     const [currentLang, setCurrentLang] = useState({
         name: "English",
@@ -85,37 +90,56 @@ export default function Landing() {
                 }}
             />
 
+            {/* Earnings Ticker - Top Bar */}
+            <EarningsTicker isVisible={liveStatsEnabled} />
+
             {/* Navigation */}
-            <nav className="relative z-20 bg-[#0D0F1E] pt-10">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between relative">
+            <nav className="relative z-20 bg-[#0A0C1A] pt-6">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Main Nav Box */}
-                    <div className="flex-1 py-[8px] px-5 rounded-full bg-[#151728] flex items-center justify-between">
+                    <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-[#1A1D2E] border border-[#2A2D3E]">
                         {/* Logo */}
-                        <div className="flex-shrink-0">
-                            <Image src={LogoImg} alt="Logo" width={160} height={10} className="object-contain" />
+                        <div className="flex items-center gap-3">
+                            <Image src={LogoImg} alt="Logo" className="h-7 w-auto object-contain hover:opacity-80 transition-opacity" />
+                            
+                            {/* Payout Methods Section */}
+                            <div className="hidden xl:flex">
+                                <PayoutMethods isLoggedIn={false} />
+                            </div>
                         </div>
 
                         {/* Desktop Nav */}
-                        <div className="hidden md:flex flex-1 justify-center space-x-8">
-                            <a href="#" className="text-white hover:text-gray-300 font-medium">Games</a>
-                            <a href="#" className="text-white hover:text-gray-300 font-medium">Tasks</a>
-                            <a href="#" className="text-white hover:text-gray-300 font-medium">Rewards</a>
-                            <a href="#" className="text-white hover:text-gray-300 font-medium">Contact</a>
+                        <div className="hidden md:flex items-center gap-1">
+                            <a href="#games" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Games</a>
+                            <a href="#tasks" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Tasks</a>
+                            <a href="#rewards" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Rewards</a>
+                            <a href="#contact" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Contact</a>
                         </div>
 
-                        {/* Buttons */}
-                        <div className="hidden md:flex items-center space-x-2">
-                            <button
-                                onClick={() => setOpen(true)}
-                                className="text-[#151728] cursor-pointer rounded-full bg-[#FFFFFF] font-medium px-6 py-2"
+                        {/* Right Section */}
+                        <div className="flex items-center gap-2">
+                            {/* Live Stats Toggle */}
+                            <div className="hidden lg:flex">
+                                <LiveStatsToggle 
+                                    defaultEnabled={liveStatsEnabled}
+                                    onChange={setLiveStatsEnabled}
+                                />
+                            </div>
+
+                            {/* Modern Auth Buttons */}
+                            <div className="hidden md:flex">
+                                <ModernAuthButtons 
+                                    onSignInClick={() => setOpen(true)}
+                                    onSignUpClick={() => setSignUpOpen(true)}
+                                />
+                            </div>
+
+                            {/* Mobile Menu Button */}
+                            <button 
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                className="md:hidden p-2 rounded-md bg-[#252840] border border-[#2A2D3E] hover:bg-[#2A2D3E] transition-colors"
                             >
-                                Sign in
-                            </button>
-                            <button
-                                onClick={() => setSignUpOpen(true)}
-                                className="bg-[#099F86] cursor-pointer text-white font-medium px-6 py-2 rounded-full transition-colors"
-                            >
-                                Sign up
+                                {menuOpen ? <X size={20} /> : <Menu size={20} />}
                             </button>
                         </div>
 
@@ -142,37 +166,32 @@ export default function Landing() {
                         />
                         <ForgotPasswordModal isOpen={forgotOpen} onClose={() => setForgotOpen(false)} />
 
-                        {/* Mobile Menu Button */}
-                        <div className="md:hidden flex items-center">
-                            <button onClick={() => setMenuOpen(!menuOpen)}>
-                                {menuOpen ? <X size={28} /> : <Menu size={28} />}
-                            </button>
-                        </div>
                     </div>
 
-                    {/* Language Selector */}
-                    <div className="hidden md:block ml-4 relative px-3 py-4 rounded-full bg-[#151728]">
+                    {/* Language Selector - Separate from main nav */}
+                    <div className="hidden md:block absolute right-4 top-6 px-3 py-2 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E]">
                         <button
-                            className="flex items-center gap-2 rounded-md transition-colors"
+                            className="flex items-center gap-2 rounded-md hover:bg-[#252840] px-2 py-1 transition-colors"
                             onClick={() => setLangOpen((prev) => !prev)}
                         >
-                            <Image src={currentLang.flag} alt={currentLang.code} width={20} height={14} />
-                            <span className="text-sm font-medium">{currentLang.code}</span>
-                            <IoMdArrowDropdown size={16} />
+                            <Image src={currentLang.flag} alt={currentLang.code} width={18} height={12} />
+                            <span className="text-xs font-medium text-[#9CA3AF]">{currentLang.code}</span>
+                            <IoMdArrowDropdown size={14} />
                         </button>
                         {langOpen && (
-                            <div className="absolute right-0 mt-5 w-30 bg-[#26293E] rounded-xl z-20 shadow-md">
-                                <ul className="py-2 px-2 text-sm">
+                            <div className="absolute right-0 mt-2 w-36 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg z-20 shadow-xl">
+                                <ul className="py-1 text-sm">
                                     {languages.map((lang) => (
                                         <li key={lang.code}>
                                             <button
                                                 onClick={() => handleLanguageChange(lang)}
-                                                className={`w-full flex rounded-xl items-center gap-2 px-3 py-2 text-left ${currentLang.code === lang.code
-                                                    ? "bg-[#099F86] text-white"
-                                                    : "hover:bg-[#33354d]"
+                                                className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
+                                                    currentLang.code === lang.code
+                                                        ? "bg-emerald-500/10 text-emerald-400"
+                                                        : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
                                                     }`}
                                             >
-                                                <Image src={lang.flag} alt={lang.name} width={20} height={14} />
+                                                <Image src={lang.flag} alt={lang.name} width={18} height={12} />
                                                 {lang.name}
                                             </button>
                                         </li>
@@ -185,61 +204,79 @@ export default function Landing() {
 
                 {/* Mobile Menu */}
                 <div
-                    className={`md:hidden fixed top-0 left-0 w-full h-full bg-[#0D0F1E] z-30 transition-all duration-300 ease-in-out ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
+                    className={`md:hidden fixed top-0 left-0 w-72 h-full bg-[#0A0C1A] border-r border-[#1A1D2E] shadow-2xl z-50 transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"
                         }`}
                 >
-                    <div className="absolute top-5 right-5">
-                        <button onClick={() => setMenuOpen(false)} className="border rounded-md p-1">
-                            <X size={20} className="text-white" />
+                    <div className="flex justify-between items-center p-5 border-b border-[#1A1D2E]">
+                        <Image src={LogoImg} alt="Logo" className="h-7 w-auto object-contain" />
+                        <button 
+                            onClick={() => setMenuOpen(false)} 
+                            className="p-1.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
+                        >
+                            <X size={18} />
                         </button>
                     </div>
-                    <div className="p-6 space-y-6 mt-10 overflow-y-auto h-full">
-                        <a href="#" className="block text-lg text-white hover:text-gray-300 font-medium">Games</a>
-                        <a href="#" className="block text-lg text-white hover:text-gray-300 font-medium">Tasks</a>
-                        <a href="#" className="block text-lg text-white hover:text-gray-300 font-medium">Rewards</a>
-                        <a href="#" className="block text-lg text-white hover:text-gray-300 font-medium">Contact</a>
+                    
+                    <div className="p-5 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
+                        {/* Navigation Links */}
+                        <nav className="space-y-1">
+                            <a href="#games" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Games</a>
+                            <a href="#tasks" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Tasks</a>
+                            <a href="#rewards" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Rewards</a>
+                            <a href="#contact" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Contact</a>
+                        </nav>
 
-                        <div className="space-y-6">
-                            <button
-                                onClick={() => setOpen(true)}
-                                className="w-full text-[#151728] cursor-pointer rounded-full bg-[#FFFFFF] font-medium px-6 py-3"
-                            >
-                                Sign in
-                            </button>
-                            <button
-                                onClick={() => setSignUpOpen(true)}
-                                className="w-full bg-[#099F86] cursor-pointer text-white font-medium px-6 py-3 rounded-full transition-colors"
-                            >
-                                Sign up
-                            </button>
+                        {/* Auth Buttons */}
+                        <div className="pt-4 border-t border-[#1A1D2E]">
+                            <ModernAuthButtons 
+                                onSignInClick={() => {
+                                    setMenuOpen(false);
+                                    setOpen(true);
+                                }}
+                                onSignUpClick={() => {
+                                    setMenuOpen(false);
+                                    setSignUpOpen(true);
+                                }}
+                            />
                         </div>
 
-                        {/* Mobile Language Selector */}
-                        <div className="relative mt-2">
+                        {/* Live Stats Toggle */}
+                        <div className="pt-4 border-t border-[#1A1D2E]">
+                            <LiveStatsToggle 
+                                defaultEnabled={liveStatsEnabled}
+                                onChange={setLiveStatsEnabled}
+                            />
+                        </div>
+
+                        {/* Language Selector */}
+                        <div className="pt-4 border-t border-[#1A1D2E]">
                             <button
-                                className="flex items-center justify-between w-full rounded-full px-3 py-4 bg-[#26293E]"
+                                className="flex items-center justify-between w-full px-3 py-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
                                 onClick={() => setLangOpen((prev) => !prev)}
                             >
                                 <div className="flex items-center gap-2">
-                                    <Image src={currentLang.flag} alt={currentLang.code} width={20} height={14} />
+                                    <Image src={currentLang.flag} alt={currentLang.code} width={18} height={12} />
+                                    <span className="text-sm font-medium text-[#9CA3AF]">{currentLang.name}</span>
                                 </div>
-                                <span className="flex-1 text-center text-sm font-medium">{currentLang.code}</span>
-                                <ChevronDown size={16} className="ml-auto" />
+                                <ChevronDown size={16} className="text-[#9CA3AF]" />
                             </button>
                             {langOpen && (
-                                <div className="absolute mt-2 w-full bg-[#26293E] rounded-xl z-40 shadow-md">
-                                    <ul className="py-1 text-sm">
+                                <div className="mt-2 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg shadow-xl">
+                                    <ul className="py-1">
                                         {languages.map((lang) => (
                                             <li key={lang.code}>
                                                 <button
-                                                    onClick={() => handleLanguageChange(lang)}
-                                                    className={`w-full flex rounded-xl items-center justify-between px-3 py-2 text-left ${currentLang.code === lang.code
-                                                        ? "bg-[#099F86] text-white"
-                                                        : "hover:bg-[#33354d]"
+                                                    onClick={() => {
+                                                        handleLanguageChange(lang);
+                                                        setMenuOpen(false);
+                                                    }}
+                                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${currentLang.code === lang.code
+                                                        ? "bg-emerald-500/10 text-emerald-400"
+                                                        : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
                                                         }`}
                                                 >
-                                                    <Image src={lang.flag} alt={lang.name} width={20} height={14} />
-                                                    <span className="flex-1 text-center">{lang.name}</span>
+                                                    <Image src={lang.flag} alt={lang.name} width={18} height={12} />
+                                                    {lang.name}
                                                 </button>
                                             </li>
                                         ))}
@@ -249,6 +286,14 @@ export default function Landing() {
                         </div>
                     </div>
                 </div>
+                
+                {/* Mobile Menu Overlay */}
+                {menuOpen && (
+                    <div 
+                        className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+                        onClick={() => setMenuOpen(false)}
+                    />
+                )}
             </nav>
 
             {/* Hero Section */}

@@ -23,6 +23,9 @@ import {
 import { toast } from "react-toastify";
 import SupportChat from "../Components/HomePage/SupportChat";
 import { useSocket } from "@/contexts/SocketProvider";
+import EarningsTicker from "./Shared/EarningsTicker";
+import PayoutMethods from "./Shared/PayoutMethods";
+import LiveStatsToggle from "./Shared/LiveStatsToggle";
 
 import LogoImg from "../../public/assets/logo.png";
 import DolarImg from "../../public/assets/dolar.png";
@@ -50,6 +53,7 @@ const TopBar: React.FC = () => {
   const [balance, setBalance] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [liveStatsEnabled, setLiveStatsEnabled] = useState(true);
   const storeProfile = useSelector((s: RootState) => s.user.profile);
   const storeToken = useSelector((s: RootState) => s.user.token);
   const dispatch = useDispatch();
@@ -429,88 +433,94 @@ const TopBar: React.FC = () => {
   }, [socket]);
 
   return (
-    <header className="w-full bg-[#151728] text-white shadow-md">
-      <div className="max-w-8xl px-2 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="w-full bg-[#0A0C1A] text-white shadow-lg">
+      {/* Earnings Ticker - Top Bar */}
+      <EarningsTicker isVisible={liveStatsEnabled} />
+      
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Left Side */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
-              className="lg:hidden flex items-center justify-center w-8 h-8 rounded-md bg-[#1E2133]"
+              className="lg:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
               onClick={() => setMenuOpen(true)}
             >
-              <Menu size={16} />
+              <Menu size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             {/* Logo */}
-            <Link href="/home">
-              <div>
-                <Image
-                  src={LogoImg}
-                  alt="Logo"
-                  className="md:w-32 w-28 h-auto object-contain"
-                />
-              </div>
+            <Link href="/home" className="flex-shrink-0">
+              <Image
+                src={LogoImg}
+                alt="Logo"
+                className="h-6 sm:h-8 w-auto object-contain hover:opacity-80 transition-opacity"
+              />
             </Link>
 
+            {/* Payout Methods Section */}
+            <div className="hidden xl:flex">
+              <PayoutMethods isLoggedIn={!!username} />
+            </div>
+
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center space-x-8 ml-10 text-sm font-medium">
+            <nav className="hidden lg:flex items-center gap-1 ml-6">
               <Link
                 href="/home"
-                className="flex text-[#B3B6C7] text-lg font-normal items-center ml-10 gap-1 hover:text-teal-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
               >
-                <Image src={Earn} alt="Earn" width={20} height={20} />
+                <Image src={Earn} alt="Earn" width={16} height={16} />
                 Earn
               </Link>
               <Link
                 href="/tasks"
-                className="flex text-[#B3B6C7] text-lg font-normal items-center gap-1 hover:text-teal-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
               >
-                <Image src={Task} alt="Tasks" width={20} height={20} />
+                <Image src={Task} alt="Tasks" width={16} height={16} />
                 Tasks
               </Link>
               <Link
                 href="/servey"
-                className="flex text-[#B3B6C7] text-lg font-normal items-center gap-1 hover:text-teal-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
               >
-                <Image src={Servey} alt="Surveys" width={20} height={20} />
+                <Image src={Servey} alt="Surveys" width={16} height={16} />
                 Surveys
               </Link>
               <Link
                 href="/rewards"
-                className="flex text-[#B3B6C7] text-lg font-normal items-center gap-1 hover:text-teal-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
               >
-                <Image src={Reward} alt="Rewards" width={20} height={20} />
+                <Image src={Reward} alt="Rewards" width={16} height={16} />
                 Rewards
               </Link>
               <Link
                 href="/leaderboard"
-                className="flex text-[#B3B6C7] text-lg font-normal items-center gap-1 hover:text-teal-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
               >
-                <Image
-                  src={Leaderboard}
-                  alt="Leaderboard"
-                  width={20}
-                  height={20}
-                />
+                <Image src={Leaderboard} alt="Leaderboard" width={16} height={16} />
                 Leaderboard
               </Link>
             </nav>
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Live Stats Toggle */}
+            <div className="hidden lg:flex">
+              <LiveStatsToggle 
+                defaultEnabled={liveStatsEnabled}
+                onChange={setLiveStatsEnabled}
+              />
+            </div>
             {/* Notification */}
             <button
               onClick={() => setOpen(!open)}
-              className="relative cursor-pointer flex items-center justify-center w-10 h-10 rounded-md bg-[#1E2133]"
+              className="relative cursor-pointer flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
             >
-              <Bell size={20} />
-              {notificationCount > 0 ? (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] text-white rounded-full px-1.5 py-0.5">
+              <Bell size={16} className="sm:w-[18px] sm:h-[18px]" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] text-white rounded-full min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] flex items-center justify-center font-semibold">
                   {notificationCount}
                 </span>
-              ) : (
-                <span className="absolute top-2.5 right-3.5 h-1 w-1 bg-red-500 rounded-full opacity-40"></span>
               )}
             </button>
 
@@ -520,46 +530,46 @@ const TopBar: React.FC = () => {
               <WalletDropdown onClose={() => setWalletOpen(false)} />
             )}
 
-            <div className="flex items-center space-x-3 h-10 md:px-3 px-2 rounded-md bg-[#1E2133]">
-              <div className="flex items-center space-x-0">
+            <div className="flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-1.5 sm:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E]">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Image
                   src={DolarImg}
-                  className="md:w-8 md:h-8 h-6 w-6 mt-0.5 object-contain"
+                  className="w-4 h-4 sm:w-5 sm:h-5 object-contain"
                   alt=""
                 />
-                <span className="text-green-400 cursor-pointer text-white font-semibold">
+                <span className="text-white font-semibold text-xs sm:text-sm">
                   {balance !== null ? "$" + (balance / 100).toFixed(2) : "--"}
                 </span>
               </div>
-              <span className="h-5 w-[0.5px] hidden md:flex bg-[#30334A]"></span>
+              <span className="h-3 sm:h-4 w-[1px] bg-[#2A2D3E]"></span>
               <button
                 onClick={() => setWalletOpen(!walletOpen)}
-                className="bg-[#099F86] cursor-pointer px-3 py-[5px] rounded-md text-sm font-medium flex items-center gap-1"
+                className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium flex items-center gap-0.5 sm:gap-1 transition-colors"
               >
                 <Image
                   src={WalletImg}
-                  className="md:w-4 md:h-4 w-4 h-3 object-contain"
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 object-contain"
                   alt=""
                 />
-                <span> Wallet </span>
+                <span className="hidden sm:inline">Wallet</span>
               </button>
             </div>
 
             <div className="relative flex">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center h-10 md:px-4 px-2 rounded-md bg-[#1E2133] md:space-x-2 cursor-pointer"
+                className="flex items-center h-8 sm:h-9 px-1.5 sm:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] gap-1 sm:gap-2 cursor-pointer transition-colors"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <ProfileInfo
-                    size={28}
+                    size={24}
                     username={username}
                     avatarUrl={avatarUrl}
                   />
                 </div>
                 <ChevronDown
-                  size={16}
-                  className="mt-1 hidden md:flex cursor-pointer"
+                  size={12}
+                  className="hidden sm:flex cursor-pointer sm:w-[14px] sm:h-[14px]"
                 />
               </button>
 
@@ -637,123 +647,130 @@ const TopBar: React.FC = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-[#1E2133] shadow-lg p-4 z-50 transform transition-transform duration-300 ${
+        className={`lg:hidden fixed top-0 left-0 h-full w-72 bg-[#0A0C1A] border-r border-[#1A1D2E] shadow-2xl p-5 z-50 transform transition-transform duration-300 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Close Button */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <Image
             src={LogoImg}
-            alt="Affiliate"
-            width={90}
-            height={16}
-            className="object-contain"
+            alt="Logo"
+            className="h-8 w-auto object-contain"
           />
-          <button onClick={() => setMenuOpen(false)}>
-            <X size={24} />
+          <button 
+            onClick={() => setMenuOpen(false)}
+            className="p-1.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
+          >
+            <X size={20} />
           </button>
         </div>
 
         {/* Nav Links */}
-        <nav className="flex flex-col space-y-2 text-sm font-medium">
+        <nav className="flex flex-col gap-1">
           <Link
             href="/"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/" ? HomeActive : Home}
-              alt="Earn"
-              width={16}
-              height={16}
+              alt="Home"
+              width={18}
+              height={18}
             />
             Home
           </Link>
           <Link
             href="/home"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/home"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/home" ? EarnActive : Earn}
               alt="Earn"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             Earn
           </Link>
 
           <Link
             href="/tasks"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/tasks"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/tasks" ? TaskActive : Task}
               alt="Tasks"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             Tasks
           </Link>
 
           <Link
             href="/servey"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/servey"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/servey" ? ServeyActive : Servey}
               alt="Surveys"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             Surveys
           </Link>
 
           <Link
             href="/rewards"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/rewards"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/rewards" ? RewardActive : Reward}
               alt="Rewards"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             Rewards
           </Link>
 
           <Link
             href="/leaderboard"
-            className={`flex items-center py-3 px-2 rounded-md gap-2 ${
+            onClick={() => setMenuOpen(false)}
+            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
               pathname === "/leaderboard"
-                ? "bg-[#083136] text-[#4DD6C1]"
-                : "text-[#B3B6C7] hover:text-teal-400"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
             }`}
           >
             <Image
               src={pathname === "/leaderboard" ? Leaderboard : Leaderboard}
               alt="Leaderboard"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             Leaderboard
           </Link>

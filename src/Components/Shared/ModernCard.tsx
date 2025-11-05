@@ -32,22 +32,22 @@ const ModernCard: React.FC<ModernCardProps> = ({
         <div
             onClick={onClick}
             className={`
-                group relative overflow-hidden rounded-xl transition-all duration-300
+                group relative overflow-hidden rounded-xl transition-all duration-200
                 ${onClick ? "cursor-pointer" : ""}
                 ${isFeatured 
-                    ? "bg-gradient-to-br from-[#1E2133] via-[#26293E] to-[#1E2133] border-2 border-teal-500/30 hover:border-teal-400" 
-                    : "bg-[#1E2133] border border-gray-700/50 hover:border-teal-500/50"
+                    ? "bg-[#1A1D2E] border border-emerald-500/20 hover:border-emerald-400/40" 
+                    : "bg-[#1A1D2E] border border-[#2A2D3E] hover:border-emerald-500/30"
                 }
-                ${onClick ? "hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/10" : ""}
+                ${onClick ? "hover:scale-[1.02] hover:shadow-lg" : ""}
             `}
         >
             {/* Gradient Overlay Effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/0 via-transparent to-purple-500/0 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-transparent to-blue-500/0 opacity-0 group-hover:opacity-5 transition-opacity duration-200" />
 
             {/* Image Container */}
-            <div className={`relative ${isCompact ? "h-24" : "h-32 md:h-40"} overflow-hidden`}>
+            <div className={`relative ${isCompact ? "h-24" : "h-32 md:h-40"} overflow-hidden rounded-t-xl`}>
                 {/* Image Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1E2133] via-transparent to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D2E] via-transparent to-transparent z-10" />
                 
                 {typeof image === "string" ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -68,7 +68,7 @@ const ModernCard: React.FC<ModernCardProps> = ({
                 {/* Featured Badge */}
                 {isFeatured && (
                     <div className="absolute top-2 right-2 z-20">
-                        <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-full text-[10px] font-bold text-white shadow-lg">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500 rounded-md text-[10px] font-bold text-white shadow-lg">
                             <TrendingUp size={10} />
                             FEATURED
                         </div>
@@ -78,9 +78,9 @@ const ModernCard: React.FC<ModernCardProps> = ({
                 {/* Reward Badge */}
                 {reward !== undefined && (
                     <div className="absolute top-2 left-2 z-20">
-                        <div className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full border border-yellow-500/30">
-                            <span className="text-yellow-400 text-xs font-bold">
-                                +{reward}
+                        <div className="flex items-center gap-1 px-2.5 py-1 bg-black/70 backdrop-blur-sm rounded-md border border-emerald-500/30">
+                            <span className="text-emerald-400 text-xs font-bold">
+                                ${(reward / 100).toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -91,7 +91,7 @@ const ModernCard: React.FC<ModernCardProps> = ({
             <div className={`p-3 ${isCompact ? "space-y-1" : "space-y-2"}`}>
                 {/* Title */}
                 <h3 className={`
-                    font-semibold text-white group-hover:text-teal-400 transition-colors line-clamp-1
+                    font-semibold text-white group-hover:text-emerald-400 transition-colors line-clamp-1
                     ${isCompact ? "text-xs" : "text-sm md:text-base"}
                 `}>
                     {title}

@@ -7,9 +7,7 @@ export default function LeaderBoardMain() {
     return (
         <>
             <TopBar />
-            <main className="md:p-6 p-3 bg-[#1E2133] min-h-screen">
-                <FeedBar />
-
+            <main className="min-h-screen bg-[#0A0C1A] pb-20 lg:pb-0">
                 {/* Page Content */}
                 <LeaderBoard />
             </main>

@@ -5,6 +5,7 @@ import ToastClient from "@/Components/ToastClient";
 import ChatRoom from "@/Components/HomePage/ChatRoom";
 import { SocketProvider } from "@/contexts/SocketProvider";
 import ClerkProviderClient from "@/Components/ClerkProviderClient";
+import BottomNavigation from "@/Components/Shared/BottomNavigation";
 
 import FacebookFragmentFix from '@/Components/FacebookFragmentFix';
 
@@ -43,6 +44,7 @@ export default function RootLayout({
           <SocketProvider>
             {children}
             <ChatRoom />
+            <BottomNavigation />
             <ToastClient />
           </SocketProvider>
         </ClerkProviderClient>
