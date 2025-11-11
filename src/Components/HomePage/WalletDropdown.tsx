@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { X, ChevronDown, Loader2 } from "lucide-react";
+import { X, ChevronDown, Loader2, Wallet } from "lucide-react";
 import { BiSolidWallet } from "react-icons/bi";
 import Select, { SingleValue } from "react-select";
 import countryList from "react-select-country-list";
@@ -10,6 +10,7 @@ import Image, { StaticImageData } from "next/image";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { updateProfileFields } from "@/store/userSlice";
+import { useRouter } from "next/navigation";
 
 // Assets
 import Old from "../../../public/assets/visacard.png";
@@ -57,6 +58,7 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState("");
     const dispatch = useDispatch();
+    const router = useRouter();
 
     // Check if selected method is Virtual Visa (cash) or Crypto
     const isVirtualVisa = selectedMethod?.name === "Virtual Visa";
@@ -405,10 +407,20 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="flex w-[49%] gap-2">
+                        <div className="flex gap-2">
                             <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
                                 <Image src={World} alt="Box1" width={22} height={22} />
                                 <span className="text-sm">World coin</span>
+                            </div>
+                            <div 
+                                onClick={() => {
+                                    router.push('/wallet');
+                                    onClose();
+                                }}
+                                className="flex-1 flex items-center gap-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] border border-emerald-500/50 rounded-md px-3 py-3 cursor-pointer hover:opacity-90 transition-opacity"
+                            >
+                                <Wallet size={22} className="text-white" />
+                                <span className="text-sm font-medium">My Wallet</span>
                             </div>
                         </div>
 

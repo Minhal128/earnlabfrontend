@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { BiTask } from "react-icons/bi";
 import { RiSettingsLine } from "react-icons/ri";
 import { LuArrowUpDown } from "react-icons/lu";
 import { BsCreditCard2Back } from "react-icons/bs";
+import { Wallet } from "lucide-react";
 import { FaSearch, FaChevronDown, FaRegSave } from "react-icons/fa";
 import { useSocket } from "@/contexts/SocketProvider";
 import { useUser } from "@clerk/nextjs";
@@ -312,8 +314,11 @@ const ProfileDashboard: React.FC = () => {
     };
   }, [socket, token]);
 
+  const router = useRouter();
+
   const sections = [
     { name: "Overview", icon: <BiTask className="text-lg" /> },
+    { name: "My Wallet", icon: <Wallet className="text-lg" />, action: () => router.push('/wallet') },
     { name: "Settings", icon: <RiSettingsLine className="text-lg" /> },
     { name: "Transactions", icon: <LuArrowUpDown className="text-lg" /> },
     { name: "Withdrawals", icon: <BsCreditCard2Back className="text-lg" /> },
@@ -356,7 +361,15 @@ const ProfileDashboard: React.FC = () => {
 
   // Wait for Clerk to finish loading before rendering to avoid showing 'User'
   if (!isLoaded) {
-    return <div>Loading profile...</div>;
+    return (
+      <div className="flex flex-col w-full min-h-screen bg-[#1E2133] text-white">
+        <div className="w-full bg-[#151728] border border-[#30334A] mt-7 py-8 px-6 shadow-md">
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-400">Loading profile...</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // dev debug: expose Clerk user object to console to help diagnose missing fields
@@ -495,7 +508,13 @@ const ProfileDashboard: React.FC = () => {
           {sections.map((item) => (
             <button
               key={item.name}
-              onClick={() => setActiveSection(item.name)}
+              onClick={() => {
+                if ((item as any).action) {
+                  (item as any).action();
+                } else {
+                  setActiveSection(item.name);
+                }
+              }}
               className={`flex items-center cursor-pointer gap-2 text-left px-3 py-3 rounded-md w-full ${
                 activeSection === item.name
                   ? "bg-[#0D0F1E] text-white"
@@ -529,7 +548,11 @@ const ProfileDashboard: React.FC = () => {
                   <button
                     key={item.name}
                     onClick={() => {
-                      setActiveSection(item.name);
+                      if ((item as any).action) {
+                        (item as any).action();
+                      } else {
+                        setActiveSection(item.name);
+                      }
                       setDropdownOpen(false);
                     }}
                     className="flex items-center gap-2 px-3 py-2 rounded-md text-gray-400 hover:bg-[#0D0F1E] hover:text-white"
