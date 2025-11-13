@@ -12,6 +12,7 @@ import VisaImg from "../../../public/assets/visa.png";
 import BitcoinImg from "../../../public/assets/bit.png";
 import EthereumImg from "../../../public/assets/eth.png";
 import VenmoImg from "../../../public/assets/venmo.png";
+import WorldcoinImg from "../../../public/assets/world.png";
 
 interface PayoutMethodsProps {
   isLoggedIn?: boolean;
@@ -59,7 +60,7 @@ const PayoutMethods: React.FC<PayoutMethodsProps> = ({ isLoggedIn = false }) => 
             </div>
           ))}
         </div>
-        <span className="text-xs text-[#10B981] font-semibold">+2</span>
+        <span className="text-xs text-[#10B981] font-semibold">+3</span>
       </button>
 
       {/* Modal for non-logged-in users */}
@@ -84,7 +85,7 @@ const PayoutMethods: React.FC<PayoutMethodsProps> = ({ isLoggedIn = false }) => 
 
             {/* Payout methods grid */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {[...payoutMethods, { name: "Ethereum", logo: EthereumImg }, { name: "Venmo", logo: VenmoImg }].map((method) => (
+              {[...payoutMethods, { name: "Ethereum", logo: EthereumImg }, { name: "Venmo", logo: VenmoImg }, { name: "Worldcoin", logo: WorldcoinImg }].map((method) => (
                 <div
                   key={method.name}
                   className="flex items-center gap-3 p-3 rounded-lg bg-[#0D0F1E] border border-[#30334A] hover:border-[#10B981] transition-colors"

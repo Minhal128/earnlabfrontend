@@ -18,7 +18,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hello! How can we help you today?",
+      text: "Welcome to the General Chat — be kind and follow the rules!",
       sender: "support",
       timestamp: new Date(),
     },
@@ -78,11 +78,11 @@ export default function ChatPage() {
         </button>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <span className="text-emerald-400 font-bold">S</span>
+            <span className="text-emerald-400 font-bold">G</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">Support Chat</h1>
-            <p className="text-xs text-[#9CA3AF]">We typically reply in minutes</p>
+            <h1 className="text-lg font-bold text-white">General Chat</h1>
+            <p className="text-xs text-[#9CA3AF]">Community chat — public messages from users</p>
           </div>
         </div>
       </div>

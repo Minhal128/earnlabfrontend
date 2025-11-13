@@ -107,7 +107,7 @@ const LeaderBoard = () => {
             id: idx + 1,
             uuid: user.uuid,
             name: user.displayName || user.username,
-            points: user.balanceCents,
+            points: user.balanceCents ?? 0,
             reward: rewards[idx],
             img: user.avatarUrl || "/assets/avatar.png",
             badgeImg: "/assets/bluedolar.png",
@@ -125,7 +125,7 @@ const LeaderBoard = () => {
         id: idx + 4,
         uuid: user.uuid,
         name: user.displayName || user.username,
-        points: user.balanceCents,
+        points: user.balanceCents ?? 0,
         reward: Math.max(50, 200 - (idx * 20)), // Decreasing rewards
         img: user.avatarUrl || "/assets/avatar.png",
     }));

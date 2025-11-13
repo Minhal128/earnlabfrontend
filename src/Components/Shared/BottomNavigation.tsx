@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, DollarSign, CheckSquare, FileText, MessageCircle, Menu } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import FullScreenMenu from "./FullScreenMenu";
 
 interface NavItem {
@@ -14,10 +15,24 @@ interface NavItem {
 
 const BottomNavigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isSignedIn } = useUser();
 
-  const navItems: NavItem[] = [
+  // Check for authentication
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token || isSignedIn) {
+      // User is authenticated, you could fetch username here if needed
+      setUsername(user?.username || "user");
+    } else {
+      setUsername(null);
+    }
+  }, [user, isSignedIn]);
+
+  // Only show authenticated navigation items when user is logged in
+  const navItems: NavItem[] = (username || isSignedIn) ? [
     {
       id: "home",
       label: "Home",
@@ -28,7 +43,7 @@ const BottomNavigation: React.FC = () => {
       id: "earn",
       label: "Earn",
       icon: <DollarSign className="w-5 h-5" />,
-      path: "/home",
+      path: "/earn",
     },
     {
       id: "tasks",
@@ -48,7 +63,7 @@ const BottomNavigation: React.FC = () => {
       icon: <MessageCircle className="w-5 h-5" />,
       path: "/chat",
     },
-  ];
+  ] : [];
 
   const handleNavClick = (path: string) => {
     router.push(path);

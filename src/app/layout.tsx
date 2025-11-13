@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ToastClient from "@/Components/ToastClient";
-import ChatRoom from "@/Components/HomePage/ChatRoom";
 import { SocketProvider } from "@/contexts/SocketProvider";
 import ClerkProviderClient from "@/Components/ClerkProviderClient";
 import BottomNavigation from "@/Components/Shared/BottomNavigation";
@@ -43,7 +42,6 @@ export default function RootLayout({
         <ClerkProviderClient>
           <SocketProvider>
             {children}
-            <ChatRoom />
             <BottomNavigation />
             <ToastClient />
           </SocketProvider>

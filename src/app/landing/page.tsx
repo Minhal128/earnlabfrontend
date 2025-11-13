@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image, { type StaticImageData } from "next/image";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X, Sparkles, TrendingUp, Users, Target, Gift, Star, Zap } from "lucide-react";
 import { IoMdArrowDropdown } from "react-icons/io";
 
 import PayPalImg from "../../../public/assets/paypal.png";
@@ -18,6 +18,12 @@ import DeFlag from "../../../public/assets/flag.png";
 import HeroIcon from "../../../public/assets/top.png";
 import CenterImg from "../../../public/assets/center.png";
 import BottomImg from "../../../public/assets/bottom.png";
+import PayPalIcon from "../../../public/assets/paypal.png";
+import BitcoinIcon from "../../../public/assets/bit.png";
+import VisaIcon from "../../../public/assets/visa.png";
+import VenmoIcon from "../../../public/assets/venmo.png";
+import WorldIcon from "../../../public/assets/world.png";
+import SteamIcon from "../../../public/assets/cb.png";
 
 import WhyChooseUs from "@/Components/Landing/WhyChooseUs";
 import Testimonials from "@/Components/Landing/Testimonials";
@@ -59,6 +65,12 @@ export default function Landing() {
     const [langOpen, setLangOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [liveStatsEnabled, setLiveStatsEnabled] = useState(true);
+    
+    // Dynamic counters state
+    const [totalPaid, setTotalPaid] = useState(0);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const [totalTasks, setTotalTasks] = useState(0);
+    const [isCountingUp, setIsCountingUp] = useState(false);
 
     const [currentLang, setCurrentLang] = useState({
         name: "English",
@@ -77,6 +89,60 @@ export default function Landing() {
         setCurrentLang(lang);
         setLangOpen(false);
     };
+
+    // Dynamic counter animation effect
+    useEffect(() => {
+        const animateCounters = () => {
+            setIsCountingUp(true);
+            
+            // Simulate fetching real-time data and animate counters
+            const targetPaid = 2847392; // Target: $28,473.92
+            const targetUsers = 52847;
+            const targetTasks = 1247;
+            
+            const duration = 2000; // 2 seconds
+            const steps = 60;
+            const interval = duration / steps;
+            
+            let currentStep = 0;
+            
+            const timer = setInterval(() => {
+                currentStep++;
+                const progress = currentStep / steps;
+                
+                setTotalPaid(Math.floor(targetPaid * progress));
+                setTotalUsers(Math.floor(targetUsers * progress));
+                setTotalTasks(Math.floor(targetTasks * progress));
+                
+                if (currentStep >= steps) {
+                    clearInterval(timer);
+                    setIsCountingUp(false);
+                }
+            }, interval);
+        };
+        
+        // Start animation after component mounts
+        const timeout = setTimeout(animateCounters, 500);
+        
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, []);
+
+    // Simulate real-time updates (this would connect to your API in production)
+    useEffect(() => {
+        const updateCounters = () => {
+            // Simulate small increments based on user activity
+            setTotalPaid(prev => prev + Math.floor(Math.random() * 500) + 100);
+            setTotalUsers(prev => prev + Math.floor(Math.random() * 3) + 1);
+            setTotalTasks(prev => prev + Math.floor(Math.random() * 2) + 1);
+        };
+        
+        // Update every 30 seconds
+        const interval = setInterval(updateCounters, 30000);
+        
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#0D0F1E] text-white">
@@ -297,25 +363,120 @@ export default function Landing() {
             </nav>
 
             {/* Hero Section */}
-            <section className="relative z-10 px-4 md:px-6 py-12 md:py-20 text-center">
-                <div className="max-w-3xl mx-auto">
-                    <div className="flex justify-center items-center gap-3 md:mb-3 mb-5 md:mt-18 mt-10">
-                        <Image src={HeroIcon} alt="Hero icon" width={32} height={32} />
-                        <p className="md:text-xl">Join 50,000+ users already earning daily</p>
+            <section className="relative z-10 px-4 md:px-6 py-12 md:py-24">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col items-center text-center">
+                        {/* Centered Content */}
+                        <div className="max-w-4xl">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
+                                <Sparkles className="w-4 h-4 text-emerald-400" />
+                                <span className="text-sm font-medium text-emerald-400">Start Earning Today</span>
+                            </div>
+
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                                <span className="block">Turn Gaming Into</span>
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">$500+ Monthly Income</span>
+                            </h1>
+
+                            <p className="text-lg text-[#9CA3AF] mb-8 mx-auto max-w-2xl leading-relaxed">
+                                Join 20,000+ gamers already earning real money. Play mobile games, complete simple tasks, and cash out instantly. Average user earns <strong>$127</strong> in first week!
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-8">
+                                <button 
+                                    onClick={() => setSignUpOpen(true)}
+                                    className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full text-lg font-semibold text-white hover:from-emerald-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg"
+                                >
+                                    Start Earning Now
+                                </button>
+                                <button 
+                                    onClick={() => setOpen(true)}
+                                    className="px-6 py-3 bg-transparent border-2 border-emerald-500/30 rounded-full text-sm font-semibold text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                                >
+                                    Sign In
+                                </button>
+                            </div>
+
+                            {/* Stats Row */}
+                            <div className="flex flex-wrap gap-6 items-center justify-center">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-2xl font-bold text-white">20K+</div>
+                                    <div className="text-sm text-[#9CA3AF]">Active Users</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="text-2xl font-bold text-white">$127</div>
+                                    <div className="text-sm text-[#9CA3AF]">Avg First Week</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="text-2xl font-bold text-white">24/7</div>
+                                    <div className="text-sm text-[#9CA3AF]">Instant Payout</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="text-4xl md:text-7xl font-bold md:mb-6 mb-3 flex flex-wrap justify-center items-center gap-2">
-                        <span>Turn Your Time Into</span>
-                        <span>Real</span>
-                        <Image src={CenterImg} alt="Reward Icon" className="object-contain mt-3 w-12 h-12" />
-                        <span>Rewards</span>
-                    </h1>
-                    <p className="md:text-2xl text-sm text-[#B3B6C7] md:mb-10 mb-5 max-w-2xl mx-auto">
-                        Earn cash, crypto, or gift cards by completing simple tasks, surveys, and games.
-                        Join thousands already getting paid.
-                    </p>
-                    <button className="md:px-15 md:py-4 px-5 py-2 bg-[#099F86] rounded-full md:text-lg text-sm font-semibold transition-colors">
-                        Start Earning
-                    </button>
+
+                    {/* Dynamic Stats Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16 mb-16 mt-16">
+                        <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20">
+                            <div className="flex items-center justify-center gap-2 mb-4">
+                                <TrendingUp className="w-8 h-8 text-emerald-400" />
+                                <div className="text-3xl md:text-4xl font-bold text-white">
+                                    ${isCountingUp ? (totalPaid / 100).toFixed(0) : (totalPaid / 100).toFixed(2)}
+                                </div>
+                            </div>
+                            <p className="text-emerald-400 font-semibold text-lg">Total Paid</p>
+                            <p className="text-[#9CA3AF] text-sm mt-1">To our amazing users</p>
+                        </div>
+                        
+                        <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
+                            <div className="flex items-center justify-center gap-2 mb-4">
+                                <Users className="w-8 h-8 text-blue-400" />
+                                <div className="text-3xl md:text-4xl font-bold text-white">
+                                    {totalUsers.toLocaleString()}+
+                                </div>
+                            </div>
+                            <p className="text-blue-400 font-semibold text-lg">Active Users</p>
+                            <p className="text-[#9CA3AF] text-sm mt-1">Earning daily rewards</p>
+                        </div>
+                        
+                        <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20">
+                            <div className="flex items-center justify-center gap-2 mb-4">
+                                <Target className="w-8 h-8 text-purple-400" />
+                                <div className="text-3xl md:text-4xl font-bold text-white">
+                                    {totalTasks.toLocaleString()}+
+                                </div>
+                            </div>
+                            <p className="text-purple-400 font-semibold text-lg">Tasks Completed</p>
+                            <p className="text-[#9CA3AF] text-sm mt-1">This month alone</p>
+                        </div>
+                    </div>
+
+                    {/* Feature Highlights */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div className="flex flex-col items-center p-4">
+                            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+                                <Gift className="w-8 h-8 text-emerald-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Instant Rewards</h3>
+                            <p className="text-[#9CA3AF] text-sm">Get paid instantly to your preferred payment method</p>
+                        </div>
+                        
+                        <div className="flex flex-col items-center p-4">
+                            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+                                <Star className="w-8 h-8 text-blue-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Top Rated</h3>
+                            <p className="text-[#9CA3AF] text-sm">Trusted by thousands with 4.8/5 star rating</p>
+                        </div>
+                        
+                        <div className="flex flex-col items-center p-4">
+                            <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+                                <Zap className="w-8 h-8 text-purple-400" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Easy Tasks</h3>
+                            <p className="text-[#9CA3AF] text-sm">Simple tasks that anyone can complete in minutes</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -341,10 +502,14 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* Bottom Image Section */}
-            <section className="relative z-10 px-4 md:px-0 md:py-10">
-                <div className="md:mt-12 mt-10">
-                    <Image src={BottomImg} alt="Bottom Full Image" className="w-full h-full object-cover rounded-xl" />
+            {/* Payment icons row - centered */}
+            <section className="relative z-10 mt-10 px-4 md:px-0">
+                <div className="max-w-4xl mx-auto flex items-center justify-center gap-4 flex-wrap">
+                    {[PayPalIcon, VisaIcon, BitcoinIcon, VenmoIcon, WorldIcon, SteamIcon].map((ic, i) => (
+                        <div key={i} className="w-14 h-14 rounded-lg bg-[#0D0F1E] border border-[#21242E] flex items-center justify-center shadow-md">
+                            <Image src={ic} alt={`pay-${i}`} width={36} height={36} className="object-contain" />
+                        </div>
+                    ))}
                 </div>
             </section>
 

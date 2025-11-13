@@ -32,6 +32,9 @@ const RedOrBlackGame: React.FC = () => {
     const [lastResult, setLastResult] = useState<GameResult | null>(null);
     const [balance, setBalance] = useState<number | null>(null);
     const [spinning, setSpinning] = useState(false);
+    const [dailyEarnings, setDailyEarnings] = useState<number>(0);
+    const [hasPlayedToday, setHasPlayedToday] = useState(false);
+    const [canPlay, setCanPlay] = useState(false);
 
     const getApi = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -55,9 +58,9 @@ const RedOrBlackGame: React.FC = () => {
         fetchGameStats();
     }, []);
 
-    // Fetch user balance
+    // Fetch user balance and daily earnings
     useEffect(() => {
-        const fetchBalance = async () => {
+        const fetchUserData = async () => {
             const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
             if (!token) return;
 
@@ -72,12 +75,30 @@ const RedOrBlackGame: React.FC = () => {
                         setBalance(data.profile.balanceCents);
                     }
                 }
+
+                // Check daily earnings and game eligibility
+                const dailyRes = await fetch(`${api}/api/v1/user/daily-earnings`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (dailyRes.ok) {
+                    const dailyData = await dailyRes.json();
+                    const todayEarnings = dailyData.todayEarningsCents || 0;
+                    setDailyEarnings(todayEarnings);
+                    
+                    // User can play if they've earned at least $1 today and haven't played yet
+                    setCanPlay(todayEarnings >= 100);
+                    
+                    // Check if user has already played today
+                    const lastPlayDate = localStorage.getItem("lastRedBlackPlay");
+                    const today = new Date().toDateString();
+                    setHasPlayedToday(lastPlayDate === today);
+                }
             } catch (err) {
-                console.error("Failed to fetch balance", err);
+                console.error("Failed to fetch user data", err);
             }
         };
 
-        fetchBalance();
+        fetchUserData();
     }, [lastResult]);
 
     const playGame = async (choice: "red" | "black") => {
@@ -87,8 +108,13 @@ const RedOrBlackGame: React.FC = () => {
             return;
         }
 
-        if (balance !== null && balance < stakeCents) {
-            toast.error("Insufficient balance");
+        if (hasPlayedToday) {
+            toast.error("You can only play once per day!");
+            return;
+        }
+
+        if (!canPlay) {
+            toast.error("You need to earn at least $1.00 today to play the daily bonus!");
             return;
         }
 
@@ -121,11 +147,16 @@ const RedOrBlackGame: React.FC = () => {
                 setLastResult(data);
                 setBalance(data.newBalanceCents);
                 setSpinning(false);
+                
+                // Mark that user has played today
+                const today = new Date().toDateString();
+                localStorage.setItem("lastRedBlackPlay", today);
+                setHasPlayedToday(true);
 
                 if (data.won) {
                     toast.success(`🎉 You won $${(data.rewardCents / 100).toFixed(2)}!`);
                 } else {
-                    toast.error(`You lost $${(stakeCents / 100).toFixed(2)}`);
+                    toast.error(`Better luck next time! Come back tomorrow for another chance.`);
                 }
             }, 2000); // 2 second spin animation
         } catch (err) {
@@ -150,15 +181,45 @@ const RedOrBlackGame: React.FC = () => {
         <div className="bg-gradient-to-br from-[#26293E] to-[#1E2133] rounded-lg p-6 text-white shadow-lg mb-6">
             {/* Header */}
             <div className="text-center mb-6">
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">🎰 Red or Black</h2>
-                <p className="text-sm text-gray-400">
-                    {gameStats?.description || "Pick red or black to win!"}
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">🎰 Daily Red or Black Bonus</h2>
+                <p className="text-sm text-gray-400 mb-3">
+                    Earn at least $1.00 today to unlock your daily bonus spin!
                 </p>
-                {balance !== null && (
-                    <div className="mt-3 text-lg font-semibold text-green-400">
-                        Balance: ${(balance / 100).toFixed(2)}
+                
+                {/* Daily Status */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
+                    <div className="text-center">
+                        <div className="text-lg font-semibold text-blue-400">
+                            Today's Earnings: ${(dailyEarnings / 100).toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                            Need: ${Math.max(0, (100 - dailyEarnings) / 100).toFixed(2)} more
+                        </div>
                     </div>
-                )}
+                    
+                    {balance !== null && (
+                        <div className="text-center">
+                            <div className="text-lg font-semibold text-green-400">
+                                Balance: ${(balance / 100).toFixed(2)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Status Indicator */}
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                    hasPlayedToday 
+                        ? "bg-gray-500/20 text-gray-400" 
+                        : canPlay 
+                            ? "bg-emerald-500/20 text-emerald-400" 
+                            : "bg-red-500/20 text-red-400"
+                }`}>
+                    {hasPlayedToday 
+                        ? "✅ Played Today - Come Back Tomorrow!" 
+                        : canPlay 
+                            ? "🎯 Ready to Play!" 
+                            : "💰 Earn $1.00 to Unlock"}
+                </div>
             </div>
 
             {/* Roulette Wheel Visual */}
@@ -207,37 +268,31 @@ const RedOrBlackGame: React.FC = () => {
                 </div>
             )}
 
-            {/* Stake Input */}
-            <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Stake Amount</label>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="number"
-                        value={stakeCents}
-                        onChange={(e) => setStakeCents(Math.max(gameStats?.minStakeCents || 10, parseInt(e.target.value) || 10))}
-                        min={gameStats?.minStakeCents || 10}
-                        max={gameStats?.maxStakeCents || 10000}
-                        className="flex-1 bg-[#1E2133] border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                        disabled={playing || spinning}
-                    />
-                    <span className="text-sm text-gray-400">
-                        ${(stakeCents / 100).toFixed(2)}
-                    </span>
+            {/* Daily Bonus Info */}
+            <div className="mb-6 text-center">
+                <div className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/20 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-emerald-400 mb-2">🎁 Daily Bonus Rewards</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="text-gray-300">Minimum Win: <span className="text-emerald-400 font-semibold">$0.10</span></div>
+                        <div className="text-gray-300">Maximum Win: <span className="text-emerald-400 font-semibold">$10.00</span></div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                        Free daily spin - no stake required! Win amounts are randomly generated.
+                    </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                    Min: ${((gameStats?.minStakeCents || 10) / 100).toFixed(2)} | Max: ${((gameStats?.maxStakeCents || 10000) / 100).toFixed(2)}
-                </p>
             </div>
 
             {/* Choice Buttons */}
             <div className="grid grid-cols-2 gap-4">
                 <button
                     onClick={() => playGame("red")}
-                    disabled={playing || spinning}
+                    disabled={playing || spinning || !canPlay || hasPlayedToday}
                     className={`py-4 rounded-lg font-bold text-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                         selectedChoice === "red" && spinning
                             ? "bg-red-700 ring-4 ring-red-400"
-                            : "bg-red-600 hover:bg-red-700"
+                            : (!canPlay || hasPlayedToday)
+                                ? "bg-gray-600"
+                                : "bg-red-600 hover:bg-red-700"
                     }`}
                 >
                     {spinning && selectedChoice === "red" ? (
@@ -248,11 +303,13 @@ const RedOrBlackGame: React.FC = () => {
                 </button>
                 <button
                     onClick={() => playGame("black")}
-                    disabled={playing || spinning}
+                    disabled={playing || spinning || !canPlay || hasPlayedToday}
                     className={`py-4 rounded-lg font-bold text-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                         selectedChoice === "black" && spinning
                             ? "bg-gray-900 ring-4 ring-gray-600"
-                            : "bg-gray-800 hover:bg-gray-900"
+                            : (!canPlay || hasPlayedToday)
+                                ? "bg-gray-600"
+                                : "bg-gray-800 hover:bg-gray-900"
                     }`}
                 >
                     {spinning && selectedChoice === "black" ? (
@@ -264,12 +321,11 @@ const RedOrBlackGame: React.FC = () => {
             </div>
 
             {/* Game Info */}
-            {gameStats && (
-                <div className="mt-6 text-center text-xs text-gray-500">
-                    <p>House Edge: {gameStats.houseEdgePercent}%</p>
-                    <p className="mt-1">Win = 2x your stake (minus house edge)</p>
-                </div>
-            )}
+            <div className="mt-6 text-center text-xs text-gray-500">
+                <p>🎯 Daily Bonus Game - One Free Spin Per Day</p>
+                <p className="mt-1">💰 Earn at least $1.00 today to unlock your spin</p>
+                <p className="mt-1">🎁 Win between $0.10 - $10.00 instantly!</p>
+            </div>
         </div>
     );
 };

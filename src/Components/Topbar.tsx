@@ -462,44 +462,46 @@ const TopBar: React.FC = () => {
               <PayoutMethods isLoggedIn={!!username} />
             </div>
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-1 ml-6">
-              <Link
-                href="/home"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
-              >
-                <Image src={Earn} alt="Earn" width={16} height={16} />
-                Earn
-              </Link>
-              <Link
-                href="/tasks"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
-              >
-                <Image src={Task} alt="Tasks" width={16} height={16} />
-                Tasks
-              </Link>
-              <Link
-                href="/servey"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
-              >
-                <Image src={Servey} alt="Surveys" width={16} height={16} />
-                Surveys
-              </Link>
-              <Link
-                href="/rewards"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
-              >
-                <Image src={Reward} alt="Rewards" width={16} height={16} />
-                Rewards
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
-              >
-                <Image src={Leaderboard} alt="Leaderboard" width={16} height={16} />
-                Leaderboard
-              </Link>
-            </nav>
+            {/* Desktop Nav - Only show when logged in */}
+            {(username || isSignedIn) && (
+              <nav className="hidden lg:flex items-center gap-1 ml-6">
+                <Link
+                  href="/earn"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
+                >
+                  <Image src={Earn} alt="Earn" width={16} height={16} />
+                  Earn
+                </Link>
+                <Link
+                  href="/tasks"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
+                >
+                  <Image src={Task} alt="Tasks" width={16} height={16} />
+                  Tasks
+                </Link>
+                <Link
+                  href="/servey"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
+                >
+                  <Image src={Servey} alt="Surveys" width={16} height={16} />
+                  Surveys
+                </Link>
+                <Link
+                  href="/rewards"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
+                >
+                  <Image src={Reward} alt="Rewards" width={16} height={16} />
+                  Rewards
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all"
+                >
+                  <Image src={Leaderboard} alt="Leaderboard" width={16} height={16} />
+                  Leaderboard
+                </Link>
+              </nav>
+            )}
           </div>
 
           {/* Right Section */}
@@ -668,6 +670,7 @@ const TopBar: React.FC = () => {
 
         {/* Nav Links */}
         <nav className="flex flex-col gap-1">
+          {/* Always show Home/Landing link */}
           <Link
             href="/"
             onClick={() => setMenuOpen(false)}
@@ -685,95 +688,119 @@ const TopBar: React.FC = () => {
             />
             Home
           </Link>
-          <Link
-            href="/home"
-            onClick={() => setMenuOpen(false)}
-            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
-              pathname === "/home"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
-            }`}
-          >
-            <Image
-              src={pathname === "/home" ? EarnActive : Earn}
-              alt="Earn"
-              width={18}
-              height={18}
-            />
-            Earn
-          </Link>
+          
+          {/* Only show authenticated links when user is logged in */}
+          {(username || isSignedIn) && (
+            <>
+              <Link
+                href="/home"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/home"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/home" ? EarnActive : Earn}
+                  alt="Dashboard"
+                  width={18}
+                  height={18}
+                />
+                Dashboard
+              </Link>
 
-          <Link
-            href="/tasks"
-            onClick={() => setMenuOpen(false)}
-            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
-              pathname === "/tasks"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
-            }`}
-          >
-            <Image
-              src={pathname === "/tasks" ? TaskActive : Task}
-              alt="Tasks"
-              width={18}
-              height={18}
-            />
-            Tasks
-          </Link>
+              <Link
+                href="/earn"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/earn"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/earn" ? EarnActive : Earn}
+                  alt="Earn"
+                  width={18}
+                  height={18}
+                />
+                Earn
+              </Link>
 
-          <Link
-            href="/servey"
-            onClick={() => setMenuOpen(false)}
-            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
-              pathname === "/servey"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
-            }`}
-          >
-            <Image
-              src={pathname === "/servey" ? ServeyActive : Servey}
-              alt="Surveys"
-              width={18}
-              height={18}
-            />
-            Surveys
-          </Link>
+              <Link
+                href="/tasks"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/tasks"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/tasks" ? TaskActive : Task}
+                  alt="Tasks"
+                  width={18}
+                  height={18}
+                />
+                Tasks
+              </Link>
 
-          <Link
-            href="/rewards"
-            onClick={() => setMenuOpen(false)}
-            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
-              pathname === "/rewards"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
-            }`}
-          >
-            <Image
-              src={pathname === "/rewards" ? RewardActive : Reward}
-              alt="Rewards"
-              width={18}
-              height={18}
-            />
-            Rewards
-          </Link>
+              <Link
+                href="/servey"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/servey"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/servey" ? ServeyActive : Servey}
+                  alt="Surveys"
+                  width={18}
+                  height={18}
+                />
+                Surveys
+              </Link>
 
-          <Link
-            href="/leaderboard"
-            onClick={() => setMenuOpen(false)}
-            className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
-              pathname === "/leaderboard"
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
-            }`}
-          >
-            <Image
-              src={pathname === "/leaderboard" ? Leaderboard : Leaderboard}
-              alt="Leaderboard"
-              width={18}
-              height={18}
-            />
-            Leaderboard
-          </Link>
+              <Link
+                href="/rewards"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/rewards"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/rewards" ? RewardActive : Reward}
+                  alt="Rewards"
+                  width={18}
+                  height={18}
+                />
+                Rewards
+              </Link>
+
+              <Link
+                href="/leaderboard"
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center py-2.5 px-3 rounded-md gap-2.5 text-sm font-medium transition-all ${
+                  pathname === "/leaderboard"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
+                }`}
+              >
+                <Image
+                  src={pathname === "/leaderboard" ? Leaderboard : Leaderboard}
+                  alt="Leaderboard"
+                  width={18}
+                  height={18}
+                />
+                Leaderboard
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

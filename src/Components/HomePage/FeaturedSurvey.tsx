@@ -36,38 +36,50 @@ const FeaturedSurvey: React.FC = () => {
                 </button>
             </div>
 
-            {/* Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {surveys.map((survey) => (
+            {/* Cards Grid - 3 surveys per row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {surveys.slice(0, 3).map((survey) => (
                     <div
                         key={survey.id}
-                        className="bg-[#1E2133] rounded-md overflow-hidden px-3 pt-3 shadow hover:shadow-lg transition flex flex-col"
+                        className="bg-gradient-to-br from-[#1E2133] to-[#26293E] rounded-xl overflow-hidden p-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 border border-[#2C2F44]"
                     >
                         {/* Image Box */}
-                        <div className="w-full md:h-48 h-32 flex items-center rounded-md justify-center bg-[#26293E]">
+                        <div className="w-full h-40 flex items-center rounded-lg justify-center bg-gradient-to-br from-[#26293E] to-[#1E2133] mb-4">
                             <Image
                                 src={SurveyIcon}
                                 alt={survey.title}
-                                className="object-contain md:w-28 md:h-28 w-20 h-20"
+                                className="object-contain w-24 h-24"
                             />
                         </div>
 
-                        {/* Title */}
-                        <div className="px-1 py-2 border-b border-[#2C2F44]">
-                            <p className="md:text-sm text-xs font-medium text-white">
+                        {/* Content */}
+                        <div className="space-y-3">
+                            {/* Title */}
+                            <h3 className="text-lg font-semibold text-white">
                                 {survey.title}
-                            </p>
-                        </div>
+                            </h3>
 
-                        <div className="flex items-center gap-2 px-1 py-2">
-                            <Image
-                                src={TimeIcon}
-                                alt="time icon"
-                                width={16}
-                                height={16}
-                                className="object-contain"
-                            />
-                            <p className="md:text-xs text-[10px] text-[#8C8FA8]">{survey.time}</p>
+                            {/* Time and Reward */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Image
+                                        src={TimeIcon}
+                                        alt="time icon"
+                                        width={16}
+                                        height={16}
+                                        className="object-contain"
+                                    />
+                                    <span className="text-sm text-[#8C8FA8]">{survey.time}</span>
+                                </div>
+                                <div className="text-emerald-400 font-semibold text-sm">
+                                    $0.50 - $2.00
+                                </div>
+                            </div>
+
+                            {/* Action Button */}
+                            <button className="w-full py-2 px-4 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg font-medium hover:from-emerald-600 hover:to-blue-600 transition-all">
+                                Start Survey
+                            </button>
                         </div>
                     </div>
                 ))}
