@@ -57,6 +57,12 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState("");
+    const [cryptoWalletAddress, setCryptoWalletAddress] = useState("");
+    const [cryptoAmount, setCryptoAmount] = useState("");
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
+    const [paymentDetails, setPaymentDetails] = useState<any>(null);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [isConfirming, setIsConfirming] = useState(false);
     const dispatch = useDispatch();
     const router = useRouter();
 
@@ -127,6 +133,60 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
             setIsRedeeming(false);
         }
     };
+
+    const handleCryptoWithdrawal = async () => {
+        if (!selectedMethod || !cryptoWalletAddress.trim()) {
+            toast.error("Please enter a wallet address");
+            return;
+        }
+
+        if (!cryptoAmount || parseFloat(cryptoAmount) <= 0) {
+            toast.error("Please enter a valid amount");
+            return;
+        }
+
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+            toast.error("Please sign in to create a withdrawal");
+            return;
+        }
+
+        setIsWithdrawing(true);
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/user/withdrawals/request`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    amountCents: Math.round(parseFloat(cryptoAmount) * 100),
+                    method: "crypto",
+                    destination: cryptoWalletAddress.trim(),
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(`✅ Withdrawal request submitted! Awaiting admin review.`);
+                
+                // Reset form
+                setCryptoWalletAddress("");
+                setCryptoAmount("");
+                setSelectedMethod(null);
+            } else {
+                toast.error(data.message || "Failed to create withdrawal");
+            }
+        } catch (err) {
+            console.error("Error creating withdrawal:", err);
+            toast.error("Failed to create withdrawal. Please try again.");
+        } finally {
+            setIsWithdrawing(false);
+        }
+    };
+
 
     return (
         <div
@@ -262,6 +322,8 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                 <input
                                     type="text"
                                     placeholder="Enter your wallet address"
+                                    value={cryptoWalletAddress}
+                                    onChange={(e) => setCryptoWalletAddress(e.target.value)}
                                     className="w-full px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
                                 />
                             </div>
@@ -313,8 +375,10 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                 /* Crypto: Show input with Max button */
                                 <div className="flex items-center gap-2">
                                     <input
-                                        type="text"
-                                        placeholder="Enter amount"
+                                        type="number"
+                                        placeholder="Enter amount in USD"
+                                        value={cryptoAmount}
+                                        onChange={(e) => setCryptoAmount(e.target.value)}
                                         className="flex-1 px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
                                     />
                                     <button className="px-4 py-3 bg-[#6B6E8A] text-sm rounded-md hover:bg-[#7a7f9a] transition">
@@ -325,8 +389,12 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                         </div>
 
                         {/* Create Withdrawal */}
-                        <button className="w-full cursor-pointer px-4 py-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] text-sm rounded-md transition hover:opacity-90">
-                            Create withdrawal
+                        <button 
+                            onClick={handleCryptoWithdrawal}
+                            disabled={isWithdrawing}
+                            className="w-full cursor-pointer px-4 py-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] text-sm rounded-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isWithdrawing ? "Processing..." : "Create withdrawal"}
                         </button>
                     </div>
                 ) : activeTab === "general" ? (
@@ -364,53 +432,80 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Lit} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Litecoin", icon: Lit })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Lit} alt="Litecoin" width={22} height={22} />
                                 <span className="text-sm">Litecoin</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Sol} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Solana", icon: Sol })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Sol} alt="Solana" width={22} height={22} />
                                 <span className="text-sm">Solana</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Tet} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Tether", icon: Tet })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Tet} alt="Tether" width={22} height={22} />
                                 <span className="text-sm">Tether</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Tron} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Tron", icon: Tron })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Tron} alt="Tron" width={22} height={22} />
                                 <span className="text-sm">Tron</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Rip} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Ripple (XRP)", icon: Rip })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Rip} alt="XRP" width={22} height={22} />
                                 <span className="text-sm">Ripple (XRP)</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={POl} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Polygon", icon: POl })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={POl} alt="Polygon" width={22} height={22} />
                                 <span className="text-sm">Polygon</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Ripple} alt="Box1" width={22} height={22} />
-                                <span className="text-sm">Ripple (XRP)</span>
-                            </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={USD} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "USD Coin", icon: USD })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={USD} alt="USD Coin" width={22} height={22} />
                                 <span className="text-sm">USD Coin</span>
+                            </div>
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Worldcoin", icon: World })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={World} alt="Worldcoin" width={22} height={22} />
+                                <span className="text-sm">Worldcoin</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={World} alt="Box1" width={22} height={22} />
-                                <span className="text-sm">World coin</span>
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Tron", icon: Tron })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Tron} alt="Tron" width={22} height={22} />
+                                <span className="text-sm">Tron</span>
                             </div>
                             <div 
                                 onClick={() => {
@@ -427,45 +522,69 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                         {/* Vouchers Section */}
                         <p className="text-sm text-white">Vouchers</p>
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Play} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Playstation", icon: Play })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Play} alt="Playstation" width={22} height={22} />
                                 <span className="text-sm">Playstation</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={N} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Nintendo", icon: N })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={N} alt="Nintendo" width={22} height={22} />
                                 <span className="text-sm">Nintendo</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={NEt} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Netflix", icon: NEt })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={NEt} alt="Netflix" width={22} height={22} />
                                 <span className="text-sm">Netflix</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Zal} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Zalando", icon: Zal })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Zal} alt="Zalando" width={22} height={22} />
                                 <span className="text-sm">Zalando</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Spot} alt="Box1" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Spotify", icon: Spot })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Spot} alt="Spotify" width={22} height={22} />
                                 <span className="text-sm">Spotify</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Rob} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "Roblox", icon: Rob })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Rob} alt="Roblox" width={22} height={22} />
                                 <span className="text-sm">Roblox</span>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Paypal} alt="Box1" width={22} height={22} />
-                                <span className="text-sm">Paypal</span>
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "PayPal", icon: Paypal })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Paypal} alt="PayPal" width={22} height={22} />
+                                <span className="text-sm">PayPal</span>
                             </div>
-                            <div className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer">
-                                <Image src={Itune} alt="Box2" width={22} height={22} />
+                            <div 
+                                onClick={() => setSelectedMethod({ name: "iTunes", icon: Itune })}
+                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
+                            >
+                                <Image src={Itune} alt="iTunes" width={22} height={22} />
                                 <span className="text-sm">iTunes</span>
                             </div>
                         </div>
@@ -497,6 +616,84 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                     </div>
                 )}
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && paymentDetails && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#1e2133] rounded-lg max-w-md w-full p-6 border border-gray-700">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-bold text-white">Payment Details</h2>
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="text-gray-400 hover:text-white transition"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Payment Info */}
+                        <div className="space-y-3 mb-6">
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Crypto Type</p>
+                                <p className="text-white font-semibold">{paymentDetails.cryptoType}</p>
+                            </div>
+
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Amount (USD)</p>
+                                <p className="text-white font-semibold">${paymentDetails.amountUSD}</p>
+                            </div>
+
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Pay Amount</p>
+                                <p className="text-white font-semibold">{paymentDetails.payAmount} {paymentDetails.payCurrency}</p>
+                            </div>
+
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Wallet Address</p>
+                                <p className="text-white font-semibold text-sm break-all">{paymentDetails.walletAddress}</p>
+                            </div>
+
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Invoice ID</p>
+                                <p className="text-white font-semibold text-sm break-all">{paymentDetails.invoiceId}</p>
+                            </div>
+
+                            <div className="bg-[#26293E] p-3 rounded-md">
+                                <p className="text-xs text-gray-400 mb-1">Status</p>
+                                <p className="text-yellow-400 font-semibold">{paymentDetails.status}</p>
+                            </div>
+                        </div>
+
+                        {/* Confirm Button */}
+                        <button
+                            onClick={handleConfirmPayment}
+                            disabled={isConfirming}
+                            className="w-full px-4 py-3 bg-gradient-to-r from-[#099F86] to-[#08c6a0] text-white text-sm rounded-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
+                        >
+                            {isConfirming ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={16} />
+                                    Confirming...
+                                </>
+                            ) : (
+                                <>
+                                    <Wallet size={16} />
+                                    Confirm Payment
+                                </>
+                            )}
+                        </button>
+
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowPaymentModal(false)}
+                            className="w-full px-4 py-3 bg-[#26293E] text-white text-sm rounded-md transition hover:bg-[#2f3247]"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Custom Scrollbar */}
             <style jsx>{`

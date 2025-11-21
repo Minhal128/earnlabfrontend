@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { ChevronDown, Menu, X, Sparkles, TrendingUp, Users, Target, Gift, Star, Zap } from "lucide-react";
 import { IoMdArrowDropdown } from "react-icons/io";
+import CountryFlag from "react-country-flag";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
@@ -11,10 +12,6 @@ import VenmoImg from "../../../public/assets/v.png";
 import AppleImg from "../../../public/assets/apple.png";
 import DotsBg from "../../../public/assets/drop.png";
 import LogoImg from "../../../public/assets/logo.png";
-import EngFlag from "../../../public/assets/flag.png";
-import EsFlag from "../../../public/assets/flag.png";
-import FrFlag from "../../../public/assets/flag.png";
-import DeFlag from "../../../public/assets/flag.png";
 import HeroIcon from "../../../public/assets/top.png";
 import CenterImg from "../../../public/assets/center.png";
 import BottomImg from "../../../public/assets/bottom.png";
@@ -74,18 +71,17 @@ export default function Landing() {
 
     const [currentLang, setCurrentLang] = useState({
         name: "English",
-        code: "ENG",
-        flag: EngFlag,
+        code: "GB",
     });
 
     const languages = [
-        { name: "English", code: "ENG", flag: EngFlag },
-        { name: "Spanish", code: "ESP", flag: EsFlag },
-        { name: "French", code: "FRA", flag: FrFlag },
-        { name: "German", code: "GER", flag: DeFlag },
+        { name: "English", code: "GB" },
+        { name: "Spanish", code: "ES" },
+        { name: "French", code: "FR" },
+        { name: "German", code: "DE" },
     ];
 
-    const handleLanguageChange = (lang: { name: string; code: string; flag: StaticImageData }) => {
+    const handleLanguageChange = (lang: { name: string; code: string }) => {
         setCurrentLang(lang);
         setLangOpen(false);
     };
@@ -240,24 +236,24 @@ export default function Landing() {
                             className="flex items-center gap-2 rounded-md hover:bg-[#252840] px-2 py-1 transition-colors"
                             onClick={() => setLangOpen((prev) => !prev)}
                         >
-                            <Image src={currentLang.flag} alt={currentLang.code} width={18} height={12} />
+                            <CountryFlag countryCode={currentLang.code} svg style={{ width: '18px', height: '12px' }} />
                             <span className="text-xs font-medium text-[#9CA3AF]">{currentLang.code}</span>
                             <IoMdArrowDropdown size={14} />
                         </button>
                         {langOpen && (
-                            <div className="absolute right-0 mt-2 w-36 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg z-20 shadow-xl">
+                            <div className="absolute right-0 mt-2 w-40 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg z-20 shadow-xl">
                                 <ul className="py-1 text-sm">
                                     {languages.map((lang) => (
                                         <li key={lang.code}>
                                             <button
                                                 onClick={() => handleLanguageChange(lang)}
-                                                className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
+                                                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
                                                     currentLang.code === lang.code
                                                         ? "bg-emerald-500/10 text-emerald-400"
                                                         : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
                                                     }`}
                                             >
-                                                <Image src={lang.flag} alt={lang.name} width={18} height={12} />
+                                                <CountryFlag countryCode={lang.code} svg style={{ width: '20px', height: '14px' }} />
                                                 {lang.name}
                                             </button>
                                         </li>
@@ -321,7 +317,7 @@ export default function Landing() {
                                 onClick={() => setLangOpen((prev) => !prev)}
                             >
                                 <div className="flex items-center gap-2">
-                                    <Image src={currentLang.flag} alt={currentLang.code} width={18} height={12} />
+                                    <CountryFlag countryCode={currentLang.code} svg style={{ width: '20px', height: '14px' }} />
                                     <span className="text-sm font-medium text-[#9CA3AF]">{currentLang.name}</span>
                                 </div>
                                 <ChevronDown size={16} className="text-[#9CA3AF]" />
@@ -336,12 +332,12 @@ export default function Landing() {
                                                         handleLanguageChange(lang);
                                                         setMenuOpen(false);
                                                     }}
-                                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${currentLang.code === lang.code
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors ${currentLang.code === lang.code
                                                         ? "bg-emerald-500/10 text-emerald-400"
                                                         : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
                                                         }`}
                                                 >
-                                                    <Image src={lang.flag} alt={lang.name} width={18} height={12} />
+                                                    <CountryFlag countryCode={lang.code} svg style={{ width: '20px', height: '14px' }} />
                                                     {lang.name}
                                                 </button>
                                             </li>

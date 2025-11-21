@@ -8,6 +8,7 @@ import Image from "next/image";
 import DolarImg from "../../../public/assets/dolar.png";
 import GiftbitPayoutModal from "@/Components/Shared/GiftbitPayoutModal";
 import TransactionHistoryModal from "@/Components/Shared/TransactionHistoryModal";
+import GiftCardRedemptionModal from "@/Components/Shared/GiftCardRedemptionModal";
 
 interface Transaction {
   _id: string;
@@ -18,15 +19,28 @@ interface Transaction {
   description: string;
 }
 
+interface WithdrawalRequest {
+  _id: string;
+  amountCents: number;
+  method: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed' | 'Cancelled';
+  destination: string;
+  createdAt: string;
+  rejectionReason?: string;
+}
+
 export default function WalletPage() {
   const router = useRouter();
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [giftbitModalOpen, setGiftbitModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [giftCardRedemptionOpen, setGiftCardRedemptionOpen] = useState(false);
   const [thisMonthEarnings, setThisMonthEarnings] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
+  const [pendingWithdrawal, setPendingWithdrawal] = useState(0);
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -60,6 +74,25 @@ export default function WalletPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const giftbitData = await giftbitResponse.json();
+
+        // Fetch withdrawal requests
+        const withdrawalResponse = await fetch(`${api}/api/v1/user/withdrawals/history`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const withdrawalData = await withdrawalResponse.json();
+        if (withdrawalData.history && Array.isArray(withdrawalData.history)) {
+          // Filter only Pending and Rejected withdrawals
+          const filteredWithdrawals = withdrawalData.history.filter((w: any) => 
+            w.status === 'Pending' || w.status === 'Rejected'
+          );
+          setWithdrawalRequests(filteredWithdrawals);
+          
+          // Calculate pending withdrawal amount
+          const pendingAmount = withdrawalData.history
+            .filter((w: any) => w.status === 'Pending')
+            .reduce((sum: number, w: any) => sum + (w.amountCents || 0), 0);
+          setPendingWithdrawal(pendingAmount / 100);
+        }
         
         // Debug: Log first transaction to verify amount structure
         if (giftbitData?.transactions?.[0]) {
@@ -176,11 +209,11 @@ export default function WalletPage() {
 
               <div className="flex gap-3">
                 <button 
-                  onClick={() => setGiftbitModalOpen(true)}
+                  onClick={() => setGiftCardRedemptionOpen(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors"
                 >
                   <Gift className="w-4 h-4" />
-                  Gift Card
+                  Redeem Gift Card
                 </button>
                 <button 
                   onClick={() => setHistoryModalOpen(true)}
@@ -196,8 +229,10 @@ export default function WalletPage() {
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="rounded-xl bg-[#1A1D2E] border border-[#2A2D3E] p-4">
-              <p className="text-xs text-[#9CA3AF] mb-1">Pending</p>
-              <p className="text-xl font-bold text-yellow-400">$0.00</p>
+              <p className="text-xs text-[#9CA3AF] mb-1">Pending Withdrawal</p>
+              <p className="text-xl font-bold text-yellow-400">
+                {loading ? "--" : `$${pendingWithdrawal.toFixed(2)}`}
+              </p>
             </div>
             <div className="rounded-xl bg-[#1A1D2E] border border-[#2A2D3E] p-4">
               <p className="text-xs text-[#9CA3AF] mb-1">This Month</p>
@@ -212,6 +247,65 @@ export default function WalletPage() {
               </p>
             </div>
           </div>
+
+          {/* Withdrawal Requests */}
+          {withdrawalRequests.length > 0 && (
+            <div className="rounded-2xl bg-[#1A1D2E] border border-[#2A2D3E] p-6 mb-6">
+              <h3 className="text-lg font-bold text-white mb-4">Withdrawal Requests</h3>
+              
+              <div className="space-y-3">
+                {withdrawalRequests.map((request) => (
+                  <div
+                    key={request._id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-[#252840] hover:bg-[#2A2D3E] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        request.status === 'Pending' ? "bg-yellow-500/10" : "bg-red-500/10"
+                      }`}>
+                        {request.status === 'Pending' ? (
+                          <Clock className="w-5 h-5 text-yellow-400" />
+                        ) : (
+                          <ArrowUpRight className="w-5 h-5 text-red-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-white">
+                            {request.method.charAt(0).toUpperCase() + request.method.slice(1)} Withdrawal
+                          </p>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            request.status === 'Pending'
+                              ? 'bg-yellow-500/20 text-yellow-400'
+                              : 'bg-red-500/20 text-red-400'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#9CA3AF] mt-1">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </p>
+                        {request.rejectionReason && (
+                          <p className="text-xs text-red-400 mt-1">
+                            Reason: {request.rejectionReason}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-emerald-400">
+                        ${(request.amountCents / 100).toFixed(2)}
+                      </p>
+                      <p className="text-xs text-[#9CA3AF] mt-1">
+                        {request.destination.substring(0, 6)}......
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Transactions */}
           <div className="rounded-2xl bg-[#1A1D2E] border border-[#2A2D3E] p-6">
@@ -312,6 +406,28 @@ export default function WalletPage() {
       <TransactionHistoryModal
         isOpen={historyModalOpen}
         onClose={() => setHistoryModalOpen(false)}
+      />
+
+      {/* Gift Card Redemption Modal */}
+      <GiftCardRedemptionModal
+        isOpen={giftCardRedemptionOpen}
+        onClose={() => setGiftCardRedemptionOpen(false)}
+        userBalance={balance || 0}
+        onRedemptionComplete={() => {
+          // Refresh wallet data after successful redemption
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          if (token) {
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/user/profile`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.profile && typeof data.profile.balanceCents === "number") {
+                  setBalance(data.profile.balanceCents);
+                }
+              });
+          }
+        }}
       />
     </>
   );

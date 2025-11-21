@@ -1,6 +1,7 @@
 import TopBar from "@/Components/Topbar";
 import Image, { type StaticImageData } from "next/image";
 import React from "react";
+import Link from "next/link";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
@@ -71,8 +72,51 @@ export default function AffiliateMain() {
         <>
             <TopBar />
             <main className="md:p-6 p-3 bg-[#1E2133] min-h-screen">
+                {/* Navigation Tabs */}
+                <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+                    <Link
+                        href="/home"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Dashboard
+                    </Link>
+                    <Link
+                        href="/earn"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Earn
+                    </Link>
+                    <Link
+                        href="/tasks"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Tasks
+                    </Link>
+                    <Link
+                        href="/servey"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Surveys
+                    </Link>
+                    <Link
+                        href="/rewards"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Rewards
+                    </Link>
+                    <Link
+                        href="/leaderboard"
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#26293E] transition-colors whitespace-nowrap"
+                    >
+                        Leaderboard
+                    </Link>
+                    <div className="px-4 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap">
+                        Affiliate
+                    </div>
+                </div>
+
                 {/* Notification Bar */}
-                <div className="overflow-x-auto scrollbar-hide">
+                <div className="overflow-x-auto scrollbar-hide mb-6">
                     <div className="flex gap-4 md:min-w-max">
                         {notifications.map((item) => (
                             <div
