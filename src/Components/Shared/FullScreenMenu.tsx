@@ -12,7 +12,8 @@ import {
   Settings,
   Gift,
   Users,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
 
@@ -131,6 +132,14 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
       color: "text-orange-400",
       bgColor: "bg-orange-500/10",
     },
+    {
+      id: "referral",
+      label: "Referral",
+      icon: <Share2 className="w-6 h-6" />,
+      path: "/referrals",
+      color: "text-indigo-400",
+      bgColor: "bg-indigo-500/10",
+    },
   ];
 
   const handleTileClick = (tile: MenuTile) => {
@@ -171,11 +180,13 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
         <div className="p-6 overflow-y-auto h-[calc(100%-80px)]">
           {/* Menu Tiles Grid */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {menuTiles.map((tile) => (
+            {menuTiles.map((tile, index) => (
               <button
                 key={tile.id}
                 onClick={() => handleTileClick(tile)}
-                className={`relative overflow-hidden rounded-xl ${tile.bgColor} border border-[#2A2D3E] p-6 hover:scale-105 transition-all duration-200 group`}
+                className={`relative overflow-hidden rounded-xl ${tile.bgColor} border border-[#2A2D3E] p-6 hover:scale-105 transition-all duration-200 group ${
+                  tile.id === 'referral' ? 'col-span-2 w-1/2 mx-auto' : ''
+                }`}
               >
                 {/* Background glow */}
                 <div className={`absolute -top-10 -right-10 w-24 h-24 ${tile.bgColor} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity`} />

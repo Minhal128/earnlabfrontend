@@ -25,7 +25,7 @@ const PricingHoldTimes: React.FC = () => {
     {
       icon: <Clock className="w-5 h-5" />,
       amount: "$10 – $15",
-      holdTime: "7 Days Hold",
+      holdTime: "15 Days Hold",
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20",

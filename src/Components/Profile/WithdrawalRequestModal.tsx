@@ -77,7 +77,13 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
       return;
     }
 
-    const amountCents = Math.round(parseFloat(amount) * 100);
+    const amountValue = parseFloat(amount);
+    if (amountValue < 5) {
+      setError("Minimum withdrawal amount is $5");
+      return;
+    }
+
+    const amountCents = Math.round(amountValue * 100);
     if (amountCents > userBalance) {
       setError("Insufficient balance");
       return;
@@ -244,19 +250,21 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
                   : selectedMethod === "crypto"
                     ? "Wallet Address"
                     : selectedMethod === "paypal"
-                      ? "PayPal Email"
+                      ? "Recipient Email"
                       : "Bank Account"}
               </label>
               <input
-                type={selectedMethod === "giftcard" ? "email" : "text"}
+                type={selectedMethod === "giftcard" || selectedMethod === "paypal" ? "email" : "text"}
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder={
                   selectedMethod === "giftcard"
                     ? "your@email.com"
-                    : selectedMethod === "crypto"
-                      ? "0x..."
-                      : "Enter destination"
+                    : selectedMethod === "paypal"
+                      ? "recipient@email.com"
+                      : selectedMethod === "crypto"
+                        ? "0x..."
+                        : "Enter destination"
                 }
                 className="w-full bg-[#151728] border border-[#2A2D44] rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#18C3A7]"
               />

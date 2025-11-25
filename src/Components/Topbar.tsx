@@ -458,7 +458,7 @@ const TopBar: React.FC = () => {
             </Link>
 
             {/* Payout Methods Section */}
-            <div className="hidden xl:flex">
+            <div className="flex">
               <PayoutMethods isLoggedIn={!!username} />
             </div>
 
@@ -615,13 +615,6 @@ const TopBar: React.FC = () => {
                     <div className="border-t border-[#30334A] my-1"></div>
 
                     <button
-                      onClick={() => setChatOpen(true)}
-                      className="flex items-center text-white gap-2"
-                    >
-                      <MdContactSupport size={16} /> Support
-                    </button>
-                    <div className="border-t border-[#30334A] my-1"></div>
-                    <button
                       onClick={handleSignOut}
                       className="flex items-center gap-2 text-red-400 text-left"
                     >
@@ -635,17 +628,6 @@ const TopBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Support Bubble (opens the SupportChat) */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setChatOpen(true)}
-          aria-label="Open support chat"
-          className="flex items-center justify-center w-14 h-14 rounded-full bg-[#3B3F5A] shadow-lg hover:bg-[#474a67]"
-        >
-          <MdContactSupport size={20} className="text-white" />
-        </button>
-        <SupportChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />
-      </div>
 
       {/* Mobile Sidebar */}
       <div

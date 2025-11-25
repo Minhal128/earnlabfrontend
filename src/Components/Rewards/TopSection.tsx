@@ -7,10 +7,12 @@ import Image from "next/image";
 
 import LeftBottom from '../../../public/assets/back.png'
 import RightTop from '../../../public/assets/bgright.png'
-import BoxImg from '../../../public/assets/box.png'
-import GiftImg from '../../../public/assets/page.png'
+import BoxGradient from '../../../public/assets/box-gradient.svg'
+import BoxNeon from '../../../public/assets/box-neon.svg'
+import BoxPremium from '../../../public/assets/box-premium.svg'
 import FreedomImg from '../../../public/assets/freedom.png'
 import RewardModal from "./RewardModal";
+import RedOrBlackBonus from "./RedOrBlackBonus";
 
 const TopSection = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -200,9 +202,9 @@ const TopSection = () => {
         })();
     }, []);
     return (
-        <div className="w-full min-h-screen bg-[#0a0f1c] px-6 text-white py-6">
+        <div className="w-full min-h-screen bg-[#0a0f1c] px-4 sm:px-6 text-white py-6">
             {/* Top Rewards Banner */}
-            <section className="relative w-full flex justify-center items-center bg-gradient-to-r from-purple-600 to-pink-600 py-10 px-6 overflow-hidden rounded-lg mb-12">
+            <section className="relative w-full flex justify-center items-center bg-gradient-to-r from-purple-600 to-pink-600 py-6 md:py-10 px-4 md:px-6 overflow-hidden rounded-lg mb-12">
                 {/* Background Images */}
                 <div className="absolute top-0 right-0 w-32 h-32 md:w-40 md:h-40 opacity-80 pointer-events-none">
                     <Image src={RightTop} alt="coin" fill className="object-contain" />
@@ -213,9 +215,9 @@ const TopSection = () => {
 
                 {/* Content */}
                 <div className="relative text-center text-white max-w-xl z-10">
-                    <h1 className="text-3xl md:text-7xl font-semibold mb-4">Rewards</h1>
-                    <p className="text-base md:text-lg mb-6">
-                        Earn $1.00 more today by joining our community
+                    <h1 className="text-2xl md:text-7xl font-semibold mb-4">Rewards</h1>
+                    <p className="text-sm md:text-lg mb-6">
+                        Verify your email to claim $0.25 + 3 Free Boxes
                     </p>
                     <button
                         onClick={() => {
@@ -226,7 +228,7 @@ const TopSection = () => {
                         disabled={claimLoading || dailyEligible === false}
                         className="px-6 py-3 cursor-pointer bg-[#099F86] text-white font-semibold rounded-lg transition disabled:opacity-60"
                     >
-                        {claimLoading ? "Claiming..." : (dailyEligible === false ? "Claimed" : "Claim $1.000")}
+                        {claimLoading ? "Claiming..." : (dailyEligible === false ? "Claimed" : "Claim $0.25")}
                     </button>
                     {claimMessage && (
                         <div className="mt-2 text-sm text-teal-200">{claimMessage}</div>
@@ -243,12 +245,13 @@ const TopSection = () => {
                 <p className="text-gray-400 mb-6">
                     Maintain your streak to earn rewards every day
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4">
                     {/* Render from API if available, otherwise fallback to 7 placeholders */}
                     {(streakBoxes.length > 0 ? streakBoxes : [1, 2, 3, 4, 5, 6, 7]).map((b: any, idx: number) => {
                         const day = b.day ?? idx + 1;
-                        // prefer backend-provided imageKey or imageUrl, otherwise fall back to local BoxImg
-                        const image = b.imageUrl || (b.imageKey ? BoxImg : BoxImg);
+                        // Rotate through unique SVG box designs
+                        const boxDesigns = [BoxGradient, BoxNeon, BoxPremium];
+                        const image = b.imageUrl || boxDesigns[idx % 3];
                         const claimable = b.claimable !== undefined ? !!b.claimable : (dailyEligible ?? true);
                         return (
                             <div
@@ -315,13 +318,21 @@ const TopSection = () => {
                 </div>
             </section>
 
+            {/* Red or Black Daily Bonus Section */}
+            <section className="mb-12">
+                <h2 className="text-xl font-semibold mb-6">Daily Bonus</h2>
+                <RedOrBlackBonus userBalance={0} />
+            </section>
+
             {/* Unlock Free Boxes Section */}
             <section>
                 <h2 className="text-xl font-semibold mb-2">Unlock Your Free Boxes</h2>
                 <p className="text-gray-400 mb-6">Claim free boxes available to your account.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-6">
                     {(freeBoxes.length > 0 ? freeBoxes : [1, 2, 3]).map((box: any, idx: number) => {
-                        const img = box.imageUrl || GiftImg;
+                        // Rotate through unique SVG box designs for free boxes
+                        const boxDesigns = [BoxGradient, BoxNeon, BoxPremium];
+                        const img = box.imageUrl || boxDesigns[idx % 3];
                         const title = box.title || `Box ${idx + 1}`;
                         const locked = box.locked === undefined ? false : !!box.locked;
                         return (

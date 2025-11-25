@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Paperclip, Smile } from "lucide-react";
 import Image from "next/image";
+import UserProfileModal from "@/Components/UserProfileModal";
 
 interface Message {
   id: string;
@@ -11,6 +12,8 @@ interface Message {
   sender: "user" | "support";
   timestamp: Date;
   avatarUrl?: string;
+  userId?: string;
+  username?: string;
 }
 
 export default function ChatPage() {
@@ -24,6 +27,8 @@ export default function ChatPage() {
     },
   ]);
   const [inputText, setInputText] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -66,6 +71,13 @@ export default function ChatPage() {
     }
   };
 
+  const handleUserClick = (userId?: string) => {
+    if (userId) {
+      setSelectedUserId(userId);
+      setShowProfileModal(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#0A0C1A]">
       {/* Header */}
@@ -95,12 +107,18 @@ export default function ChatPage() {
             className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl p-4 ${
+              onClick={() => handleUserClick(message.userId)}
+              className={`max-w-[80%] rounded-2xl p-4 cursor-pointer transition-all ${
                 message.sender === "user"
-                  ? "bg-emerald-500 text-white"
-                  : "bg-[#1A1D2E] text-white border border-[#2A2D3E]"
-              }`}
+                  ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                  : "bg-[#1A1D2E] text-white border border-[#2A2D3E] hover:border-emerald-500/50"
+              } ${message.userId ? "hover:shadow-lg" : ""}`}
             >
+              {message.username && message.sender !== "support" && (
+                <p className="text-xs font-semibold mb-1 opacity-75">
+                  {message.username}
+                </p>
+              )}
               <p className="text-sm">{message.text}</p>
               <p className={`text-xs mt-1 ${
                 message.sender === "user" ? "text-emerald-100" : "text-[#9CA3AF]"
@@ -144,6 +162,16 @@ export default function ChatPage() {
           </button>
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        userId={selectedUserId}
+        isOpen={showProfileModal}
+        onClose={() => {
+          setShowProfileModal(false);
+          setSelectedUserId(null);
+        }}
+      />
     </div>
   );
 }

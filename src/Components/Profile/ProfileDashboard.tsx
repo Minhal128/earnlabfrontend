@@ -566,7 +566,7 @@ const ProfileDashboard: React.FC = () => {
         </div>
 
         <main className="flex-1 overflow-y-auto">
-          <div className="bg-[#151728] px-6 pt-3 pb-6 rounded-xl shadow-md">
+          <div className="bg-[#151728] px-6 pt-3 pb-20 md:pb-6 rounded-xl shadow-md">
             {activeSection === "Overview" && <ProfileOverview />}
             {activeSection === "Settings" && <SettingsDashboard />}
             {activeSection === "Transactions" && <TransactionDashboard />}

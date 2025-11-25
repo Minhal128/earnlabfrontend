@@ -25,6 +25,17 @@ interface CompletedOffer {
     provider?: string;
 }
 
+interface Withdrawal {
+    _id: string;
+    amountCents: number;
+    method: string;
+    status: string;
+    destination?: string;
+    giftCardType?: string;
+    createdAt: string;
+    completedAt?: string;
+}
+
 interface UserProfileModalProps {
     userId: string | null;
     isOpen: boolean;
@@ -35,8 +46,9 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
     const [loading, setLoading] = useState(false);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [completedOffers, setCompletedOffers] = useState<CompletedOffer[]>([]);
+    const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
     const [isPrivate, setIsPrivate] = useState(false);
-    const [activeTab, setActiveTab] = useState<"overview" | "offers">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "offers" | "withdrawals">("overview");
 
     const getApi = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -47,6 +59,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
             // Reset state when modal closes
             setProfile(null);
             setCompletedOffers([]);
+            setWithdrawals([]);
             setIsPrivate(false);
             setActiveTab("overview");
         }
@@ -70,9 +83,10 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                     setProfile(data.profile);
                     setIsPrivate(false);
                     
-                    // Fetch completed offers if profile is public
+                    // Fetch completed offers and withdrawals if profile is public
                     if (data.profile) {
                         fetchCompletedOffers(userId);
+                        fetchWithdrawals(userId);
                     }
                 }
             } else {
@@ -106,6 +120,29 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
             }
         } catch (err) {
             console.error("Error fetching completed offers:", err);
+        }
+    };
+
+    const fetchWithdrawals = async (uid: string) => {
+        try {
+            const api = getApi();
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            
+            const headers: HeadersInit = {};
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
+            const res = await fetch(`${api}/api/v1/user/${uid}/withdrawals`, { headers });
+            
+            if (res.ok) {
+                const data = await res.json();
+                if (data.withdrawals && Array.isArray(data.withdrawals)) {
+                    setWithdrawals(data.withdrawals);
+                }
+            }
+        } catch (err) {
+            console.error("Error fetching withdrawals:", err);
         }
     };
 
@@ -208,10 +245,10 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
 
                             {/* Tabs */}
                             <div className="border-b border-gray-700 mb-6">
-                                <div className="flex gap-6">
+                                <div className="flex gap-6 overflow-x-auto">
                                     <button
                                         onClick={() => setActiveTab("overview")}
-                                        className={`pb-3 px-2 font-medium transition-colors ${
+                                        className={`pb-3 px-2 font-medium transition-colors whitespace-nowrap ${
                                             activeTab === "overview"
                                                 ? "text-teal-400 border-b-2 border-teal-400"
                                                 : "text-gray-400 hover:text-gray-300"
@@ -221,13 +258,23 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                                     </button>
                                     <button
                                         onClick={() => setActiveTab("offers")}
-                                        className={`pb-3 px-2 font-medium transition-colors ${
+                                        className={`pb-3 px-2 font-medium transition-colors whitespace-nowrap ${
                                             activeTab === "offers"
                                                 ? "text-teal-400 border-b-2 border-teal-400"
                                                 : "text-gray-400 hover:text-gray-300"
                                         }`}
                                     >
-                                        Completed Offers ({completedOffers.length})
+                                        Earnings ({completedOffers.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab("withdrawals")}
+                                        className={`pb-3 px-2 font-medium transition-colors whitespace-nowrap ${
+                                            activeTab === "withdrawals"
+                                                ? "text-teal-400 border-b-2 border-teal-400"
+                                                : "text-gray-400 hover:text-gray-300"
+                                        }`}
+                                    >
+                                        Withdrawals ({withdrawals.length})
                                     </button>
                                 </div>
                             </div>
@@ -295,7 +342,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                                         )}
                                     </div>
                                 </div>
-                            ) : (
+                            ) : activeTab === "offers" ? (
                                 <div className="space-y-3">
                                     {completedOffers.length > 0 ? (
                                         completedOffers.map((offer) => (
@@ -327,6 +374,58 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                                         <div className="text-center py-12">
                                             <Award className="mx-auto mb-4 text-gray-600" size={48} />
                                             <p className="text-gray-400">No completed offers yet</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {withdrawals.length > 0 ? (
+                                        withdrawals.map((withdrawal) => {
+                                            const statusColors: { [key: string]: string } = {
+                                                'Pending': 'text-yellow-400 bg-yellow-500/10',
+                                                'Approved': 'text-blue-400 bg-blue-500/10',
+                                                'Completed': 'text-green-400 bg-green-500/10',
+                                                'Rejected': 'text-red-400 bg-red-500/10',
+                                                'Cancelled': 'text-gray-400 bg-gray-500/10',
+                                            };
+                                            const statusColor = statusColors[withdrawal.status] || 'text-gray-400 bg-gray-500/10';
+                                            
+                                            return (
+                                                <div 
+                                                    key={withdrawal._id}
+                                                    className="bg-[#26293E] rounded-lg p-4 hover:bg-[#2f3247] transition-colors"
+                                                >
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div className="flex-1">
+                                                            <h5 className="text-white font-semibold mb-1">
+                                                                {withdrawal.method === 'crypto' ? '₿ Crypto' : 
+                                                                 withdrawal.method === 'paypal' ? '🅿️ PayPal' :
+                                                                 withdrawal.method === 'giftcard' ? '🎁 Gift Card' : 'Bank Transfer'}
+                                                                {withdrawal.giftCardType && ` (${withdrawal.giftCardType})`}
+                                                            </h5>
+                                                            <p className="text-gray-400 text-xs">
+                                                                To: {withdrawal.destination?.substring(0, 30)}...
+                                                            </p>
+                                                        </div>
+                                                        <span className="text-green-400 font-bold text-lg ml-4">
+                                                            -${(withdrawal.amountCents / 100).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <p className="text-gray-400 text-xs">
+                                                            {new Date(withdrawal.createdAt).toLocaleString()}
+                                                        </p>
+                                                        <span className={`text-xs font-semibold px-2 py-1 rounded ${statusColor}`}>
+                                                            {withdrawal.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-12">
+                                            <Award className="mx-auto mb-4 text-gray-600" size={48} />
+                                            <p className="text-gray-400">No withdrawals yet</p>
                                         </div>
                                     )}
                                 </div>

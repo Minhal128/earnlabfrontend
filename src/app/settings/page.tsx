@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Bell, Lock, Globe, Moon, Smartphone } from "lucide-react";
+import { ArrowLeft, Bell, Lock, Globe, Moon, Smartphone, HelpCircle } from "lucide-react";
 import TopBar from "@/Components/Topbar";
 
 export default function SettingsPage() {
@@ -15,7 +15,6 @@ export default function SettingsPage() {
       items: [
         { label: "Push Notifications", type: "toggle", enabled: true },
         { label: "Email Notifications", type: "toggle", enabled: false },
-        { label: "SMS Notifications", type: "toggle", enabled: false },
       ],
     },
     {
@@ -33,6 +32,14 @@ export default function SettingsPage() {
         { label: "Language", type: "select", value: "English" },
         { label: "Currency", type: "select", value: "USD" },
         { label: "Dark Mode", type: "toggle", enabled: true },
+      ],
+    },
+    {
+      title: "Support & Help",
+      icon: <HelpCircle className="w-5 h-5" />,
+      items: [
+        { label: "Withdrawal Times", type: "info", value: "Under $5: Instant | $10-15: 15 days | $15-25: 25 days | $25+: 35 days" },
+        { label: "Contact Support", type: "link", value: "Visit Support Center" },
       ],
     },
   ];
@@ -86,6 +93,17 @@ export default function SettingsPage() {
                       )}
                       {item.type === "select" && (
                         <span className="text-sm text-emerald-400">{item.value}</span>
+                      )}
+                      {item.type === "info" && (
+                        <span className="text-xs text-[#9CA3AF] text-right max-w-xs">{item.value}</span>
+                      )}
+                      {item.type === "link" && (
+                        <button
+                          onClick={() => router.push("/support")}
+                          className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          {item.value}
+                        </button>
                       )}
                     </div>
                   ))}

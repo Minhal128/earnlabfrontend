@@ -20,11 +20,11 @@ import Lit from "../../../public/assets/lit.png";
 import Sol from "../../../public/assets/sol.png";
 import Tet from "../../../public/assets/tet.png";
 import Tron from "../../../public/assets/tron.png";
-import Rip from "../../../public/assets/rip.png";
+import Rip from "../../../public/assets/xrp.jpg";
 import POl from "../../../public/assets/pol.png";
-import Ripple from "../../../public/assets/ripple.png";
+import Ripple from "../../../public/assets/xrp.jpg";
 import USD from "../../../public/assets/usd.png";
-import World from "../../../public/assets/world.png";
+import World from "../../../public/assets/worldcoin.png";
 
 import Play from "../../../public/assets/play.png";
 import N from "../../../public/assets/n.png";
@@ -66,18 +66,35 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
     const dispatch = useDispatch();
     const router = useRouter();
 
-    // Check if selected method is Virtual Visa (cash) or Crypto
+    // Check if selected method is Virtual Visa (cash), PayPal, or Crypto
     const isVirtualVisa = selectedMethod?.name === "Virtual Visa";
-    const isCrypto = selectedMethod && !isVirtualVisa;
+    const isPayPal = selectedMethod?.name === "PayPal";
+    const isCrypto = selectedMethod && !isVirtualVisa && !isPayPal;
 
-    // Amount presets for Virtual Visa (in euros)
-    const amountPresets = [10, 25, 50, 100];
+    // Amount presets for Virtual Visa (in dollars)
+    const amountPresets = [10, 20, 50, 100];
 
     const options: CountryOption[] = useMemo(() => countryList().getData(), []);
 
     const handleChange = (val: SingleValue<CountryOption> | null) => {
         setValue(val);
         setSelectedMethod({ name: "Virtual Visa", icon: Old });
+    };
+
+    const handleConfirmPayment = async () => {
+        setIsConfirming(true);
+        try {
+            // Simulate confirmation delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            toast.success("Payment confirmed successfully!");
+            setShowPaymentModal(false);
+            setPaymentDetails(null);
+        } catch (error) {
+            toast.error("Failed to confirm payment");
+            console.error(error);
+        } finally {
+            setIsConfirming(false);
+        }
     };
 
     const handleRedeemPromo = async () => {
@@ -136,12 +153,18 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
 
     const handleCryptoWithdrawal = async () => {
         if (!selectedMethod || !cryptoWalletAddress.trim()) {
-            toast.error("Please enter a wallet address");
+            toast.error(isPayPal ? "Please enter a recipient email" : "Please enter a wallet address");
             return;
         }
 
         if (!cryptoAmount || parseFloat(cryptoAmount) <= 0) {
             toast.error("Please enter a valid amount");
+            return;
+        }
+
+        const amount = parseFloat(cryptoAmount);
+        if (isPayPal && amount < 5) {
+            toast.error("PayPal minimum withdrawal is $5");
             return;
         }
 
@@ -161,8 +184,8 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    amountCents: Math.round(parseFloat(cryptoAmount) * 100),
-                    method: "crypto",
+                    amountCents: Math.round(amount * 100),
+                    method: isPayPal ? "paypal" : "crypto",
                     destination: cryptoWalletAddress.trim(),
                 }),
             });
@@ -329,9 +352,23 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             </div>
                         )}
 
+                        {/* PayPal Email - Only for PayPal */}
+                        {isPayPal && (
+                            <div>
+                                <label className="text-sm mb-1 block">Recipient Email</label>
+                                <input
+                                    type="email"
+                                    placeholder="recipient@email.com"
+                                    value={cryptoWalletAddress}
+                                    onChange={(e) => setCryptoWalletAddress(e.target.value)}
+                                    className="w-full px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
+                                />
+                            </div>
+                        )}
+
                         {/* Amount */}
                         <div>
-                            <label className="text-sm mb-1 block">Amount</label>
+                            <label className="text-sm mb-1 block">Amount {isPayPal ? "(Min. $5)" : ""}</label>
                             
                             {/* Virtual Visa: Show preset buttons */}
                             {isVirtualVisa ? (
@@ -350,7 +387,7 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                                         : "bg-[#26293E] text-gray-300 hover:bg-[#2f3247]"
                                                 }`}
                                             >
-                                                €{amount}
+                                                ${amount}
                                             </button>
                                         ))}
                                     </div>
@@ -358,7 +395,7 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                         <span className="text-xs text-gray-400">Or enter custom amount:</span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-2">
-                                        <span className="text-sm text-gray-400">€</span>
+                                        <span className="text-sm text-gray-400">$</span>
                                         <input
                                             type="number"
                                             value={customAmount}
@@ -372,11 +409,12 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                     </div>
                                 </>
                             ) : (
-                                /* Crypto: Show input with Max button */
+                                /* Crypto/PayPal: Show input with Max button */
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="number"
-                                        placeholder="Enter amount in USD"
+                                        min={isPayPal ? "5" : "0"}
+                                        placeholder={isPayPal ? "Enter amount in USD (Min. $5)" : "Enter amount in USD"}
                                         value={cryptoAmount}
                                         onChange={(e) => setCryptoAmount(e.target.value)}
                                         className="flex-1 px-3 py-3 text-sm bg-[#26293E] border border-gray-700 rounded-md outline-none text-white focus:border-teal-400 transition"
@@ -519,59 +557,8 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        {/* Vouchers Section */}
+                        {/* Vouchers Section - PayPal Only */}
                         <p className="text-sm text-white">Vouchers</p>
-                        <div className="flex gap-2">
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Playstation", icon: Play })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={Play} alt="Playstation" width={22} height={22} />
-                                <span className="text-sm">Playstation</span>
-                            </div>
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Nintendo", icon: N })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={N} alt="Nintendo" width={22} height={22} />
-                                <span className="text-sm">Nintendo</span>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Netflix", icon: NEt })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={NEt} alt="Netflix" width={22} height={22} />
-                                <span className="text-sm">Netflix</span>
-                            </div>
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Zalando", icon: Zal })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={Zal} alt="Zalando" width={22} height={22} />
-                                <span className="text-sm">Zalando</span>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Spotify", icon: Spot })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={Spot} alt="Spotify" width={22} height={22} />
-                                <span className="text-sm">Spotify</span>
-                            </div>
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "Roblox", icon: Rob })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={Rob} alt="Roblox" width={22} height={22} />
-                                <span className="text-sm">Roblox</span>
-                            </div>
-                        </div>
-
                         <div className="flex gap-2">
                             <div 
                                 onClick={() => setSelectedMethod({ name: "PayPal", icon: Paypal })}
@@ -579,13 +566,6 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                             >
                                 <Image src={Paypal} alt="PayPal" width={22} height={22} />
                                 <span className="text-sm">PayPal</span>
-                            </div>
-                            <div 
-                                onClick={() => setSelectedMethod({ name: "iTunes", icon: Itune })}
-                                className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
-                            >
-                                <Image src={Itune} alt="iTunes" width={22} height={22} />
-                                <span className="text-sm">iTunes</span>
                             </div>
                         </div>
                     </div>

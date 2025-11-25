@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
+import UserProfileModal from "../Shared/UserProfileModal";
 import dotsBg from "../../../public/assets/drop.png";
 import leaderTop from "../../../public/assets/leadertop.png";
 import Avatar from "../../../public/assets/avatar.png";
@@ -17,6 +20,7 @@ interface LeaderboardUser {
 }
 
 const LeaderBoard = () => {
+    const router = useRouter();
     const targetDate = useMemo(() => {
         const date = new Date();
         date.setDate(date.getDate() + 10);
@@ -48,7 +52,7 @@ const LeaderBoard = () => {
 
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [showProfileModal, setShowProfileModal] = useState(false);
 
     // Fetch leaderboard data - Top 25
@@ -74,23 +78,9 @@ const LeaderBoard = () => {
     }, []);
 
     // Handle user click
-    const handleUserClick = async (userId: string) => {
-        try {
-            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const res = await fetch(`${api}/api/v1/games/user/${userId}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.isPrivate) {
-                    toast.info(data.message || "This profile is private");
-                } else {
-                    setSelectedUser(data.profile);
-                    setShowProfileModal(true);
-                }
-            }
-        } catch (err) {
-            console.error("Failed to fetch user profile:", err);
-            toast.error("Failed to load user profile");
-        }
+    const handleUserClick = (userId: string) => {
+        setSelectedUserId(userId);
+        setShowProfileModal(true);
     };
 
     // Prepare top 3 winners
@@ -157,7 +147,7 @@ const LeaderBoard = () => {
     }, []);
 
     return (
-        <div className="relative min-h-screen bg-[#0A0C1A] text-white flex flex-col items-center justify-start overflow-hidden">
+        <div className="relative min-h-screen bg-[#0A0C1A] text-white flex flex-col items-center justify-start overflow-hidden pb-20 lg:pb-0">
             <Image
                 src={dotsBg}
                 alt="background dots"
@@ -165,48 +155,85 @@ const LeaderBoard = () => {
             />
 
             {/* Main Content */}
-            <div className="relative z-10 flex flex-col items-center w-full max-w-7xl px-2 sm:px-4 md:px-6 py-6 md:py-10">
-                {/* Header */}
-                <div className="flex flex-col items-center gap-3 mb-6">
-                    <div className="flex items-center justify-center bg-[#1A1D2E] rounded-full p-4">
-                        <Image
-                            src={leaderTop}
-                            alt="Leaderboard"
-                            width={80}
-                            height={80}
-                            className="object-contain"
-                        />
+            <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-4 sm:px-6 py-6 space-y-6">
+                {/* Header Section */}
+                <div className="w-full space-y-4">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-2">
+                        🏆 Leaderboard
+                    </h1>
+                    <p className="text-sm sm:text-base text-[#9CA3AF]">
+                        Compete with top earners and referrers. Track your progress in real-time.
+                    </p>
+                </div>
+
+                {/* Competition Timer */}
+                <div className="w-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
+                    <div className="text-2xl">⏱️</div>
+                    <div>
+                        <p className="text-xs text-[#9CA3AF]">Competition ends in:</p>
+                        <p className="text-sm font-semibold text-emerald-400">
+                            {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                        </p>
                     </div>
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">$150</h1>
-                    <p className="text-[#9CA3AF] text-base sm:text-lg md:text-xl">Monthly Race</p>
                 </div>
 
-                {/* Countdown */}
-                <div className="flex gap-2 sm:gap-3 mt-4">
-                    {[
-                        { label: "Days", value: timeLeft.days },
-                        { label: "Hours", value: timeLeft.hours },
-                        { label: "Minutes", value: timeLeft.minutes },
-                        { label: "Seconds", value: timeLeft.seconds },
-                    ].map((t, i) => (
-                        <div
-                            key={i}
-                            className="bg-[#1A1D2E] border border-[#2A2D3E] px-3 sm:px-4 py-2 sm:py-3 rounded-xl flex flex-col items-center min-w-[60px] sm:min-w-[70px]"
-                        >
-                            <span className="text-xl sm:text-2xl rounded-lg bg-[#252840] py-1.5 sm:py-2 px-2 sm:px-3 mb-1 sm:mb-2 font-bold text-emerald-400">
-                                {t.value.toString().padStart(2, "0")}
-                            </span>
-                            <span className="text-[10px] sm:text-xs text-[#9CA3AF]">{t.label}</span>
+                {/* Tab Buttons */}
+                <div className="w-full flex gap-2 sm:gap-3">
+                    <button className="flex-1 px-4 py-2.5 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] text-[#9CA3AF] hover:text-white text-sm font-medium transition-all">
+                        Weekly
+                    </button>
+                    <button className="flex-1 px-4 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium transition-all">
+                        📅 Monthly
+                    </button>
+                    <button className="flex-1 px-4 py-2.5 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] text-[#9CA3AF] hover:text-white text-sm font-medium transition-all">
+                        Top Referrers
+                    </button>
+                </div>
+
+                {/* Info Cards */}
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Top Earner */}
+                    <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="text-2xl">🏆</div>
+                            <div>
+                                <p className="text-xs text-[#9CA3AF]">Top Earner</p>
+                                <p className="text-lg font-bold text-white">{topWinners[0]?.name || "Awatix"}</p>
+                            </div>
                         </div>
-                    ))}
+                    </div>
+
+                    {/* Active Users */}
+                    <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="text-2xl">👥</div>
+                            <div>
+                                <p className="text-xs text-[#9CA3AF]">Active Users</p>
+                                <p className="text-lg font-bold text-white">{leaderboardData.length}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Podium */}
-                <div className="relative w-full mt-12 px-2 sm:px-6 py-8 sm:py-12 rounded-2xl overflow-hidden">
-                    {loading ? (
-                        <div className="text-center text-gray-400">Loading leaderboard...</div>
-                    ) : (
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-center gap-4 sm:gap-6 w-full">
+                {/* Your Rank */}
+                <div className="w-full bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="text-2xl">📊</div>
+                        <div>
+                            <p className="text-xs text-[#9CA3AF]">Your Rank</p>
+                            <p className="text-lg font-bold text-white">Unranked</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Top 3 Podium */}
+                <div className="w-full mt-6">
+                    <h2 className="text-xl font-bold text-white mb-4">Top 3</h2>
+                    <div className="relative w-full px-2 sm:px-6 py-8 rounded-2xl overflow-hidden">
+                        {loading ? (
+                            <div className="text-center text-gray-400">Loading leaderboard...</div>
+                        ) : (
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-center gap-4 sm:gap-6 w-full">
                         {podiumOrder.map((winner) => {
                             const isCenter = winner.id === 1;
                             const isSecond = winner.id === 2;
@@ -284,16 +311,15 @@ const LeaderBoard = () => {
                                 </div>
                             );
                         })}
+                            </div>
+                        )}
                     </div>
-                    )}
                 </div>
 
-                {/* Other Players - Top 4-25 */}
-                <div className="w-full mt-10">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                        <span className="w-1 h-6 bg-emerald-400 rounded-full"></span>
-                        Top 25 Rankings
-                    </h2>
+                {/* Full Rankings */}
+                <div className="w-full mt-6">
+                    <h2 className="text-xl font-bold text-white mb-4">Full Rankings</h2>
+                    <p className="text-xs text-[#9CA3AF] mb-4">Complete leaderboard standings</p>
                     
                     <div className="space-y-2">
                         {otherPlayers.map((player, idx) => {
@@ -367,73 +393,19 @@ const LeaderBoard = () => {
                         })}
                     </div>
                 </div>
+
             </div>
 
-            {/* Profile Modal */}
-            {showProfileModal && selectedUser && (
-                <div 
-                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
-                    onClick={() => setShowProfileModal(false)}
-                >
-                    <div 
-                        className="bg-[#1E2133] rounded-xl p-8 max-w-md w-full shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold">User Profile</h2>
-                            <button 
-                                onClick={() => setShowProfileModal(false)}
-                                className="text-gray-400 hover:text-white text-2xl"
-                            >
-                                ×
-                            </button>
-                        </div>
-                        
-                        <div className="flex flex-col items-center gap-4">
-                            {selectedUser.avatarUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img 
-                                    src={selectedUser.avatarUrl} 
-                                    alt={selectedUser.username}
-                                    className="w-24 h-24 rounded-full"
-                                />
-                            ) : (
-                                <div className="w-24 h-24 rounded-full bg-[#2A2D44] flex items-center justify-center text-3xl">
-                                    {(selectedUser.displayName || selectedUser.username).charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            
-                            <div className="text-center">
-                                <h3 className="text-xl font-semibold mb-1">
-                                    {selectedUser.displayName || selectedUser.username}
-                                </h3>
-                                <p className="text-gray-400 text-sm">@{selectedUser.username}</p>
-                            </div>
-
-                            <div className="w-full bg-[#26293E] rounded-lg p-4 mt-4">
-                                <div className="flex justify-between items-center mb-3">
-                                    <span className="text-gray-400">Total Earned</span>
-                                    <span className="text-xl font-bold text-green-400">
-                                        ${(selectedUser.balanceCents / 100).toFixed(2)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-400">Joined</span>
-                                    <span className="text-sm">
-                                        {new Date(selectedUser.createdAt).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => setShowProfileModal(false)}
-                                className="w-full mt-4 py-3 bg-gradient-to-r from-[#099F86] to-[#0EA88F] rounded-lg font-semibold hover:opacity-90 transition"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {/* User Profile Modal */}
+            {selectedUserId && (
+                <UserProfileModal
+                    userId={selectedUserId}
+                    isOpen={showProfileModal}
+                    onClose={() => {
+                        setShowProfileModal(false);
+                        setSelectedUserId(null);
+                    }}
+                />
             )}
         </div>
     );

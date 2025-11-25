@@ -1,0 +1,26 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="boxGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B9D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#C44569;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9F2B63;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Main box -->
+  <rect x="30" y="40" width="140" height="120" rx="12" fill="url(#boxGradient)" filter="url(#shadow)"/>
+  
+  <!-- Box lid -->
+  <path d="M 30 40 L 50 20 L 150 20 L 170 40" fill="url(#boxGradient)" opacity="0.8"/>
+  
+  <!-- Highlight -->
+  <rect x="35" y="50" width="130" height="15" rx="4" fill="white" opacity="0.2"/>
+  
+  <!-- Sparkle effect -->
+  <circle cx="70" cy="80" r="3" fill="white" opacity="0.6"/>
+  <circle cx="130" cy="100" r="2" fill="white" opacity="0.4"/>
+  <circle cx="100" cy="140" r="2.5" fill="white" opacity="0.5"/>
+</svg>

@@ -19,7 +19,7 @@ import PayPalIcon from "../../../public/assets/paypal.png";
 import BitcoinIcon from "../../../public/assets/bit.png";
 import VisaIcon from "../../../public/assets/visa.png";
 import VenmoIcon from "../../../public/assets/venmo.png";
-import WorldIcon from "../../../public/assets/world.png";
+import WorldIcon from "../../../public/assets/worldcoin.png";
 import SteamIcon from "../../../public/assets/cb.png";
 
 import WhyChooseUs from "@/Components/Landing/WhyChooseUs";
@@ -180,6 +180,38 @@ export default function Landing() {
 
                         {/* Right Section */}
                         <div className="flex items-center gap-2">
+                            {/* Language Selector - Circle Flag */}
+                            <div className="hidden md:block relative">
+                                <button
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] hover:border-emerald-400 transition-all duration-200"
+                                    onClick={() => setLangOpen((prev) => !prev)}
+                                    title={`Language: ${currentLang.name}`}
+                                >
+                                    <CountryFlag countryCode={currentLang.code} svg style={{ width: '16px', height: '12px' }} />
+                                </button>
+                                {langOpen && (
+                                    <div className="absolute right-0 mt-2 w-40 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg z-20 shadow-xl">
+                                        <ul className="py-1 text-sm">
+                                            {languages.map((lang) => (
+                                                <li key={lang.code}>
+                                                    <button
+                                                        onClick={() => handleLanguageChange(lang)}
+                                                        className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
+                                                            currentLang.code === lang.code
+                                                                ? "bg-emerald-500/10 text-emerald-400"
+                                                                : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
+                                                            }`}
+                                                    >
+                                                        <CountryFlag countryCode={lang.code} svg style={{ width: '20px', height: '14px' }} />
+                                                        {lang.name}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Live Stats Toggle */}
                             <div className="hidden lg:flex">
                                 <LiveStatsToggle 
@@ -228,39 +260,6 @@ export default function Landing() {
                         />
                         <ForgotPasswordModal isOpen={forgotOpen} onClose={() => setForgotOpen(false)} />
 
-                    </div>
-
-                    {/* Language Selector - Separate from main nav */}
-                    <div className="hidden md:block absolute right-4 top-6 px-3 py-2 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E]">
-                        <button
-                            className="flex items-center gap-2 rounded-md hover:bg-[#252840] px-2 py-1 transition-colors"
-                            onClick={() => setLangOpen((prev) => !prev)}
-                        >
-                            <CountryFlag countryCode={currentLang.code} svg style={{ width: '18px', height: '12px' }} />
-                            <span className="text-xs font-medium text-[#9CA3AF]">{currentLang.code}</span>
-                            <IoMdArrowDropdown size={14} />
-                        </button>
-                        {langOpen && (
-                            <div className="absolute right-0 mt-2 w-40 bg-[#1A1D2E] border border-[#2A2D3E] rounded-lg z-20 shadow-xl">
-                                <ul className="py-1 text-sm">
-                                    {languages.map((lang) => (
-                                        <li key={lang.code}>
-                                            <button
-                                                onClick={() => handleLanguageChange(lang)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                                                    currentLang.code === lang.code
-                                                        ? "bg-emerald-500/10 text-emerald-400"
-                                                        : "text-[#9CA3AF] hover:bg-[#252840] hover:text-white"
-                                                    }`}
-                                            >
-                                                <CountryFlag countryCode={lang.code} svg style={{ width: '20px', height: '14px' }} />
-                                                {lang.name}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
                     </div>
                 </div>
 

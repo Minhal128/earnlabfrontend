@@ -18,7 +18,7 @@ export default function SupportPage() {
     },
     {
       question: "How long do withdrawals take?",
-      answer: "Withdrawals are processed based on the amount: Under $5 is instant, $10-$15 takes 7 days, $15-$25 takes 25 days, and $25+ takes 35 days.",
+      answer: "Withdrawals are processed based on the amount: Under $5 is instant, $10-15 takes 15 days, $15-$25 takes 25 days, and $25+ takes 35 days.",
     },
     {
       question: "Why is my task pending?",

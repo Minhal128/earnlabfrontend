@@ -16,13 +16,13 @@ const ModernAuthButtons: React.FC<ModernAuthButtonsProps> = ({
   const isCompact = variant === "compact";
 
   return (
-    <div className={`flex items-center ${isCompact ? "gap-2" : "gap-2"}`}>
+    <div className={`flex items-center gap-3 ${isCompact ? "flex-col sm:flex-row" : ""}`}>
       {/* Sign In Button */}
       <button
         onClick={onSignInClick}
-        className="px-4 py-2 rounded-md bg-transparent border border-[#2A2D3E] text-white font-medium text-sm hover:bg-[#1A1D2E] hover:border-emerald-400 transition-all duration-200"
+        className="px-6 py-2.5 rounded-lg bg-transparent border-2 border-[#2A2D3E] text-white font-semibold text-sm hover:bg-[#1A1D2E] hover:border-emerald-400 transition-all duration-200 whitespace-nowrap"
       >
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center justify-center gap-2">
           <LogIn className="w-4 h-4" />
           Sign In
         </span>
@@ -31,9 +31,9 @@ const ModernAuthButtons: React.FC<ModernAuthButtonsProps> = ({
       {/* Register Button */}
       <button
         onClick={onSignUpClick}
-        className="px-4 py-2 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm transition-all duration-200 shadow-sm"
+        className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-emerald-500/30 whitespace-nowrap"
       >
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center justify-center gap-2">
           <UserPlus className="w-4 h-4" />
           Register
         </span>

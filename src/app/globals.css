@@ -73,64 +73,78 @@
 }
 
 .Toastify__toast {
-    padding: 16px 20px;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    margin-bottom: 12px;
-    min-width: 300px;
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(24, 195, 167, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    margin-bottom: 12px !important;
+    min-width: 300px !important;
+    background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
 }
 
 /* Success Toast */
 .Toastify__toast--success {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
+    background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
+    color: #18C3A7 !important;
+    border: 1px solid rgba(24, 195, 167, 0.5) !important;
 }
 
 .Toastify__toast--success .Toastify__toast-icon {
-    color: white;
+    color: #18C3A7 !important;
 }
 
 /* Error Toast */
 .Toastify__toast--error {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-    color: white;
+    background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
+    color: #FF6B6B !important;
+    border: 1px solid rgba(255, 107, 107, 0.5) !important;
 }
 
 .Toastify__toast--error .Toastify__toast-icon {
-    color: white;
+    color: #FF6B6B !important;
+}
+
+.Toastify__toast--error svg {
+    color: #FF6B6B !important;
 }
 
 /* Warning Toast */
 .Toastify__toast--warning {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
+    background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
+    color: #FFA500 !important;
+    border: 1px solid rgba(255, 165, 0, 0.5) !important;
 }
 
 .Toastify__toast--warning .Toastify__toast-icon {
-    color: white;
+    color: #FFA500 !important;
 }
 
 /* Info Toast */
 .Toastify__toast--info {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-    color: white;
+    background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
+    color: #18C3A7 !important;
+    border: 1px solid rgba(24, 195, 167, 0.5) !important;
 }
 
 .Toastify__toast--info .Toastify__toast-icon {
-    color: white;
+    color: #18C3A7 !important;
 }
 
 /* Close Button */
 .Toastify__close-button {
-    color: rgba(255, 255, 255, 0.7);
-    opacity: 1;
+    color: rgba(24, 195, 167, 0.7) !important;
+    opacity: 1 !important;
 }
 
 .Toastify__close-button:hover {
-    color: white;
+    color: #18C3A7 !important;
+}
+
+/* Override default react-toastify styles */
+.Toastify__toast-body {
+    color: inherit !important;
 }

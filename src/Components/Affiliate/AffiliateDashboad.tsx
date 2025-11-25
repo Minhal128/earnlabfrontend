@@ -102,22 +102,22 @@ const AffiliateDashboard: React.FC = () => {
   return (
     <div className="w-full pt-5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-lg">
       {/* Header */}
-      <div className="mb-6 px-4">
-        <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+      <div className="mb-6 px-4 overflow-visible">
+        <h2 className="text-xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent inline-block" style={{ fontKerning: 'auto', letterSpacing: '0.02em' }}>
           🚀 Affiliate Program
         </h2>
-        <p className="text-slate-300 text-sm md:text-base mt-2">
+        <p className="text-slate-300 text-xs md:text-base mt-2">
           Earn money for every friend you refer to Labwards
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex p-2 bg-slate-800 border border-slate-700 w-96 rounded-lg overflow-hidden mb-6 mx-4 shadow-lg">
+      <div className="flex p-2 bg-slate-800 border border-slate-700 w-full md:w-96 rounded-lg overflow-hidden mb-6 mx-4 shadow-lg">
         {["dashboard", "codes", "tiers"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as Tab)}
-            className={`flex-1 px-4 py-2 cursor-pointer capitalize transition text-sm md:text-base font-medium
+            className={`flex-1 px-2 md:px-4 py-2 cursor-pointer capitalize transition text-xs md:text-base font-medium
               ${
                 activeTab === tab
                   ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md shadow-lg"
@@ -279,7 +279,41 @@ const AffiliateDashboard: React.FC = () => {
 
       {/* Codes Tab */}
       {activeTab === "codes" && (
-        <div className="px-4 pb-6">
+        <div className="px-4 pb-6 space-y-6">
+          {/* Referral Code Section */}
+          {referralData && (
+            <div className="bg-gradient-to-br from-cyan-600 via-blue-600 to-purple-700 rounded-2xl shadow-2xl border border-cyan-500 border-opacity-30 p-6">
+              <h3 className="text-white font-bold mb-3 text-xl">🔑 Your Referral Code</h3>
+              <p className="text-cyan-100 text-sm mb-4 opacity-95">
+                Share this code with friends to earn commissions!
+              </p>
+
+              {/* Code Display */}
+              <div className="bg-slate-900 bg-opacity-50 backdrop-blur-sm rounded-xl p-4 mb-4 flex items-center justify-between gap-3 flex-wrap border border-cyan-400 border-opacity-30">
+                <code className="text-cyan-300 text-lg break-all flex-1 font-mono font-bold">
+                  {referralData.affiliateCode}
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralData.affiliateCode);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition shadow-lg"
+                >
+                  {copied ? "✓ Copied!" : "Copy"}
+                </button>
+              </div>
+
+              {/* Referral Link */}
+              <div className="mb-4 bg-slate-900 bg-opacity-40 rounded-lg p-3 border border-cyan-400 border-opacity-20">
+                <p className="text-cyan-200 text-sm opacity-90 mb-2">Your Referral Link:</p>
+                <code className="text-cyan-300 font-mono text-xs break-all">{referralData.referralLink}</code>
+              </div>
+            </div>
+          )}
+
+          {/* Earnings Stats */}
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-lg">
             <h3 className="text-lg font-bold text-white mb-4">📊 Your Referral Earnings</h3>
 

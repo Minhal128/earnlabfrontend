@@ -1,4 +1,5 @@
 import TopBar from "@/Components/Topbar";
+import PageNavigation from "@/Components/Shared/PageNavigation";
 import React from "react";
 
 import HeroSection from "@/Components/HomePage/HeroSection";
@@ -9,6 +10,7 @@ export default function Home() {
     return (
         <>
             <TopBar />
+            <PageNavigation />
             <main className="min-h-screen bg-[#0A0C1A] pb-20 lg:pb-0">
                 {/* Container with max width */}
                 <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-3 sm:space-y-4 md:space-y-6">

@@ -1,0 +1,37 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+    </linearGradient>
+    <filter id="premiumShadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.4" flood-color="#FFD700"/>
+    </filter>
+  </defs>
+  
+  <!-- Background glow -->
+  <circle cx="100" cy="100" r="85" fill="#FFD700" opacity="0.1"/>
+  
+  <!-- Main box -->
+  <rect x="40" y="50" width="120" height="100" rx="10" fill="url(#premiumGradient)" filter="url(#premiumShadow)"/>
+  
+  <!-- Top stripe -->
+  <rect x="40" y="50" width="120" height="20" rx="10" fill="white" opacity="0.25"/>
+  
+  <!-- Diamond pattern -->
+  <g opacity="0.3">
+    <polygon points="70,75 75,70 80,75 75,80" fill="white"/>
+    <polygon points="120,75 125,70 130,75 125,80" fill="white"/>
+    <polygon points="70,120 75,115 80,120 75,125" fill="white"/>
+    <polygon points="120,120 125,115 130,120 125,125" fill="white"/>
+  </g>
+  
+  <!-- Center crown -->
+  <g transform="translate(100, 95)">
+    <path d="M -8 5 L -4 -5 L 0 -8 L 4 -5 L 8 5 Z" fill="white" opacity="0.8"/>
+    <circle cx="-4" cy="-5" r="2" fill="white"/>
+    <circle cx="0" cy="-8" r="2" fill="white"/>
+    <circle cx="4" cy="-5" r="2" fill="white"/>
+  </g>
+</svg>

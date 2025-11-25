@@ -1,8 +1,9 @@
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 import BgImg from "../../../public/assets/bg.png";
 import LockImg from "../../../public/assets/locak.png";
@@ -12,6 +13,41 @@ type VerifyProps = {
 };
 
 const Verify: React.FC<VerifyProps> = () => {
+    const [isClaiming, setIsClaiming] = useState(false);
+
+    const handleClaimBonus = async () => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        
+        if (!token) {
+            toast.info("Please sign up first to claim your bonus");
+            return;
+        }
+
+        setIsClaiming(true);
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/user/claim-email-verification-bonus`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success("🎉 Bonus claimed! You received $0.25 + 3 Free Boxes!");
+            } else {
+                toast.error(data.message || "Failed to claim bonus");
+            }
+        } catch (err) {
+            console.error("Error claiming bonus:", err);
+            toast.error("Failed to claim bonus. Please try again.");
+        } finally {
+            setIsClaiming(false);
+        }
+    };
     return (
         <div className="md:min-h-screen h-[600px] flex items-center justify-center mt-10 md:mt-0 bg-[#083136] px-4">
             <div
@@ -37,8 +73,12 @@ const Verify: React.FC<VerifyProps> = () => {
                         plus 3 Free boxes with exciting reward probabilities.
                     </p>
 
-                    <button className="mt-7 px-14 py-3 cursor-pointer rounded-full bg-gradient-to-t from-[#0B816D] to-[#18C3A7] text-white font-semibold shadow-md transition">
-                        Claim my Bonus
+                    <button 
+                        onClick={handleClaimBonus}
+                        disabled={isClaiming}
+                        className="mt-7 px-14 py-3 cursor-pointer rounded-full bg-gradient-to-t from-[#0B816D] to-[#18C3A7] text-white font-semibold shadow-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isClaiming ? "Claiming..." : "Claim my Bonus"}
                     </button>
 
                     <div className="flex items-center pt-4 justify-center font-semibold gap-2 mt-4 text-[#151728] text-md">

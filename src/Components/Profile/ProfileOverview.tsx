@@ -230,17 +230,17 @@ const ProfileOverview: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                     onClick={() => router.push("/home")}
-                    className="p-4 bg-gradient-to-r from-[#099F86] to-[#0EA88F] rounded-lg text-white font-medium hover:opacity-90 transition flex items-center justify-center gap-2"
+                    className="p-4 bg-gradient-to-r from-[#099F86] to-[#0EA88F] rounded-lg text-white font-medium hover:opacity-90 transition flex items-center justify-center gap-2 text-sm md:text-base"
                 >
                     <Award size={20} />
-                    Browse New Offers
+                    <span className="truncate">Browse New Offers</span>
                 </button>
                 <button
                     onClick={() => router.push("/rewards")}
-                    className="p-4 bg-[#26293E] border border-gray-700 rounded-lg text-white font-medium hover:border-teal-500 transition flex items-center justify-center gap-2"
+                    className="p-4 bg-[#26293E] border border-gray-700 rounded-lg text-white font-medium hover:border-teal-500 transition flex items-center justify-center gap-2 text-sm md:text-base"
                 >
                     <TrendingUp size={20} />
-                    View All Rewards
+                    <span className="truncate">View All Rewards</span>
                 </button>
             </div>
         </div>

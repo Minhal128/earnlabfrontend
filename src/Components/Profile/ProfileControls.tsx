@@ -157,29 +157,20 @@ const ProfileControls: React.FC = () => {
 
   return (
     <div className="w-full mt-4 mb-6">
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-[#0f172a] p-4 rounded">
-          <h4 className="text-sm font-semibold text-white">Daily Bonus</h4>
-          <p className="text-xs text-white">{loadingDaily ? 'Checking...' : (daily?.claimed ? `Already claimed (${daily?.streakDays ?? 0} day streak)` : 'Not claimed yet')}</p>
-          <div className="mt-2">
-            <button onClick={claimDaily} disabled={loadingDaily || daily?.claimed} className="px-3 py-1 bg-[#04b39a] rounded text-white text-sm">Claim $0.10</button>
-          </div>
-        </div>
-
-        <div className="bg-[#0f172a] p-4 rounded">
-          <h4 className="text-sm font-semibold text-white">Red or Black</h4>
-          <p className="text-xs text-white">{redBlack?.status ?? 'No game info'}</p>
-          <div className="mt-2 flex gap-2">
-            <button onClick={() => playRedBlack('red')} disabled={playing} className="px-3 py-1 bg-red-600 rounded text-white text-sm">Play Red</button>
-            <button onClick={() => playRedBlack('black')} disabled={playing} className="px-3 py-1 bg-black rounded text-white text-sm">Play Black</button>
-          </div>
-        </div>
-
+      <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-[#0f172a] p-4 rounded">
           <h4 className="text-sm font-semibold text-white">Bonus Code</h4>
           <div className="mt-2 flex gap-2">
             <input value={code} onChange={(e)=>setCode(e.target.value)} className="flex-1 px-2 py-1 bg-[#11131a] rounded text-sm text-white placeholder:text-gray-400" placeholder="Enter code" />
             <button onClick={redeemCode} className="px-3 py-1 bg-[#04b39a] rounded text-white text-sm">Redeem</button>
+          </div>
+        </div>
+
+        <div className="bg-[#0f172a] p-4 rounded">
+          <h4 className="text-sm font-semibold text-white">Daily Streak</h4>
+          <p className="text-xs text-white">{loadingDaily ? 'Checking...' : `${daily?.streakDays ?? 0} day streak`}</p>
+          <div className="mt-2">
+            <p className="text-xs text-gray-400">Visit the Rewards page for daily bonuses</p>
           </div>
         </div>
       </div>
