@@ -18,17 +18,25 @@ const GIFT_CARDS = [
   { id: "steam", name: "Steam" },
   { id: "xbox", name: "Xbox" },
   { id: "playstation", name: "PlayStation" },
+  { id: "netflix", name: "Netflix" },
+  { id: "spotify", name: "Spotify" },
+  { id: "roblox", name: "Roblox" },
+  { id: "nintendo", name: "Nintendo" },
 ];
 
 // Supported denominations per brand (fallback - will be fetched from backend)
 // Conservative defaults for testbed environment
 const BRAND_DENOMINATIONS: { [key: string]: number[] } = {
-  'amazon': [25, 50, 100],
-  'google_play': [20, 50],
-  'apple_itunes': [25, 50],
-  'steam': [20, 50],
-  'xbox': [20, 50],
-  'playstation': [20, 50],
+  'amazon': [10, 20, 25, 50, 100],
+  'google_play': [10, 20, 50, 100],
+  'apple_itunes': [10, 20, 25, 50, 100],
+  'steam': [10, 20, 50, 100],
+  'xbox': [10, 20, 50, 100],
+  'playstation': [10, 20, 50, 100],
+  'netflix': [10, 20, 50, 100],
+  'spotify': [10, 20, 50, 100],
+  'roblox': [10, 20, 50, 100],
+  'nintendo': [10, 20, 50, 100],
 };
 
 const CURRENCIES = ["USD", "EUR"];

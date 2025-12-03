@@ -395,19 +395,21 @@ const ProfileDashboard: React.FC = () => {
                 alt="Profile"
                 width={80}
                 height={80}
-                className="rounded-full"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
               />
             ) : (
-              // neutral placeholder when no avatar available yet
-              <div className="h-20 w-20 rounded-full bg-[#2A2D44]" />
+              // emoji placeholder when no avatar available
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-2xl sm:text-3xl">
+                {profile?.emoji || '😊'}
+              </div>
             )}
             <div className="text-center sm:text-left">
-              <h2 className="text-xl text-white pb-2 font-semibold">
+              <h2 className="text-base sm:text-lg md:text-xl text-white pb-1 sm:pb-2 font-semibold">
                 {displayName}
               </h2>
-              <p className="text-sm text-[#8C8FA8] pb-2">
+              <p className="text-xs sm:text-sm text-[#8C8FA8] pb-1 sm:pb-2">
                 {joinedAt
-                  ? `Joined ${joinedAt.toLocaleDateString()}`
+                  ? `Joined ${joinedAt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`
                   : "Joined -"}
               </p>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">

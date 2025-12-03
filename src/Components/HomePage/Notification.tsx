@@ -6,7 +6,7 @@ import React from "react";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
-import VenmoImg from "../../../public/assets/v.png";
+import AmazonImg from "../../../public/assets/ama.png";
 import AppleImg from "../../../public/assets/apple.png";
 
 interface Notification {
@@ -31,8 +31,8 @@ const notifications: Notification[] = [
     },
     {
         id: 3,
-        icon: VenmoImg,
-        title: "Sandra earned $15.00",
+        icon: AmazonImg,
+        title: "Alex earned $15.00",
         subtitle: "3 Minutes ago",
     },
     {
@@ -50,19 +50,19 @@ const notifications: Notification[] = [
     {
         id: 6,
         icon: SteamImg,
-        title: "Jacob withdrew $10.70",
+        title: "Emma withdrew $10.70",
         subtitle: "3 Minutes ago",
     },
     {
         id: 7,
-        icon: VenmoImg,
-        title: "Sandra earned $15.00",
+        icon: AmazonImg,
+        title: "Michael earned $15.00",
         subtitle: "3 Minutes ago",
     },
     {
         id: 8,
         icon: AppleImg,
-        title: "Jacob withdrew $10.70",
+        title: "Sarah withdrew $10.70",
         subtitle: "3 Minutes ago",
     },
 ];

@@ -7,7 +7,7 @@ import UserProfileModal from "../UserProfileModal";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
-import VenmoImg from "../../../public/assets/v.png";
+import AmazonImg from "../../../public/assets/amazon.png";
 import AppleImg from "../../../public/assets/apple.png";
 
 type FeedEvent = {
@@ -78,7 +78,7 @@ const FeedBar: React.FC = () => {
             case "earning":
                 return PayPalImg;
             case "withdrawal":
-                return VenmoImg;
+                return AmazonImg;
             case "gift":
                 return AppleImg;
             default:

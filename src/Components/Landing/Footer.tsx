@@ -92,7 +92,7 @@ const Footer = () => {
                     <div className="space-y-2 text-sm text-[#9CA3AF]">
                         <div className="flex items-center gap-2">
                             <Mail className="w-4 h-4" />
-                            <span>support@earnlab.com</span>
+                            <span>support@labwards.com</span>
                         </div>
                     </div>
                 </div>
@@ -100,7 +100,7 @@ const Footer = () => {
 
             {/* Bottom Section */}
             <div className="flex flex-col md:flex-row justify-between items-center text-sm text-[#9CA3AF] mt-12 pt-8 gap-4">
-                <p>© 2025 EarnLab. All rights reserved.</p>
+                <p>© 2025 LabWards. All rights reserved.</p>
                 <div className="flex gap-6">
                     <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>
                     <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>

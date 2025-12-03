@@ -5,6 +5,7 @@ import ToastClient from "@/Components/ToastClient";
 import { SocketProvider } from "@/contexts/SocketProvider";
 import ClerkProviderClient from "@/Components/ClerkProviderClient";
 import BottomNavigation from "@/Components/Shared/BottomNavigation";
+import CookieConsent from "@/Components/Shared/CookieConsent";
 
 import FacebookFragmentFix from '@/Components/FacebookFragmentFix';
 
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lab Wards",
+  title: "Labwards",
 };
 
 export default function RootLayout({
@@ -43,6 +44,7 @@ export default function RootLayout({
           <SocketProvider>
             {children}
             <BottomNavigation />
+            <CookieConsent />
             <ToastClient />
           </SocketProvider>
         </ClerkProviderClient>

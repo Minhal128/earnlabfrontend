@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import DateImg from '../../../public/assets/date.png'
@@ -75,8 +75,117 @@ const Input = ({
 );
 
 const PersonalInformation = () => {
+    const [selectedEmoji, setSelectedEmoji] = useState<string>('😊');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [saving, setSaving] = useState(false);
+    
+    // Common emoji options for avatars
+    const emojiOptions = [
+        '😊', '😎', '🤩', '😄', '🥳', '😇', '🤓', '😏',
+        '🦊', '🐱', '🐶', '🦁', '🐯', '🐻', '🐼', '🐨',
+        '👨', '👩', '👦', '👧', '🧑', '👴', '👵', '🧔',
+        '🎮', '🎯', '🎪', '🎨', '🎭', '🎰', '🎲', '🎳',
+        '💎', '💰', '🏆', '🥇', '⭐', '🌟', '✨', '💫',
+        '🔥', '💪', '🎉', '🚀', '💡', '🌈', '🎵', '❤️',
+    ];
+
+    // Load current emoji from profile
+    useEffect(() => {
+        const loadProfile = async () => {
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            if (!token) return;
+            
+            try {
+                const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+                const res = await fetch(`${api}/api/v1/user/profile`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.profile?.emoji) {
+                        setSelectedEmoji(data.profile.emoji);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load profile", err);
+            }
+        };
+        loadProfile();
+    }, []);
+
+    const handleSaveEmoji = async () => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) return;
+        
+        setSaving(true);
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/user/profile`, {
+                method: 'PUT',
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ emoji: selectedEmoji }),
+            });
+            if (res.ok) {
+                setShowEmojiPicker(false);
+            }
+        } catch (err) {
+            console.error("Failed to save emoji", err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     return (
         <form className="space-y-4">
+            {/* Avatar Emoji Selector */}
+            <div className="flex flex-col gap-2 mb-6">
+                <label className="text-[#B3B6C7] text-md">Profile Avatar</label>
+                <div className="flex items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-4xl hover:scale-105 transition-transform border-4 border-teal-500/50"
+                    >
+                        {selectedEmoji}
+                    </button>
+                    <div className="text-sm text-[#9CA3AF]">
+                        <p>Click to change your avatar emoji</p>
+                        <p className="text-xs text-[#6B7280] mt-1">This will be shown on your profile</p>
+                    </div>
+                </div>
+                
+                {/* Emoji Picker Grid */}
+                {showEmojiPicker && (
+                    <div className="mt-3 p-4 bg-[#26293E] rounded-lg border border-[#30334A]">
+                        <div className="grid grid-cols-8 gap-2 mb-4">
+                            {emojiOptions.map((emoji) => (
+                                <button
+                                    key={emoji}
+                                    type="button"
+                                    onClick={() => setSelectedEmoji(emoji)}
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-[#30334A] transition ${
+                                        selectedEmoji === emoji ? 'bg-teal-500/30 ring-2 ring-teal-500' : 'bg-[#1E2133]'
+                                    }`}
+                                >
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleSaveEmoji}
+                            disabled={saving}
+                            className="w-full py-2 rounded-md bg-gradient-to-t from-[#099F86] to-[#0EA88F] text-white font-medium transition disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Save Avatar'}
+                        </button>
+                    </div>
+                )}
+            </div>
+
             <Input label="Username" />
             <Input label="Email Address" type="email" />
             <div className="flex flex-col gap-2 mb-4">

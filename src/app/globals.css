@@ -26,7 +26,7 @@
 }
 
 .animate-scroll-left {
-    animation: scroll-left 30s linear infinite;
+    animation: scroll-left 60s linear infinite;
 }
 
 .animate-scroll-left:hover {
@@ -84,6 +84,22 @@
     margin-bottom: 12px !important;
     min-width: 300px !important;
     background: linear-gradient(135deg, #1A1D2E 0%, #151728 100%) !important;
+}
+
+/* Cookie Consent slide up animation */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s ease-out;
 }
 
 /* Success Toast */

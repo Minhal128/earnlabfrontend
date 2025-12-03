@@ -10,8 +10,16 @@ import RightTop from '../../../public/assets/bgright.png'
 import BoxGradient from '../../../public/assets/box-gradient.svg'
 import BoxNeon from '../../../public/assets/box-neon.svg'
 import BoxPremium from '../../../public/assets/box-premium.svg'
-import FreedomImg from '../../../public/assets/freedom.png'
 import RewardModal from "./RewardModal";
+
+// Mission icons - using gradient backgrounds with icons
+const missionImages = [
+    "https://img.icons8.com/3d-fluency/200/treasure-chest.png",
+    "https://img.icons8.com/3d-fluency/200/goal.png",
+    "https://img.icons8.com/3d-fluency/200/prize.png",
+    "https://img.icons8.com/3d-fluency/200/rocket.png",
+    "https://img.icons8.com/3d-fluency/200/star.png",
+];
 import RedOrBlackBonus from "./RedOrBlackBonus";
 
 const TopSection = () => {
@@ -288,30 +296,33 @@ const TopSection = () => {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {(missions.length > 0 ? missions : [1, 2, 3, 4, 5]).map((m: any, idx: number) => {
-                        const img = m.metadata?.logoUrl || FreedomImg;
+                        const img = m.metadata?.logoUrl || missionImages[idx % missionImages.length];
                         const title = m.title || m.name || "Mission";
                         const description = m.description || m.metadata?.shortDescription || "Earn rewards by completing tasks";
                         const progress = m.progressPercent ?? 0;
                         const rewardCents = m.rewardCents ?? m.reward ?? 0;
+                        const missionColors = [
+                            "from-cyan-500/20 to-blue-600/20 border-cyan-500/30",
+                            "from-purple-500/20 to-pink-600/20 border-purple-500/30",
+                            "from-emerald-500/20 to-teal-600/20 border-emerald-500/30",
+                            "from-orange-500/20 to-red-600/20 border-orange-500/30",
+                            "from-yellow-500/20 to-amber-600/20 border-yellow-500/30",
+                        ];
                         return (
-                            <div key={m._id ?? idx} className="bg-[#151728] rounded-lg p-3 text-center shadow-md transition">
-                                <div className="border border-[#1E2133] rounded-md w-full flex justify-center py-2">
-                                    {typeof img === "string" ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={img} alt={title} style={{ width: 160, height: 50, objectFit: 'contain' }} />
-                                    ) : (
-                                        <Image src={img} alt={title} width={160} height={50} className="mx-auto mb-4" />
-                                    )}
+                            <div key={m._id ?? idx} className={`group bg-gradient-to-br ${missionColors[idx % missionColors.length]} rounded-xl p-4 text-center shadow-lg border hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer`}>
+                                <div className="bg-[#0D0F1E]/60 rounded-lg w-full flex justify-center py-4 mb-3 group-hover:bg-[#0D0F1E]/80 transition-colors">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={img} alt={title} className="w-16 h-16 object-contain group-hover:scale-110 transition-transform duration-300" />
                                 </div>
-                                <p className="text-sm mb-2 py-3">{description}</p>
-                                <div className="w-full bg-[#30334A] rounded-full h-2 mb-4">
-                                    <div style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} className="h-2 bg-[#0ea287] rounded-full" />
+                                <p className="text-sm mb-3 text-gray-300 group-hover:text-white transition-colors">{description}</p>
+                                <div className="w-full bg-[#30334A] rounded-full h-2 mb-3 overflow-hidden">
+                                    <div style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} className="h-2 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-500" />
                                 </div>
-                                <div className="flex justify-between">
-                                    <p className="text-xs text-[#8C8FA8] mb-3">Progress</p>
-                                    <p className="text-xs text-gray-400 mb-3">${(rewardCents/100).toFixed(2)}</p>
+                                <div className="flex justify-between mb-3">
+                                    <p className="text-xs text-[#8C8FA8]">Progress</p>
+                                    <p className="text-xs text-emerald-400 font-semibold">${(rewardCents/100).toFixed(2)}</p>
                                 </div>
-                                <button className="text-xs w-full bg-[#0D0F1E] px-3 py-3 rounded">Claim</button>
+                                <button className="text-xs w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-semibold px-3 py-2.5 rounded-lg transition-all duration-300">Claim</button>
                             </div>
                         );
                     })}

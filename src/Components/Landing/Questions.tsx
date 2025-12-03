@@ -14,7 +14,7 @@ type FAQ = {
 const faqs: FAQ[] = [
     {
         id: 1,
-        question: "How do I start earning on Lab Wards?",
+        question: "How do I start earning on Labwards?",
         answer: [
             "Create a free account and log in.",
             "Choose from available tasks — surveys, games, app sign-ups, or daily check-ins.",
@@ -26,19 +26,25 @@ const faqs: FAQ[] = [
         id: 2,
         question: "What payout methods are available?",
         answer:
-            "You can choose PayPal, Bank Transfer, Gift Cards, and more depending on your region.",
+            "We offer multiple payout options including PayPal, Visa, Amazon Gift Cards, Worldcoin, Bitcoin, Litecoin, Dogecoin, and Solana. Choose the method that works best for you!",
     },
     {
         id: 3,
-        question: "What content is available on StreamVibe?",
+        question: "How long does it take to receive my payment?",
         answer:
-            "StreamVibe offers movies, TV shows, live streams, and exclusive content for subscribers.",
+            "Most payments are processed instantly! Crypto withdrawals are typically completed within minutes, while PayPal and gift cards may take up to 24 hours during peak times.",
     },
     {
         id: 4,
-        question: "How can I watch StreamVibe?",
+        question: "How does the referral program work?",
         answer:
-            "You can watch StreamVibe via mobile apps, smart TVs, or directly on the website.",
+            "Invite friends using your unique referral link and earn 10% of everything they earn — forever! There's no limit to how many friends you can refer or how much you can earn.",
+    },
+    {
+        id: 5,
+        question: "Is Labwards free to use?",
+        answer:
+            "Absolutely! Labwards is 100% free to join and use. There are no hidden fees, subscriptions, or costs. You earn real money simply by completing tasks.",
     },
 ];
 

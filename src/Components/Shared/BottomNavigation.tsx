@@ -15,7 +15,7 @@ interface NavItem {
 
 const BottomNavigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isSignedIn } = useUser();
@@ -23,16 +23,11 @@ const BottomNavigation: React.FC = () => {
   // Check for authentication
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (token || isSignedIn) {
-      // User is authenticated, you could fetch username here if needed
-      setUsername(user?.username || "user");
-    } else {
-      setUsername(null);
-    }
-  }, [user, isSignedIn]);
+    setIsAuthenticated(!!(token || isSignedIn));
+  }, [isSignedIn]);
 
-  // Only show authenticated navigation items when user is logged in
-  const navItems: NavItem[] = (username || isSignedIn) ? [
+  // Navigation items for authenticated users
+  const navItems: NavItem[] = [
     {
       id: "home",
       label: "Home",
@@ -63,7 +58,7 @@ const BottomNavigation: React.FC = () => {
       icon: <MessageCircle className="w-5 h-5" />,
       path: "/chat",
     },
-  ] : [];
+  ];
 
   const handleNavClick = (path: string) => {
     router.push(path);
@@ -72,6 +67,11 @@ const BottomNavigation: React.FC = () => {
   const isActive = (path: string) => {
     return pathname === path;
   };
+
+  // Only render navbar if user is authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>
@@ -82,7 +82,7 @@ const BottomNavigation: React.FC = () => {
             <button
               key={item.id}
               onClick={() => handleNavClick(item.path)}
-              className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[60px] ${
+              className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-[60px] relative ${
                 isActive(item.path)
                   ? "text-emerald-400 bg-emerald-500/10"
                   : "text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E]"
@@ -93,7 +93,7 @@ const BottomNavigation: React.FC = () => {
               </div>
               <span className="text-[10px] font-medium">{item.label}</span>
               {isActive(item.path) && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400" />
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400" />
               )}
             </button>
           ))}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Zap, CheckSquare, MessageSquare, Gift, Trophy, Users, Menu, Share2 } from "lucide-react";
+import { Home, Zap, CheckSquare, MessageSquare, Gift, Trophy, Users, Menu, Share2, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
 const PageNavigation = () => {
@@ -17,7 +17,7 @@ const PageNavigation = () => {
     { href: "/rewards", label: "Rewards", icon: Gift },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
     { href: "/referrals", label: "Referrals", icon: Share2 },
-    { href: "/Affiliate", label: "Affiliate", icon: Users },
+    { href: "/chat", label: "Chat", icon: MessageCircle },
   ];
 
   const isActive = (href: string) => pathname === href;

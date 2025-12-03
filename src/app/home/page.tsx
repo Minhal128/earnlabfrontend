@@ -63,7 +63,7 @@ export default function Home() {
                             </div>
                             <h3 className="text-lg font-semibold text-white mb-2">Refer Friends</h3>
                             <p className="text-[#9CA3AF] text-sm mb-4">Earn commissions by inviting friends</p>
-                            <a href="/Affiliate" className="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                            <a href="/referrals" className="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
                                 Start Referring
                             </a>
                         </div>

@@ -7,7 +7,6 @@ import Fe1 from "../../../public/assets/freedom.png";
 import Fe2 from "../../../public/assets/kobo.png";
 import Fe3 from "../../../public/assets/amaz.png";
 import Fe4 from "../../../public/assets/mor.png";
-import Fe5 from "../../../public/assets/freedom.png";
 import ModernSection from "../Shared/ModernSection";
 import ModernCard from "../Shared/ModernCard";
 
@@ -21,7 +20,7 @@ const offers: ServeyWallItem[] = [
     { image: Fe2, title: "The Morning Show" },
     { image: Fe3, title: "Amazon" },
     { image: Fe4, title: "Rakuten Kobo" },
-    { image: Fe5, title: "Freedom Mobile" },
+    { image: Fe1, title: "Daily Survey" },
 ];
 
 const ServeyWalls: React.FC = () => {

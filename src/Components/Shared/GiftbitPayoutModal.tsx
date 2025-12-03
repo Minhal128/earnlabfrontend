@@ -147,7 +147,7 @@ const GiftbitPayoutModal: React.FC<GiftbitPayoutModalProps> = ({
         amountCents,
         recipientEmail,
         recipientName: recipientName || recipientEmail,
-        giftMessage: giftMessage || "Thank you for using EarnLab!",
+        giftMessage: giftMessage || "Thank you for using LabWards!",
       };
 
       console.log("Submitting payout with payload:", payload);
@@ -430,7 +430,7 @@ const GiftbitPayoutModal: React.FC<GiftbitPayoutModalProps> = ({
                 <textarea
                   value={giftMessage}
                   onChange={(e) => setGiftMessage(e.target.value)}
-                  placeholder="Thank you for using EarnLab!"
+                  placeholder="Thank you for using LabWards!"
                   rows={3}
                   className="w-full px-4 py-3 rounded-lg bg-[#252840] border border-[#30334A] text-white focus:border-emerald-500 focus:outline-none resize-none"
                 />

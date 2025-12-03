@@ -7,7 +7,7 @@ import Image from "next/image";
 import { FaPaypal, FaAmazon, FaCcVisa, FaBitcoin } from "react-icons/fa";
 import { SiEthereum } from "react-icons/si";
 import type { StaticImageData } from "next/image";
-import WorldcoinImg from "../../../public/assets/worldcoin.png";
+import WorldcoinImg from "../../../public/assets/world.png";
 // import XRPImg from "../../../public/assets/xrp.jpg";
 import SignInModal from "../HomePage/SigninModal";
 

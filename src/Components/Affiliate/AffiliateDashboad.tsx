@@ -191,65 +191,65 @@ const AffiliateDashboard: React.FC = () => {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-cyan-500 border-opacity-30 shadow-lg hover:shadow-xl transition">
+            <div className="group bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-cyan-500 border-opacity-30 shadow-lg hover:shadow-cyan-500/20 hover:shadow-2xl hover:border-cyan-400 hover:scale-105 hover:bg-gradient-to-br hover:from-cyan-900/40 hover:to-slate-700 transition-all duration-300 cursor-pointer">
               <Image
                 src={Af1}
                 alt="Available Revenue"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="object-contain group-hover:scale-110 transition-transform duration-300"
               />
               <div>
-                <h3 className="text-lg md:text-xl font-bold text-cyan-400">
+                <h3 className="text-lg md:text-xl font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">
                   ${referralData ? (referralData.availableCents / 100).toFixed(2) : "0.00"}
                 </h3>
-                <p className="text-slate-300 text-sm font-medium">Available to Claim</p>
+                <p className="text-slate-300 text-sm font-medium group-hover:text-white transition-colors">Available to Claim</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-blue-500 border-opacity-30 shadow-lg hover:shadow-xl transition">
+            <div className="group bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-blue-500 border-opacity-30 shadow-lg hover:shadow-blue-500/20 hover:shadow-2xl hover:border-blue-400 hover:scale-105 hover:bg-gradient-to-br hover:from-blue-900/40 hover:to-slate-700 transition-all duration-300 cursor-pointer">
               <Image
                 src={Af2}
                 alt="Pending Referrals"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="object-contain group-hover:scale-110 transition-transform duration-300"
               />
               <div>
-                <h3 className="text-lg md:text-xl font-bold text-blue-400">
+                <h3 className="text-lg md:text-xl font-bold text-blue-400 group-hover:text-blue-300 transition-colors">
                   {referralData?.pendingCount || 0}
                 </h3>
-                <p className="text-slate-300 text-sm font-medium">Pending Referrals</p>
+                <p className="text-slate-300 text-sm font-medium group-hover:text-white transition-colors">Pending Referrals</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-purple-500 border-opacity-30 shadow-lg hover:shadow-xl transition">
+            <div className="group bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-purple-500 border-opacity-30 shadow-lg hover:shadow-purple-500/20 hover:shadow-2xl hover:border-purple-400 hover:scale-105 hover:bg-gradient-to-br hover:from-purple-900/40 hover:to-slate-700 transition-all duration-300 cursor-pointer">
               <Image
                 src={Af3}
                 alt="Total Referred"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="object-contain group-hover:scale-110 transition-transform duration-300"
               />
               <div>
-                <h3 className="text-lg md:text-xl font-bold text-purple-400">0</h3>
-                <p className="text-slate-300 text-sm font-medium">Total Referred Users</p>
+                <h3 className="text-lg md:text-xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors">0</h3>
+                <p className="text-slate-300 text-sm font-medium group-hover:text-white transition-colors">Total Referred Users</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-green-500 border-opacity-30 shadow-lg hover:shadow-xl transition">
+            <div className="group bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-5 rounded-xl flex items-center gap-3 border border-green-500 border-opacity-30 shadow-lg hover:shadow-green-500/20 hover:shadow-2xl hover:border-green-400 hover:scale-105 hover:bg-gradient-to-br hover:from-green-900/40 hover:to-slate-700 transition-all duration-300 cursor-pointer">
               <Image
                 src={Af4}
                 alt="Total Earned"
                 width={32}
                 height={32}
-                className="object-contain"
+                className="object-contain group-hover:scale-110 transition-transform duration-300"
               />
               <div>
-                <h3 className="text-lg md:text-xl font-bold text-green-400">
+                <h3 className="text-lg md:text-xl font-bold text-green-400 group-hover:text-green-300 transition-colors">
                   ${referralData ? ((referralData.totalEarnedCents + referralData.availableCents) / 100).toFixed(2) : "0.00"}
                 </h3>
-                <p className="text-slate-300 text-sm font-medium">Total Earned</p>
+                <p className="text-slate-300 text-sm font-medium group-hover:text-white transition-colors">Total Earned</p>
               </div>
             </div>
           </div>
@@ -350,14 +350,14 @@ const AffiliateDashboard: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {[
-              { tier: 1, commission: 5, requirement: "Default (0 referrals)", color: "border-cyan-500" },
-              { tier: 2, commission: 7, requirement: "10+ referrals", color: "border-blue-500" },
-              { tier: 3, commission: 10, requirement: "25+ referrals", color: "border-purple-500" },
-              { tier: 4, commission: 15, requirement: "50+ referrals (VIP)", color: "border-green-500" },
+              { tier: 1, commission: 5, requirement: "Default (0 referrals)", color: "border-cyan-500", hoverBg: "hover:from-cyan-900/40", hoverShadow: "hover:shadow-cyan-500/30", hoverBorder: "hover:border-cyan-400", textColor: "text-cyan-400" },
+              { tier: 2, commission: 7, requirement: "10+ referrals", color: "border-blue-500", hoverBg: "hover:from-blue-900/40", hoverShadow: "hover:shadow-blue-500/30", hoverBorder: "hover:border-blue-400", textColor: "text-blue-400" },
+              { tier: 3, commission: 10, requirement: "25+ referrals", color: "border-purple-500", hoverBg: "hover:from-purple-900/40", hoverShadow: "hover:shadow-purple-500/30", hoverBorder: "hover:border-purple-400", textColor: "text-purple-400" },
+              { tier: 4, commission: 15, requirement: "50+ referrals (VIP)", color: "border-green-500", hoverBg: "hover:from-green-900/40", hoverShadow: "hover:shadow-green-500/30", hoverBorder: "hover:border-green-400", textColor: "text-green-400" },
             ].map((tier) => (
               <div
                 key={tier.tier}
-                className={`bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 shadow-lg hover:shadow-xl transition border ${tier.color} border-opacity-40`}
+                className={`group bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl ${tier.hoverShadow} hover:scale-105 ${tier.hoverBg} hover:to-slate-700 transition-all duration-300 border ${tier.color} ${tier.hoverBorder} border-opacity-40 cursor-pointer`}
               >
                 <div className="flex items-center gap-3 mb-4">
                   <Image
@@ -365,25 +365,25 @@ const AffiliateDashboard: React.FC = () => {
                     alt={`Tier ${tier.tier}`}
                     width={40}
                     height={40}
-                    className="rounded-md"
+                    className="rounded-md group-hover:scale-110 transition-transform duration-300"
                   />
-                  <h3 className="text-lg font-bold text-white">Tier {tier.tier}</h3>
+                  <h3 className="text-lg font-bold text-white group-hover:text-slate-100">Tier {tier.tier}</h3>
                 </div>
 
-                <hr className="border-slate-600 mb-4" />
+                <hr className="border-slate-600 mb-4 group-hover:border-slate-500 transition-colors" />
 
                 <div className="mb-4">
-                  <p className="text-slate-300 text-sm font-medium mb-2">Commission Rate:</p>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                  <p className="text-slate-300 text-sm font-medium mb-2 group-hover:text-white transition-colors">Commission Rate:</p>
+                  <p className={`text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-400`}>
                     {tier.commission}%
                   </p>
                 </div>
 
-                <hr className="border-slate-600 mb-4" />
+                <hr className="border-slate-600 mb-4 group-hover:border-slate-500 transition-colors" />
 
                 <div>
-                  <p className="text-slate-300 text-sm font-medium mb-2">Requirement:</p>
-                  <p className="text-slate-200 text-sm font-semibold">{tier.requirement}</p>
+                  <p className="text-slate-300 text-sm font-medium mb-2 group-hover:text-white transition-colors">Requirement:</p>
+                  <p className="text-slate-200 text-sm font-semibold group-hover:text-white transition-colors">{tier.requirement}</p>
                 </div>
               </div>
             ))}

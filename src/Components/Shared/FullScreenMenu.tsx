@@ -101,10 +101,10 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
       bgColor: "bg-purple-500/10",
     },
     {
-      id: "affiliate",
-      label: "Affiliate",
+      id: "chat",
+      label: "Chat",
       icon: <Users className="w-6 h-6" />,
-      path: "/Affiliate",
+      path: "/chat",
       color: "text-pink-400",
       bgColor: "bg-pink-500/10",
     },

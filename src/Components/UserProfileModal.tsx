@@ -10,6 +10,7 @@ interface UserProfile {
     username: string;
     displayName?: string;
     avatarUrl?: string;
+    emoji?: string;
     balanceCents: number;
     createdAt: string;
     lastActive?: string;
@@ -154,12 +155,12 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
             onClick={onClose}
         >
             <div 
-                className="bg-[#1E2133] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                className="bg-[#1E2133] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl mx-2"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="sticky top-0 bg-[#1E2133] border-b border-gray-700 p-6 flex justify-between items-center z-10">
-                    <h2 className="text-2xl font-bold text-white">User Profile</h2>
+                <div className="sticky top-0 bg-[#1E2133] border-b border-gray-700 p-3 sm:p-4 md:p-6 flex justify-between items-center z-10">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">User Profile</h2>
                     <button 
                         onClick={onClose}
                         className="text-gray-400 hover:text-white transition-colors"
@@ -169,7 +170,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-3 sm:p-4 md:p-6">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12">
                             <Loader2 className="animate-spin mb-4 text-teal-400" size={48} />
@@ -188,57 +189,57 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                     ) : profile ? (
                         <>
                             {/* Profile Header */}
-                            <div className="flex flex-col items-center mb-6">
+                            <div className="flex flex-col items-center mb-4 sm:mb-6">
                                 {profile.avatarUrl ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img 
                                         src={profile.avatarUrl} 
                                         alt={profile.username}
-                                        className="w-24 h-24 rounded-full mb-4 border-4 border-teal-500"
+                                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full mb-3 sm:mb-4 border-3 sm:border-4 border-teal-500"
                                     />
                                 ) : (
-                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-3xl font-bold mb-4 border-4 border-teal-500">
-                                        {(profile.displayName || profile.username).charAt(0).toUpperCase()}
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4 border-3 sm:border-4 border-teal-500">
+                                        {profile.emoji || '😊'}
                                     </div>
                                 )}
                                 
-                                <h3 className="text-2xl font-bold text-white mb-1">
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 text-center px-2">
                                     {profile.displayName || profile.username}
                                 </h3>
-                                <p className="text-gray-400 text-sm mb-4">@{profile.username}</p>
+                                <p className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">@{profile.username}</p>
 
                                 {/* Stats Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mt-4">
-                                    <div className="bg-[#26293E] rounded-lg p-4 text-center">
-                                        <DollarSign className="mx-auto mb-2 text-green-400" size={24} />
-                                        <p className="text-2xl font-bold text-white">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 w-full mt-3 sm:mt-4">
+                                    <div className="bg-[#26293E] rounded-lg p-2 sm:p-3 md:p-4 text-center">
+                                        <DollarSign className="mx-auto mb-1 sm:mb-2 text-green-400" size={18} />
+                                        <p className="text-base sm:text-lg md:text-2xl font-bold text-white">
                                             ${(profile.balanceCents / 100).toFixed(2)}
                                         </p>
-                                        <p className="text-xs text-gray-400">Current Balance</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Balance</p>
                                     </div>
                                     
-                                    <div className="bg-[#26293E] rounded-lg p-4 text-center">
-                                        <TrendingUp className="mx-auto mb-2 text-teal-400" size={24} />
-                                        <p className="text-2xl font-bold text-white">
+                                    <div className="bg-[#26293E] rounded-lg p-2 sm:p-3 md:p-4 text-center">
+                                        <TrendingUp className="mx-auto mb-1 sm:mb-2 text-teal-400" size={18} />
+                                        <p className="text-base sm:text-lg md:text-2xl font-bold text-white">
                                             ${((profile.lifetimeEarningsCents || profile.balanceCents) / 100).toFixed(2)}
                                         </p>
-                                        <p className="text-xs text-gray-400">Lifetime Earned</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Earned</p>
                                     </div>
                                     
-                                    <div className="bg-[#26293E] rounded-lg p-4 text-center">
-                                        <Award className="mx-auto mb-2 text-yellow-400" size={24} />
-                                        <p className="text-2xl font-bold text-white">
+                                    <div className="bg-[#26293E] rounded-lg p-2 sm:p-3 md:p-4 text-center">
+                                        <Award className="mx-auto mb-1 sm:mb-2 text-yellow-400" size={18} />
+                                        <p className="text-base sm:text-lg md:text-2xl font-bold text-white">
                                             {profile.tasksCompleted || 0}
                                         </p>
-                                        <p className="text-xs text-gray-400">Tasks Done</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Tasks</p>
                                     </div>
                                     
-                                    <div className="bg-[#26293E] rounded-lg p-4 text-center">
-                                        <Calendar className="mx-auto mb-2 text-blue-400" size={24} />
-                                        <p className="text-sm font-bold text-white">
+                                    <div className="bg-[#26293E] rounded-lg p-2 sm:p-3 md:p-4 text-center">
+                                        <Calendar className="mx-auto mb-1 sm:mb-2 text-blue-400" size={18} />
+                                        <p className="text-xs sm:text-sm font-bold text-white">
                                             {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                                         </p>
-                                        <p className="text-xs text-gray-400">Joined</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-400">Joined</p>
                                     </div>
                                 </div>
                             </div>

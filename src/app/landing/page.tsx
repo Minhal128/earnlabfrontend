@@ -8,7 +8,7 @@ import CountryFlag from "react-country-flag";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
-import VenmoImg from "../../../public/assets/v.png";
+import AmazonImg from "../../../public/assets/amazon.png";
 import AppleImg from "../../../public/assets/apple.png";
 import DotsBg from "../../../public/assets/drop.png";
 import LogoImg from "../../../public/assets/logo.png";
@@ -18,8 +18,8 @@ import BottomImg from "../../../public/assets/bottom.png";
 import PayPalIcon from "../../../public/assets/paypal.png";
 import BitcoinIcon from "../../../public/assets/bit.png";
 import VisaIcon from "../../../public/assets/visa.png";
-import VenmoIcon from "../../../public/assets/venmo.png";
-import WorldIcon from "../../../public/assets/worldcoin.png";
+import EthereumIcon from "../../../public/assets/eth.png";
+import WorldIcon from "../../../public/assets/world.png";
 import SteamIcon from "../../../public/assets/cb.png";
 
 import WhyChooseUs from "@/Components/Landing/WhyChooseUs";
@@ -45,14 +45,14 @@ interface Notification {
 }
 
 const notifications: Notification[] = [
-    { id: 1, icon: PayPalImg, title: "Maria earned $5.00", subtitle: "3 Minutes ago" },
+    { id: 1, icon: PayPalImg, title: "Maria earned $5.00", subtitle: "2 Minutes ago" },
     { id: 2, icon: SteamImg, title: "Jacob withdrew $10.70", subtitle: "3 Minutes ago" },
-    { id: 3, icon: VenmoImg, title: "Sandra earned $15.00", subtitle: "3 Minutes ago" },
-    { id: 4, icon: AppleImg, title: "Jacob withdrew $10.70", subtitle: "3 Minutes ago" },
-    { id: 5, icon: PayPalImg, title: "Maria earned $5.00", subtitle: "3 Minutes ago" },
-    { id: 6, icon: SteamImg, title: "Jacob withdrew $10.70", subtitle: "3 Minutes ago" },
-    { id: 7, icon: VenmoImg, title: "Sandra earned $15.00", subtitle: "3 Minutes ago" },
-    { id: 8, icon: AppleImg, title: "Jacob withdrew $10.70", subtitle: "3 Minutes ago" },
+    { id: 3, icon: AmazonImg, title: "Sandra earned $15.00", subtitle: "4 Minutes ago" },
+    { id: 4, icon: AppleImg, title: "Alex withdrew $8.50", subtitle: "5 Minutes ago" },
+    { id: 5, icon: PayPalImg, title: "Emma earned $12.30", subtitle: "6 Minutes ago" },
+    { id: 6, icon: SteamImg, title: "Michael withdrew $20.00", subtitle: "7 Minutes ago" },
+    { id: 7, icon: AmazonImg, title: "Lisa earned $6.75", subtitle: "8 Minutes ago" },
+    { id: 8, icon: AppleImg, title: "David withdrew $9.99", subtitle: "10 Minutes ago" },
 ];
 
 export default function Landing() {
@@ -500,7 +500,7 @@ export default function Landing() {
             {/* Payment icons row - centered */}
             <section className="relative z-10 mt-10 px-4 md:px-0">
                 <div className="max-w-4xl mx-auto flex items-center justify-center gap-4 flex-wrap">
-                    {[PayPalIcon, VisaIcon, BitcoinIcon, VenmoIcon, WorldIcon, SteamIcon].map((ic, i) => (
+                    {[PayPalIcon, VisaIcon, BitcoinIcon, EthereumIcon, WorldIcon, SteamIcon].map((ic, i) => (
                         <div key={i} className="w-14 h-14 rounded-lg bg-[#0D0F1E] border border-[#21242E] flex items-center justify-center shadow-md">
                             <Image src={ic} alt={`pay-${i}`} width={36} height={36} className="object-contain" />
                         </div>

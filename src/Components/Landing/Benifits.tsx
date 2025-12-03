@@ -6,9 +6,11 @@ import { Zap, Gift, TrendingUp } from "lucide-react";
 import VisaImg from "../../../public/assets/visa.png";
 import PaypalImg from "../../../public/assets/paypal.png";
 import AmazonImg from "../../../public/assets/amazon.png";
-import AppleImg from "../../../public/assets/apple.png";
-import VenmoImg from "../../../public/assets/venmo.png";
-import SteamImg from "../../../public/assets/cb.png";
+import WorldcoinImg from "../../../public/assets/world.png";
+import BitcoinImg from "../../../public/assets/bit.png";
+import LitecoinImg from "../../../public/assets/lit.png";
+import DogeImg from "../../../public/assets/dolar.png";
+import SolanaImg from "../../../public/assets/sol.png";
 
 import IconTop from "../../../public/assets/benifits.png";
 
@@ -19,18 +21,14 @@ type Benefit = {
 };
 
 const benefits: Benefit[] = [
-  { id: 1, name: "VISA", icon: VisaImg },
-  { id: 2, name: "Paypal", icon: PaypalImg },
+  { id: 1, name: "PayPal", icon: PaypalImg },
+  { id: 2, name: "VISA", icon: VisaImg },
   { id: 3, name: "Amazon", icon: AmazonImg },
-  { id: 4, name: "Apple Pay", icon: AppleImg },
-  { id: 5, name: "Venmo", icon: VenmoImg },
-  { id: 6, name: "Steam", icon: SteamImg },
-  { id: 7, name: "VISA", icon: VisaImg },
-  { id: 8, name: "Paypal", icon: PaypalImg },
-  { id: 9, name: "Amazon", icon: AmazonImg },
-  { id: 10, name: "Apple Pay", icon: AppleImg },
-  { id: 11, name: "Venmo", icon: VenmoImg },
-  { id: 12, name: "Steam", icon: SteamImg },
+  { id: 4, name: "Worldcoin", icon: WorldcoinImg },
+  { id: 5, name: "Bitcoin", icon: BitcoinImg },
+  { id: 6, name: "Litecoin", icon: LitecoinImg },
+  { id: 7, name: "Dogecoin", icon: DogeImg },
+  { id: 8, name: "Solana", icon: SolanaImg },
 ];
 
 const Benefits: React.FC = () => {
@@ -62,7 +60,7 @@ const Benefits: React.FC = () => {
         </div>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
