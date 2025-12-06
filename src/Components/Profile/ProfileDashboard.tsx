@@ -9,7 +9,6 @@ import { BsCreditCard2Back } from "react-icons/bs";
 import { Wallet } from "lucide-react";
 import { FaSearch, FaChevronDown, FaRegSave } from "react-icons/fa";
 import { useSocket } from "@/contexts/SocketProvider";
-import { useUser } from "@clerk/nextjs";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import {
@@ -169,13 +168,18 @@ const ProfileDashboard: React.FC = () => {
   const storeProfile = useSelector((s: RootState) => s.user.profile);
   const storeToken = useSelector((s: RootState) => s.user.token);
   const dispatch = useDispatch();
-  // Clerk user (fallback when backend profile not available)
-  const { user, isSignedIn, isLoaded } = useUser();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<any>({});
   const [tasks, setTasks] = useState<any[]>([]);
   const { socket } = useSocket();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  // Check auth on mount
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    setIsAuthenticated(!!token);
+  }, []);
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
@@ -324,43 +328,19 @@ const ProfileDashboard: React.FC = () => {
     { name: "Withdrawals", icon: <BsCreditCard2Back className="text-lg" /> },
   ];
 
-  // derive display fields: prefer backend profile, fallback to Clerk user
-  // make fallbacks robust to different user shapes (social providers may populate different fields)
-  const clerkFirst = (user as any)?.firstName || null;
-  const clerkLast = (user as any)?.lastName || null;
-  // Robust clerk full-name fallback: prefer Clerk fullName, then first+last, then username/email
-  const clerkFull =
-    (user as any)?.fullName ||
-    ((user as any)?.firstName || "") +
-      ((user as any)?.lastName ? ` ${(user as any).lastName}` : "") ||
-    (user as any)?.username ||
-    (user as any)?.primaryEmailAddress?.emailAddress ||
-    (user as any)?.emailAddresses?.[0]?.emailAddress ||
-    (user as any)?.email ||
-    null;
-  const clerkEmail =
-    (user as any)?.primaryEmailAddress?.emailAddress ||
-    (user as any)?.emailAddresses?.[0]?.emailAddress ||
-    (user as any)?.email ||
-    null;
-  const displayName = profile?.displayName ?? clerkFull ?? "User";
+  // derive display fields from backend profile
+  const displayName = profile?.displayName ?? profile?.username ?? "User";
 
   const joinedAt = profile?.joinedAt
     ? new Date(profile.joinedAt)
-    : user?.createdAt
-      ? new Date(user.createdAt)
-      : null;
-  const displayId = profile?._id ?? user?.id ?? null;
+    : null;
+  const displayId = profile?._id ?? null;
 
-  // determine profile image: prefer backend avatar, then Clerk image fields
-  const profileImage =
-    profile?.avatarUrl ??
-    (user as any)?.profileImageUrl ??
-    (user as any)?.imageUrl ??
-    null;
+  // determine profile image from backend
+  const profileImage = profile?.avatarUrl ?? null;
 
-  // Wait for Clerk to finish loading before rendering to avoid showing 'User'
-  if (!isLoaded) {
+  // Wait for profile to load
+  if (!isAuthenticated || !profile) {
     return (
       <div className="flex flex-col w-full min-h-screen bg-[#1E2133] text-white">
         <div className="w-full bg-[#151728] border border-[#30334A] mt-7 py-8 px-6 shadow-md">
@@ -372,10 +352,9 @@ const ProfileDashboard: React.FC = () => {
     );
   }
 
-  // dev debug: expose Clerk user object to console to help diagnose missing fields
+  // dev debug: expose profile object to console to help diagnose missing fields
   if (process.env.NODE_ENV !== "production") {
     // eslint-disable-next-line no-console
-    console.debug("Clerk user object in ProfileDashboard:", user);
     console.debug("Backend profile in ProfileDashboard:", profile);
     console.debug("Derived displayName:", displayName);
     console.debug("Derived joinedAt:", joinedAt);

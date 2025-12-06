@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Redirect Affiliate page to Referrals
+// Redirect to referrals page
 export default function AffiliateMain() {
     redirect('/referrals');
 }

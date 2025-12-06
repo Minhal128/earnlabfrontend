@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useUser, useAuth } from "@clerk/nextjs";
 
 import Af1 from "../../../public/assets/af1.png";
 import Af2 from "../../../public/assets/af2.png";
@@ -25,21 +24,26 @@ const AffiliateDashboard: React.FC = () => {
   const [referralData, setReferralData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const { isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://earlabbackend.vercel.app";
+
+  // Check auth on mount
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    setIsAuthenticated(!!token);
+  }, []);
 
   // Fetch referral data from API
   useEffect(() => {
     const fetchReferralData = async () => {
-      if (!isSignedIn) {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
         setLoading(false);
         return;
       }
 
       try {
-        const token = await getToken();
         const response = await fetch(`${API_URL}/api/v1/user/referrals`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -59,7 +63,7 @@ const AffiliateDashboard: React.FC = () => {
     };
 
     fetchReferralData();
-  }, [isSignedIn, getToken]);
+  }, []);
 
   // Copy referral link
   const copyToClipboard = () => {

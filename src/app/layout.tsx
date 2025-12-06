@@ -3,9 +3,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ToastClient from "@/Components/ToastClient";
 import { SocketProvider } from "@/contexts/SocketProvider";
-import ClerkProviderClient from "@/Components/ClerkProviderClient";
 import BottomNavigation from "@/Components/Shared/BottomNavigation";
 import CookieConsent from "@/Components/Shared/CookieConsent";
+import ReduxProvider from "@/Components/ReduxProvider";
+import { ClerkProvider } from "@clerk/nextjs";
+import ClerkSyncProvider from "@/Components/ClerkSyncProvider";
 
 import FacebookFragmentFix from '@/Components/FacebookFragmentFix';
 
@@ -35,19 +37,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <FacebookFragmentFix />
-        {/* Container for Clerk Smart CAPTCHA widget. Clerk will search for an element
-            with id="clerk-captcha" to mount the visual CAPTCHA. If absent, Clerk
-            falls back to an invisible CAPTCHA (functionality still works). */}
-        <div id="clerk-captcha" />
-
-        <ClerkProviderClient>
-          <SocketProvider>
-            {children}
-            <BottomNavigation />
-            <CookieConsent />
-            <ToastClient />
-          </SocketProvider>
-        </ClerkProviderClient>
+        <ClerkProvider>
+          <ClerkSyncProvider>
+            <ReduxProvider>
+              <SocketProvider>
+                {children}
+                <BottomNavigation />
+                <CookieConsent />
+                <ToastClient />
+              </SocketProvider>
+            </ReduxProvider>
+          </ClerkSyncProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

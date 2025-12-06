@@ -15,6 +15,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    // Vercel serverless doesn't support WebSockets - only connect in development
+    // or if explicitly configured with a socket-capable backend
+    const isVercelProduction = typeof window !== "undefined" && 
+      window.location.hostname.includes("vercel.app");
+    
+    // Skip socket connection on Vercel production unless a dedicated socket URL is provided
+    if (isVercelProduction && !process.env.NEXT_PUBLIC_SOCKET_URL) {
+      console.log("[socket] Skipping WebSocket connection on Vercel (not supported)");
+      return;
+    }
+
     // Prefer a dedicated socket URL if provided. Fallback order:
     // 1) NEXT_PUBLIC_SOCKET_URL, 2) NEXT_PUBLIC_API_URL, 3) localhost:5000 (dev)
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL
@@ -32,7 +43,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       transports: ["websocket", "polling"],
       auth: token ? { token } : undefined,
       reconnection: true,
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts: 5, // Limit attempts to avoid spam
       reconnectionDelayMax: 5000,
       timeout: 20000,
     });

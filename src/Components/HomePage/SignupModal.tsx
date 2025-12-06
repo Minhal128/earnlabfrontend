@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
@@ -12,6 +12,23 @@ import { IoMdMail } from "react-icons/io";
 import { IoMdLock } from "react-icons/io";
 import { FaUser } from "react-icons/fa6";
 import { FaCodeMerge } from "react-icons/fa6";
+
+const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          renderButton: (element: HTMLElement, config: any) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
 
 export default function SignUpModal({
   isOpen,
@@ -26,62 +43,8 @@ export default function SignUpModal({
   const { signUp, isLoaded } = useSignUp();
   const redirectAfter = `${typeof window !== "undefined" ? window.location.origin : ""}/home`;
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
 
-  const handleOAuthSignUp = async (strategy: string) => {
-    // debug info to help trace clicks/loads
-    // eslint-disable-next-line no-console
-    console.debug("OAuth signup button clicked", {
-      strategy,
-      isLoaded,
-      signUpPresent: !!signUp,
-    });
-
-    if (!isLoaded || !signUp) {
-      // Clerk not ready yet — surface friendly feedback so user knows why
-      // eslint-disable-next-line no-console
-      console.warn(
-        "Clerk not loaded yet; isLoaded=",
-        isLoaded,
-        "signUp=",
-        !!signUp,
-      );
-      setError("Authentication system is loading. Please wait a moment and try again.");
-      return;
-    }
-
-    setOauthLoading(strategy);
-    setError(null);
-    try {
-      // start the OAuth redirect
-      // eslint-disable-next-line no-console
-      console.log("Starting OAuth signup for", strategy);
-      await signUp.authenticateWithRedirect({
-        strategy: strategy as any,
-        redirectUrl: redirectAfter,
-        redirectUrlComplete: redirectAfter,
-      });
-      // If redirect succeeds the page will navigate away.
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("OAuth signup redirect failed", err);
-      
-      // Provide user-friendly error messages
-      let errorMessage = "Sign-in failed. Please try again.";
-      if (err?.message) {
-        if (err.message.includes("not enabled")) {
-          errorMessage = `${strategy.replace('oauth_', '').charAt(0).toUpperCase() + strategy.replace('oauth_', '').slice(1)} sign-in is not enabled. Please contact support.`;
-        } else if (err.message.includes("popup")) {
-          errorMessage = "Pop-up was blocked. Please allow pop-ups and try again.";
-        } else {
-          errorMessage = err.message;
-        }
-      }
-      setError(errorMessage);
-    } finally {
-      // If authenticateWithRedirect fails synchronously, clear loading.
-      setOauthLoading(null);
-    }
-  };
   const [agree, setAgree] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -90,6 +53,130 @@ export default function SignUpModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Load Google Sign-In script for direct OAuth
+  useEffect(() => {
+    if (!isOpen || !googleClientId || googleScriptLoaded) return;
+
+    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existingScript) {
+      setGoogleScriptLoaded(true);
+      initializeGoogleButton();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setGoogleScriptLoaded(true);
+      initializeGoogleButton();
+    };
+    document.body.appendChild(script);
+  }, [isOpen, googleScriptLoaded]);
+
+  useEffect(() => {
+    if (isOpen && googleScriptLoaded) {
+      setTimeout(() => initializeGoogleButton(), 100);
+    }
+  }, [isOpen, googleScriptLoaded]);
+
+  const initializeGoogleButton = () => {
+    if (window.google && googleClientId) {
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCallback,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+    }
+  };
+
+  const handleGoogleClick = () => {
+    if (window.google) {
+      window.google.accounts.id.prompt();
+    }
+  };
+
+  const handleGoogleCallback = async (response: any) => {
+    console.log("[SignUp Modal] Google callback received");
+    setOauthLoading("google");
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/api/v1/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: response.credential,
+          clientId: googleClientId,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("[SignUp Modal] Google auth response:", res.status);
+
+      if (res.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+        try {
+          const evt = new CustomEvent("app-auth-changed", {
+            detail: { token: data.token, user: data.user },
+          });
+          window.dispatchEvent(evt);
+        } catch {}
+        console.log("[SignUp Modal] ✅ Sign up successful!");
+        onClose();
+        router.push("/home");
+      } else {
+        setError(data.message || "Google sign-up failed");
+      }
+    } catch (err: any) {
+      console.error("[SignUp Modal] Google auth error:", err);
+      setError("Failed to connect to server");
+    } finally {
+      setOauthLoading(null);
+    }
+  };
+
+  // Facebook OAuth via Clerk
+  const handleFacebookOAuth = async () => {
+    console.debug("Facebook OAuth signup clicked", { isLoaded, signUpPresent: !!signUp });
+
+    if (!isLoaded || !signUp) {
+      setError("Authentication system is loading. Please wait a moment and try again.");
+      return;
+    }
+
+    setOauthLoading("facebook");
+    setError(null);
+    try {
+      console.log("Starting Facebook OAuth signup");
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_facebook" as any,
+        redirectUrl: redirectAfter,
+        redirectUrlComplete: redirectAfter,
+      });
+    } catch (err: any) {
+      console.error("Facebook OAuth signup redirect failed", err);
+      let errorMessage = "Sign-up failed. Please try again.";
+      if (err?.message) {
+        if (err.message.includes("not enabled")) {
+          errorMessage = "Facebook sign-up is not enabled. Please contact support.";
+        } else if (err.message.includes("popup")) {
+          errorMessage = "Pop-up was blocked. Please allow pop-ups and try again.";
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      setError(errorMessage);
+    } finally {
+      setOauthLoading(null);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -111,24 +198,27 @@ export default function SignUpModal({
         </p>
 
         <div className="flex justify-between gap-3 mb-4">
+          {/* Google - Direct OAuth */}
           <button
-            onClick={() => handleOAuthSignUp("oauth_google")}
-            disabled={!isLoaded || !!oauthLoading}
-            className="flex-1 flex items-center cursor-pointer text-xs justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
+            onClick={handleGoogleClick}
+            disabled={!googleScriptLoaded || !!oauthLoading}
+            className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
           >
             <Image src={GoogleImg} alt="Google" width={16} height={20} />
-            {oauthLoading === "oauth_google" ? "Redirecting..." : "Google"}
+            {oauthLoading === "google" ? "Redirecting..." : "Google"}
           </button>
 
+          {/* Facebook - Clerk OAuth */}
           <button
-            onClick={() => handleOAuthSignUp("oauth_facebook")}
+            onClick={handleFacebookOAuth}
             disabled={!isLoaded || !!oauthLoading}
             className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
           >
             <Image src={FbImg} alt="Facebook" width={16} height={20} />
-            {oauthLoading === "oauth_facebook" ? "Redirecting..." : "Facebook"}
+            {oauthLoading === "facebook" ? "Redirecting..." : "Facebook"}
           </button>
 
+          {/* Worldcoin - Static for now */}
           <button className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium">
             <Image src={WeldImg} alt="Worldcoin" width={16} height={20} />
             Worldcoin
@@ -137,7 +227,7 @@ export default function SignUpModal({
 
         <div className="flex items-center my-5">
           <div className="flex-1 h-px bg-[#30334A]"></div>
-          <span className="px-3 text-xs text-[#B3B6C7]">Or sign in with</span>
+          <span className="px-3 text-xs text-[#B3B6C7]">Or sign up with</span>
           <div className="flex-1 h-px bg-[#30334A]"></div>
         </div>
 
@@ -153,10 +243,7 @@ export default function SignUpModal({
         </div>
 
         <div className="relative mb-3">
-          <IoMdMail
-            size={18}
-            className="absolute left-3 top-3 text-[#18C3A7]"
-          />
+          <IoMdMail size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -167,10 +254,7 @@ export default function SignUpModal({
         </div>
 
         <div className="relative mb-3">
-          <IoMdLock
-            size={18}
-            className="absolute left-3 top-3 text-[#18C3A7]"
-          />
+          <IoMdLock size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -187,10 +271,7 @@ export default function SignUpModal({
         </div>
 
         <div className="relative mb-3">
-          <FaCodeMerge
-            size={18}
-            className="absolute left-3 top-3 text-[#18C3A7]"
-          />
+          <FaCodeMerge size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
           <input
             value={affiliateCode}
             onChange={(e) => setAffiliateCode(e.target.value)}
@@ -211,9 +292,7 @@ export default function SignUpModal({
           />
           <p className="text-xs text-[#8C8FA8]">
             By creating this account, you agree to the{" "}
-            <span className="text-[#18C3A7] cursor-pointer">
-              Terms of Service
-            </span>{" "}
+            <span className="text-[#18C3A7] cursor-pointer">Terms of Service</span>{" "}
             and <span className="text-[#18C3A7] cursor-pointer">Policy</span>.
           </p>
         </div>
@@ -229,20 +308,17 @@ export default function SignUpModal({
             }
             setLoading(true);
             try {
-              const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/auth/register`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    username,
-                    email,
-                    password,
-                    affiliateCode,
-                    agreedToTerms: true,
-                  }),
-                },
-              );
+              const res = await fetch(`${apiBase}/api/v1/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  username,
+                  email,
+                  password,
+                  affiliateCode,
+                  agreedToTerms: true,
+                }),
+              });
               const data = await res.json();
               if (!res.ok) {
                 setError(data?.message || "Registration failed");
@@ -250,7 +326,6 @@ export default function SignUpModal({
                 return;
               }
 
-              // store token and navigate
               if (data.token) {
                 if (typeof window !== "undefined") {
                   localStorage.setItem("token", data.token);
@@ -258,15 +333,13 @@ export default function SignUpModal({
               }
               setLoading(false);
               onClose();
-              // navigate to home
               router.push("/home");
             } catch (e: any) {
               setError(e?.message || "Network error");
               setLoading(false);
             }
           }}
-          className={`w-full py-3 rounded-md font-medium
-                    ${agree ? "bg-[#18C3A7]" : "bg-[#3a3d54]"} ${loading ? "opacity-70 cursor-wait" : "cursor-pointer"}`}
+          className={`w-full py-3 rounded-md font-medium ${agree ? "bg-[#18C3A7]" : "bg-[#3a3d54]"} ${loading ? "opacity-70 cursor-wait" : "cursor-pointer"}`}
         >
           {loading ? "Creating..." : "Sign up"}
         </button>

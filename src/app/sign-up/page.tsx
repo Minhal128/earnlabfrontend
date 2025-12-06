@@ -1,14 +1,14 @@
 "use client";
 import React from 'react';
-import { SignIn } from '@clerk/nextjs';
+import { SignUp } from '@clerk/nextjs';
 
-export default function SignInPage() {
-  // Use Clerk's prebuilt SignIn UI for Facebook OAuth redirects
+export default function SignUpPage() {
+  // Use Clerk's prebuilt SignUp UI for Facebook OAuth redirects
   // Google OAuth is handled directly in the modals
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0F1220]">
       <div className="w-full max-w-md p-6">
-        <SignIn routing="path" path="/sign-in" redirectUrl="/home" />
+        <SignUp routing="path" path="/sign-up" redirectUrl="/home" />
       </div>
     </div>
   );

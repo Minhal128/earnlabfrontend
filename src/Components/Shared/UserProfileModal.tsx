@@ -8,7 +8,6 @@ interface UserProfile {
   _id: string;
   username: string;
   avatar?: string;
-  emoji?: string;
   tier?: string;
   xp?: number;
   maxXp?: number;

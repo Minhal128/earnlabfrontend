@@ -15,7 +15,6 @@ import {
   HelpCircle,
   Share2
 } from "lucide-react";
-import { useClerk } from "@clerk/nextjs";
 
 interface MenuTile {
   id: string;
@@ -34,7 +33,6 @@ interface FullScreenMenuProps {
 
 const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
-  const { signOut } = useClerk();
 
   const handleSignOut = async () => {
     try {
@@ -52,12 +50,9 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
         }
       }
 
-      if (typeof window !== "undefined") localStorage.removeItem("token");
-      
-      try {
-        await signOut();
-      } catch (e) {
-        // ignore
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
 
       onClose();

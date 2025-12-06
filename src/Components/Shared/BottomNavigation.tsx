@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, DollarSign, CheckSquare, FileText, MessageCircle, Menu } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
 import FullScreenMenu from "./FullScreenMenu";
 
 interface NavItem {
@@ -18,13 +17,12 @@ const BottomNavigation: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isSignedIn } = useUser();
 
   // Check for authentication
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    setIsAuthenticated(!!(token || isSignedIn));
-  }, [isSignedIn]);
+    setIsAuthenticated(!!token);
+  }, []);
 
   // Navigation items for authenticated users
   const navItems: NavItem[] = [

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import GoogleImg from "../../../public/assets/g.png";
@@ -8,7 +8,23 @@ import WeldImg from "../../../public/assets/weld.png";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { IoMdMail, IoMdLock } from "react-icons/io";
-import Link from "next/link";
+
+const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          renderButton: (element: HTMLElement, config: any) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
 
 export default function SignInModal({
   isOpen,
@@ -30,52 +46,126 @@ export default function SignInModal({
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
 
   const redirectAfter = `${typeof window !== "undefined" ? window.location.origin : ""}/home`;
 
-  const handleOAuth = async (strategy: string) => {
-    // debug to help trace why clicks may appear to do nothing
-    // eslint-disable-next-line no-console
-    console.debug("OAuth button clicked", {
-      strategy,
-      isLoaded,
-      signInPresent: !!signIn,
-    });
+  // Load Google Sign-In script for direct OAuth
+  useEffect(() => {
+    if (!isOpen || !googleClientId || googleScriptLoaded) return;
+
+    // Check if script already exists
+    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existingScript) {
+      setGoogleScriptLoaded(true);
+      initializeGoogleButton();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setGoogleScriptLoaded(true);
+      initializeGoogleButton();
+    };
+    document.body.appendChild(script);
+  }, [isOpen, googleScriptLoaded]);
+
+  // Re-initialize Google button when modal opens
+  useEffect(() => {
+    if (isOpen && googleScriptLoaded) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => initializeGoogleButton(), 100);
+    }
+  }, [isOpen, googleScriptLoaded]);
+
+  const initializeGoogleButton = () => {
+    if (window.google && googleClientId) {
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCallback,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+    }
+  };
+
+  const handleGoogleClick = () => {
+    if (window.google) {
+      window.google.accounts.id.prompt();
+    }
+  };
+
+  const handleGoogleCallback = async (response: any) => {
+    console.log("[SignIn Modal] Google callback received");
+    setOauthLoading("google");
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/api/v1/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: response.credential,
+          clientId: googleClientId,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("[SignIn Modal] Google auth response:", res.status);
+
+      if (res.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+        // Dispatch auth event
+        try {
+          const evt = new CustomEvent("app-auth-changed", {
+            detail: { token: data.token, user: data.user },
+          });
+          window.dispatchEvent(evt);
+        } catch {}
+        console.log("[SignIn Modal] ✅ Login successful!");
+        onClose();
+        router.push("/home");
+      } else {
+        setError(data.message || "Google sign-in failed");
+      }
+    } catch (err: any) {
+      console.error("[SignIn Modal] Google auth error:", err);
+      setError("Failed to connect to server");
+    } finally {
+      setOauthLoading(null);
+    }
+  };
+
+  // Facebook OAuth via Clerk
+  const handleFacebookOAuth = async () => {
+    console.debug("Facebook OAuth button clicked", { isLoaded, signInPresent: !!signIn });
 
     if (!isLoaded || !signIn) {
-      // Clerk not ready yet — surface friendly feedback so user knows why
-      // eslint-disable-next-line no-console
-      console.warn(
-        "Clerk not loaded yet; isLoaded=",
-        isLoaded,
-        "signIn=",
-        !!signIn,
-      );
       setError("Authentication system is loading. Please wait a moment and try again.");
       return;
     }
 
-    setOauthLoading(strategy);
+    setOauthLoading("facebook");
     setError(null);
     try {
-      // start the OAuth redirect (cast strategy to any to satisfy types)
-      // eslint-disable-next-line no-console
-      console.log("Starting OAuth for", strategy);
+      console.log("Starting Facebook OAuth");
       await signIn.authenticateWithRedirect({
-        strategy: strategy as any,
+        strategy: "oauth_facebook" as any,
         redirectUrl: redirectAfter,
         redirectUrlComplete: redirectAfter,
       });
-      // Note: a successful redirect will leave this page before the finally runs.
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error("OAuth redirect failed", err);
-      
-      // Provide user-friendly error messages
+      console.error("Facebook OAuth redirect failed", err);
       let errorMessage = "Sign-in failed. Please try again.";
       if (err?.message) {
         if (err.message.includes("not enabled")) {
-          errorMessage = `${strategy.replace('oauth_', '').charAt(0).toUpperCase() + strategy.replace('oauth_', '').slice(1)} sign-in is not enabled. Please contact support.`;
+          errorMessage = "Facebook sign-in is not enabled. Please contact support.";
         } else if (err.message.includes("popup")) {
           errorMessage = "Pop-up was blocked. Please allow pop-ups and try again.";
         } else {
@@ -84,7 +174,6 @@ export default function SignInModal({
       }
       setError(errorMessage);
     } finally {
-      // If authenticateWithRedirect fails synchronously, clear loading state.
       setOauthLoading(null);
     }
   };
@@ -109,24 +198,29 @@ export default function SignInModal({
         </p>
 
         <div className="flex justify-between gap-3 mb-4">
+          {/* Google - Direct OAuth */}
           <button
-            onClick={() => handleOAuth("oauth_google")}
-            disabled={!isLoaded || !!oauthLoading}
-            className="flex-1 flex items-center cursor-pointer text-xs justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
+            onClick={handleGoogleClick}
+            disabled={!googleScriptLoaded || !!oauthLoading}
+            className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
           >
-            <Image src={GoogleImg} alt="Google" width={16} height={20} />{" "}
-            {oauthLoading === "oauth_google" ? "Redirecting..." : "Google"}
+            <Image src={GoogleImg} alt="Google" width={16} height={20} />
+            {oauthLoading === "google" ? "Redirecting..." : "Google"}
           </button>
+          
+          {/* Facebook - Clerk OAuth */}
           <button
-            onClick={() => handleOAuth("oauth_facebook")}
+            onClick={handleFacebookOAuth}
             disabled={!isLoaded || !!oauthLoading}
             className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
           >
-            <Image src={FbImg} alt="Facebook" width={16} height={20} />{" "}
-            {oauthLoading === "oauth_facebook" ? "Redirecting..." : "Facebook"}
+            <Image src={FbImg} alt="Facebook" width={16} height={20} />
+            {oauthLoading === "facebook" ? "Redirecting..." : "Facebook"}
           </button>
+          
+          {/* Worldcoin - Static for now */}
           <button className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium">
-            <Image src={WeldImg} alt="Worldcoin" width={16} height={20} />{" "}
+            <Image src={WeldImg} alt="Worldcoin" width={16} height={20} />
             Worldcoin
           </button>
         </div>
@@ -140,10 +234,7 @@ export default function SignInModal({
         {error && <div className="text-red-400 text-sm mb-3 text-center">{error}</div>}
 
         <div className="relative mb-3">
-          <IoMdMail
-            size={18}
-            className="absolute left-3 top-3 text-[#18C3A7]"
-          />
+          <IoMdMail size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
           <input
             value={emailValue}
             onChange={(e) => setEmailValue(e.target.value)}
@@ -154,10 +245,7 @@ export default function SignInModal({
         </div>
 
         <div className="relative">
-          <IoMdLock
-            size={18}
-            className="absolute left-3 top-3 text-[#18C3A7]"
-          />
+          <IoMdLock size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
           <input
             value={passwordValue}
             onChange={(e) => setPasswordValue(e.target.value)}
@@ -185,7 +273,6 @@ export default function SignInModal({
 
         <button
           onClick={async () => {
-            // basic client-side email/password sign in against backend
             if (!emailValue || !passwordValue) {
               setError("Please enter email and password");
               return;
@@ -193,9 +280,7 @@ export default function SignInModal({
             setLoading(true);
             setError(null);
             try {
-              const api =
-                process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-              const resp = await fetch(`${api}/api/v1/auth/login`, {
+              const resp = await fetch(`${apiBase}/api/v1/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -213,8 +298,6 @@ export default function SignInModal({
                 try {
                   localStorage.setItem("token", data.token);
                 } catch {}
-                // notify other parts of the app (Topbar, Profile) that auth changed
-                // include the returned user in the event detail so listeners can update immediately
                 try {
                   const evt = new CustomEvent("app-auth-changed", {
                     detail: { token: data.token, user: data.user },
@@ -222,11 +305,9 @@ export default function SignInModal({
                   window.dispatchEvent(evt);
                 } catch {}
               }
-              // close modal and navigate
               onClose();
               router.push("/home");
             } catch (err: any) {
-              // eslint-disable-next-line no-console
               console.error("Login error", err);
               setError(err?.message || "Login failed. Please try again.");
             } finally {
@@ -240,7 +321,7 @@ export default function SignInModal({
         </button>
 
         <p className="text-center text-sm text-[#8C8FA8] mt-4">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <span
             onClick={() => {
               onClose();

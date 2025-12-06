@@ -37,6 +37,15 @@ const defaultRooms: ChatRoom[] = [
   { id: "offtopic", name: "Off-Topic" },
 ];
 
+interface StoredUser {
+  id?: string;
+  _id?: string;
+  email?: string;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
+}
+
 export default function ChatPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -48,12 +57,34 @@ export default function ChatPage() {
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  // Check authentication on mount
+  useEffect(() => {
+    const token = getToken();
+    const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    
+    if (token) {
+      setAuthToken(token);
+      setIsAuthenticated(true);
+      
+      if (userStr) {
+        try {
+          setCurrentUser(JSON.parse(userStr));
+        } catch {
+          // Invalid user JSON
+        }
+      }
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -101,7 +132,48 @@ export default function ChatPage() {
     fetchOnlineCount();
   }, [fetchMessages, fetchOnlineCount]);
 
-  // Socket events for real-time chat
+  // Polling for new messages (fallback for when WebSockets aren't available)
+  useEffect(() => {
+    // Poll for new messages every 3 seconds
+    const pollInterval = setInterval(() => {
+      fetchMessages();
+    }, 3000);
+
+    // Poll for online count every 30 seconds
+    const onlineInterval = setInterval(() => {
+      fetchOnlineCount();
+    }, 30000);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearInterval(onlineInterval);
+    };
+  }, [fetchMessages, fetchOnlineCount]);
+
+  // Send heartbeat to track online status
+  useEffect(() => {
+    const token = getToken() || authToken;
+    if (!token) return;
+
+    const sendHeartbeat = async () => {
+      try {
+        await fetch(`${apiBase}/api/v1/chat/heartbeat`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {
+        // Silently fail
+      }
+    };
+
+    // Send immediately and then every minute
+    sendHeartbeat();
+    const heartbeatInterval = setInterval(sendHeartbeat, 60000);
+
+    return () => clearInterval(heartbeatInterval);
+  }, [authToken]);
+
+  // Socket events for real-time chat (works locally, gracefully fails on Vercel)
   useEffect(() => {
     if (!socket) return;
 
@@ -135,9 +207,15 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const token = getToken();
+    const token = getToken() || authToken;
+    
+    console.log("[Chat] handleSend - token:", !!token, "authToken:", !!authToken);
+    
+    // If we have a token, use it
     if (!token) {
+      console.log("[Chat] No token, prompting sign in");
       toast.warn("Please sign in to send messages");
+      router.push("/sign-in");
       return;
     }
 

@@ -10,7 +10,6 @@ import { MdContactSupport } from "react-icons/md";
 import { FaSignOutAlt } from "react-icons/fa";
 import AffeImg from "../../public/assets/affi.png";
 import { usePathname, useRouter } from "next/navigation";
-import { useClerk, useUser } from "@clerk/nextjs";
 import ProfileInfo from "./ProfileInfo";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
@@ -57,11 +56,16 @@ const TopBar: React.FC = () => {
   const storeProfile = useSelector((s: RootState) => s.user.profile);
   const storeToken = useSelector((s: RootState) => s.user.token);
   const dispatch = useDispatch();
-  const { user, isSignedIn } = useUser();
   const { socket } = useSocket();
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const router = useRouter();
-  const { signOut } = useClerk();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Check auth on mount
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    setIsAuthenticated(!!token);
+  }, []);
   
   // Force refresh profile function (can be called from console)
   const refreshProfile = useCallback(async () => {
@@ -127,18 +131,17 @@ const TopBar: React.FC = () => {
         }
       }
 
-      // remove local token
-      if (typeof window !== "undefined") localStorage.removeItem("token");
-
-      // sign out Clerk session
-      try {
-        await signOut();
-      } catch (e) {
-        // ignore clerk signout errors
+      // remove local token and user
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
 
       setUsername(null);
       setProfileOpen(false);
+      setIsAuthenticated(false);
+      dispatch(clearUser());
+      
       // redirect to homepage
       try {
         router.push("/");
@@ -247,148 +250,6 @@ const TopBar: React.FC = () => {
       window.removeEventListener("app-auth-changed", handler as EventListener);
   }, []);
 
-  // If a Clerk user exists and we don't yet have backend username/avatar, prefer Clerk data
-  useEffect(() => {
-    if (!user) return;
-    // use Clerk user fields as fallback
-    try {
-      const cName =
-        (user as any)?.fullName ||
-        (user as any)?.firstName ||
-        (user as any)?.username ||
-        null;
-      const cAvatar = (user as any)?.profileImageUrl || null;
-      if (!username && cName) setUsername(cName);
-      if (!avatarUrl && cAvatar) setAvatarUrl(cAvatar);
-      // also write Clerk data to Redux so other components can use it
-      dispatch(
-        updateProfileFields({
-          username: cName ?? undefined,
-          avatarUrl: cAvatar ?? undefined,
-        }),
-      );
-    } catch (e) {}
-  }, [user]);
-
-  // When a Clerk user exists (social sign-in), ensure the backend has a corresponding
-  // app session/token by calling the server-side helper `/api/v1/auth/clerk-sync`.
-  // The backend will create or update the app user from Clerk public info and
-  // return the app JWT the frontend uses for protected API calls.
-  useEffect(() => {
-    // only run when Clerk reports a signed-in user
-    if (!isSignedIn || !user) return;
-
-    // don't run repeatedly for the same Clerk user in this browser session
-    try {
-      const clerkId = (user as any)?.id || (user as any)?.userId || null;
-      if (clerkId) {
-        const key = `clerkSyncDone_${clerkId}`;
-        if (
-          typeof sessionStorage !== "undefined" &&
-          sessionStorage.getItem(key)
-        )
-          return;
-      }
-    } catch (e) {}
-
-    // if we already have an app token, skip sync
-    const existing =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (existing) {
-      // make sure redux token matches
-      if (!storeToken) dispatch(setToken(existing));
-      return;
-    }
-
-    // try to obtain an email address from the Clerk user object (robust)
-    const maybeEmail =
-      (user as any)?.primaryEmailAddress?.emailAddress ||
-      (user as any)?.emailAddresses?.[0]?.emailAddress ||
-      (user as any)?.emailAddresses?.[0]?.email ||
-      (user as any)?.email ||
-      (user as any)?.emails?.[0];
-    if (!maybeEmail) {
-      // show a non-blocking toast so you can notice missing email cases
-      try {
-        toast.warn(
-          "Clerk signed-in user has no email address; clerk-sync skipped.",
-        );
-      } catch {}
-      return; // nothing we can do without email
-    }
-
-    (async () => {
-      try {
-        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        // Extract name and avatar from Clerk user to send as fallbacks
-        const clerkName = (user as any)?.fullName || 
-                         `${(user as any)?.firstName || ""} ${(user as any)?.lastName || ""}`.trim() ||
-                         (user as any)?.username || null;
-        const clerkAvatar = (user as any)?.imageUrl || (user as any)?.profileImageUrl || null;
-        
-        const resp = await fetch(`${api}/api/v1/auth/clerk-sync`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            email: maybeEmail,
-            name: clerkName,
-            avatarUrl: clerkAvatar
-          }),
-        });
-        const data = await resp.json();
-        console.log("clerk-sync response data:", data);
-        if (resp.ok && data?.token) {
-          try {
-            localStorage.setItem("token", data.token);
-          } catch {}
-          dispatch(setToken(data.token));
-          if (data.user) {
-            console.log("Dispatching user from clerk-sync:", data.user);
-            dispatch(setProfile(data.user));
-            // Immediately update local state with displayName and avatarUrl
-            const displayName = data.user.displayName || data.user.username;
-            if (displayName) setUsername(displayName);
-            if (data.user.avatarUrl) setAvatarUrl(data.user.avatarUrl);
-          }
-          // mark done for this Clerk user in this session to avoid repeats
-          try {
-            const clerkId = (user as any)?.id || (user as any)?.userId || null;
-            if (clerkId && typeof sessionStorage !== "undefined")
-              sessionStorage.setItem(`clerkSyncDone_${clerkId}`, "1");
-          } catch (e) {}
-
-          // notify the rest of the app that auth changed (Topbar listens to this too)
-          try {
-            const evt = new CustomEvent("app-auth-changed", {
-              detail: { token: data.token, user: data.user },
-            });
-            window.dispatchEvent(evt);
-          } catch {}
-
-          try {
-            toast.success("Signed in via Google — synced with app account.");
-          } catch {}
-        } else {
-          // surface a visible error so it's easier to diagnose in dev
-          // eslint-disable-next-line no-console
-          console.error("clerk-sync failed", data);
-          try {
-            toast.error(
-              "Failed to synchronise Clerk user with backend (check console).",
-            );
-          } catch {}
-        }
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("clerk-sync error", err);
-        try {
-          toast.error(
-            "Error contacting backend for clerk-sync (check console).",
-          );
-        } catch {}
-      }
-    })();
-  }, [isSignedIn, user]);
   // fetch notification count and subscribe to socket updates
   useEffect(() => {
     const token =
@@ -463,7 +324,7 @@ const TopBar: React.FC = () => {
             </div>
 
             {/* Desktop Nav - Only show when logged in */}
-            {(username || isSignedIn) && (
+            {(username || isAuthenticated) && (
               <nav className="hidden lg:flex items-center gap-1 ml-6">
                 <Link
                   href="/earn"
@@ -681,7 +542,7 @@ const TopBar: React.FC = () => {
           </Link>
           
           {/* Only show authenticated links when user is logged in */}
-          {(username || isSignedIn) && (
+          {(username || isAuthenticated) && (
             <>
               <Link
                 href="/home"
