@@ -179,9 +179,6 @@ const LeaderBoard = () => {
 
                 {/* Tab Buttons */}
                 <div className="w-full flex gap-2 sm:gap-3">
-                    <button className="flex-1 px-4 py-2.5 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] text-[#9CA3AF] hover:text-white text-sm font-medium transition-all">
-                        Weekly
-                    </button>
                     <button className="flex-1 px-4 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium transition-all">
                         📅 Monthly
                     </button>
