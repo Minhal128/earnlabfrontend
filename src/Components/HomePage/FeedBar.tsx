@@ -93,8 +93,8 @@ const FeedBar: React.FC = () => {
                 Live Activity
             </h3>
             
-            <div className="overflow-x-auto scrollbar-hide">
-                <div className="flex gap-2 sm:gap-3 md:min-w-max">
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+                <div className="flex gap-2 sm:gap-3 pb-1">
                     {loading && (
                         <div className="text-sm text-[#9CA3AF]">Loading activity...</div>
                     )}
@@ -107,20 +107,20 @@ const FeedBar: React.FC = () => {
                         <div
                             key={ev._id || idx}
                             onClick={() => handleUserClick(ev.userId)}
-                            className="flex items-center cursor-pointer gap-2 sm:gap-3 bg-[#252840] hover:bg-[#2A2D3E] border border-[#2A2D3E] text-white rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 min-w-[180px] sm:min-w-[220px] transition-all duration-200 hover:scale-105 group"
+                            className="flex items-center cursor-pointer gap-2 bg-[#252840] hover:bg-[#2A2D3E] border border-[#2A2D3E] text-white rounded-lg px-2.5 sm:px-3 py-2 min-w-[160px] sm:min-w-[180px] flex-shrink-0 transition-colors duration-200 group"
                         >
-                            <div className="flex-shrink-0 p-1.5 sm:p-2 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
+                            <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-500/10">
                                 <Image
                                     src={pickIcon(ev.type)}
                                     alt={ev.type || "event"}
-                                    className="object-contain w-5 h-5 sm:w-6 sm:h-6"
+                                    className="object-contain w-4 h-4 sm:w-5 sm:h-5"
                                 />
                             </div>
-                            <div className="flex flex-col space-y-0.5">
-                                <span className="font-medium text-xs sm:text-sm leading-tight text-white">
+                            <div className="flex flex-col min-w-0">
+                                <span className="font-medium text-[11px] sm:text-xs leading-tight text-white truncate">
                                     {ev.text}
                                 </span>
-                                <span className="text-[10px] sm:text-xs text-[#9CA3AF] leading-tight">
+                                <span className="text-[9px] sm:text-[10px] text-[#9CA3AF] leading-tight">
                                     {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString() : "now"}
                                 </span>
                             </div>

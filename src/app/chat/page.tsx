@@ -32,9 +32,7 @@ const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const defaultRooms: ChatRoom[] = [
   { id: "general", name: "General" },
-  { id: "trading", name: "Trading" },
-  { id: "help", name: "Help" },
-  { id: "offtopic", name: "Off-Topic" },
+  { id: "support", name: "Support" },
 ];
 
 interface StoredUser {
@@ -286,25 +284,25 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#0A0C1A]">
+    <div className="flex flex-col h-screen bg-[#0A0C1A] pb-16 sm:pb-0">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-[#0F1123] border-b border-[#1E2035]">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between p-2 sm:p-4 bg-[#0F1123] border-b border-[#1E2035]">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-lg bg-[#1A1D2E] hover:bg-[#252840] transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-[#1A1D2E] hover:bg-[#252840] transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-white" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-lg">💬</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <span className="text-sm sm:text-lg">💬</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Chat</h1>
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <Users size={12} />
-                {onlineCount} User(s) online
+              <h1 className="text-sm sm:text-lg font-bold text-white">Chat</h1>
+              <p className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1">
+                <Users size={10} className="sm:w-3 sm:h-3" />
+                {onlineCount} online
               </p>
             </div>
           </div>
@@ -314,13 +312,13 @@ export default function ChatPage() {
         <div className="relative">
           <button
             onClick={() => setShowRoomDropdown(!showRoomDropdown)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1A1D2E] rounded-lg hover:bg-[#252840] transition-colors border border-[#2A2D3E]"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-[#1A1D2E] rounded-lg hover:bg-[#252840] transition-colors border border-[#2A2D3E]"
           >
-            <div className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-sm font-medium text-white">{selectedRoom.name}</span>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400" />
+            <span className="text-xs sm:text-sm font-medium text-white">{selectedRoom.name}</span>
             <ChevronDown
-              size={16}
-              className={`text-gray-400 transition-transform ${showRoomDropdown ? "rotate-180" : ""}`}
+              size={14}
+              className={`text-gray-400 transition-transform sm:w-4 sm:h-4 ${showRoomDropdown ? "rotate-180" : ""}`}
             />
           </button>
 
@@ -369,7 +367,7 @@ export default function ChatPage() {
         ) : (
           messages.map((msg, index) => (
             <div key={msg._id || msg.id || index} className="group">
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2 sm:gap-3">
                 {/* Avatar */}
                 <div
                   onClick={() => handleUserClick(msg.userId)}
@@ -381,10 +379,10 @@ export default function ChatPage() {
                       alt={msg.username}
                       width={40}
                       height={40}
-                      className="rounded-full"
+                      className="rounded-full w-8 h-8 sm:w-10 sm:h-10"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm font-bold uppercase">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs sm:text-sm font-bold uppercase">
                       {msg.username?.charAt(0) || "U"}
                     </div>
                   )}
@@ -415,8 +413,8 @@ export default function ChatPage() {
                   </div>
 
                   {/* Message Text */}
-                  <div className="bg-[#1A1D2E] rounded-xl px-4 py-2.5 inline-block max-w-full">
-                    <p className="text-sm text-gray-200 break-words whitespace-pre-wrap">
+                  <div className="bg-[#1A1D2E] rounded-lg sm:rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2.5 inline-block max-w-full">
+                    <p className="text-xs sm:text-sm text-gray-200 break-words whitespace-pre-wrap">
                       {msg.text}
                     </p>
                   </div>
@@ -429,12 +427,12 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-[#0F1123] border-t border-[#1E2035]">
-        <div className="flex items-center gap-3">
-          <button className="p-2.5 hover:bg-[#1A1D2E] rounded-lg transition-colors">
+      <div className="p-2 sm:p-4 bg-[#0F1123] border-t border-[#1E2035]">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button className="p-1.5 sm:p-2.5 hover:bg-[#1A1D2E] rounded-lg transition-colors hidden sm:block">
             <ImageIcon size={22} className="text-gray-400" />
           </button>
-          <div className="flex-1 bg-[#1A1D2E] rounded-xl border border-[#2A2D3E] focus-within:border-emerald-500/50 transition-colors">
+          <div className="flex-1 bg-[#1A1D2E] rounded-lg sm:rounded-xl border border-[#2A2D3E] focus-within:border-emerald-500/50 transition-colors">
             <input
               type="text"
               value={input}
@@ -442,15 +440,15 @@ export default function ChatPage() {
               onKeyPress={handleKeyPress}
               placeholder="Enter a message..."
               disabled={sending}
-              className="w-full bg-transparent text-white text-sm placeholder-gray-500 px-4 py-3 rounded-xl outline-none"
+              className="w-full bg-transparent text-white text-xs sm:text-sm placeholder-gray-500 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl outline-none"
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim() || sending}
-            className="p-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-[#1A1D2E] disabled:cursor-not-allowed rounded-xl transition-colors"
+            className="p-2 sm:p-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-[#1A1D2E] disabled:cursor-not-allowed rounded-lg sm:rounded-xl transition-colors"
           >
-            <Send size={20} className="text-white" />
+            <Send size={18} className="text-white sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

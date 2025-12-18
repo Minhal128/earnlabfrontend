@@ -52,7 +52,7 @@ const RewardStreakBoxes: React.FC = () => {
       id: "streak",
       title: "Daily Streak",
       value: `${streak} Days`,
-      icon: <Flame className="w-6 h-6" />,
+      icon: <Flame className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: "text-orange-400",
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500/20",
@@ -61,7 +61,7 @@ const RewardStreakBoxes: React.FC = () => {
       id: "bonus",
       title: "Daily Bonus",
       value: `$${(dailyBonus / 100).toFixed(2)}`,
-      icon: <Gift className="w-6 h-6" />,
+      icon: <Gift className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: "text-emerald-400",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
@@ -70,7 +70,7 @@ const RewardStreakBoxes: React.FC = () => {
       id: "earned",
       title: "Total Earned",
       value: `$${(totalEarned / 100).toFixed(2)}`,
-      icon: <Trophy className="w-6 h-6" />,
+      icon: <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: "text-yellow-400",
       bgColor: "bg-yellow-500/10",
       borderColor: "border-yellow-500/20",
@@ -79,7 +79,7 @@ const RewardStreakBoxes: React.FC = () => {
       id: "rank",
       title: "Your Rank",
       value: rank,
-      icon: <Award className="w-6 h-6" />,
+      icon: <Award className="w-4 h-4 sm:w-5 sm:h-5" />,
       color: "text-purple-400",
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/20",
@@ -87,30 +87,24 @@ const RewardStreakBoxes: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 md:mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 md:gap-3 mb-3 md:mb-5">
       {boxes.map((box) => (
         <div
           key={box.id}
-          className={`relative overflow-hidden rounded-lg sm:rounded-xl ${box.bgColor} border ${box.borderColor} p-3 sm:p-4 md:p-5 hover:scale-105 transition-transform duration-200 cursor-pointer group`}
+          className={`relative overflow-hidden rounded-lg ${box.bgColor} border ${box.borderColor} p-2 sm:p-3 md:p-4 hover:scale-[1.02] transition-transform duration-200 cursor-pointer group`}
         >
-          {/* Background glow effect */}
-          <div className={`absolute top-0 right-0 w-20 h-20 ${box.bgColor} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity`} />
-          
-          <div className="relative z-10 space-y-2 sm:space-y-3">
+          <div className="relative z-10 flex items-start gap-2">
             {/* Icon */}
-            <div className={`inline-flex p-1.5 sm:p-2 md:p-2.5 rounded-lg ${box.bgColor} ${box.color}`}>
-              <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6">{box.icon}</div>
+            <div className={`flex-shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${box.bgColor} ${box.color}`}>
+              {box.icon}
             </div>
             
             {/* Content */}
-            <div>
-              <p className="text-[10px] sm:text-xs text-[#9CA3AF] font-medium mb-0.5 sm:mb-1">{box.title}</p>
-              <p className={`text-base sm:text-xl md:text-2xl font-bold ${box.color}`}>{box.value}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] sm:text-[10px] text-[#9CA3AF] font-medium truncate">{box.title}</p>
+              <p className={`text-sm sm:text-base md:text-lg font-bold ${box.color} truncate`}>{box.value}</p>
             </div>
           </div>
-          
-          {/* Decorative corner */}
-          <div className={`absolute -bottom-2 -right-2 w-16 h-16 ${box.bgColor} rounded-full blur-xl opacity-50`} />
         </div>
       ))}
     </div>

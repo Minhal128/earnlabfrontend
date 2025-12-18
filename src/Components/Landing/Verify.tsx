@@ -96,7 +96,7 @@ const Verify: React.FC<VerifyProps> = () => {
                             </button>
                             
                             <a 
-                                href="https://discord.gg/labwards"
+                                href="https://discord.gg/htr9C8EjKG"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 px-8 py-4 bg-[#5865F2] text-white font-bold rounded-full shadow-lg hover:bg-[#4752C4] transition-all duration-300 transform hover:scale-105"

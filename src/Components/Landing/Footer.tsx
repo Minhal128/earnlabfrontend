@@ -79,13 +79,13 @@ const Footer = () => {
                 <div>
                     <h4 className="text-white font-bold mb-6">Connect</h4>
                     <div className="flex gap-3 mb-6">
-                        <a href="#" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
+                        <a href="https://t.me/labwardscom" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
                             <FaTelegramPlane className="w-5 h-5" />
                         </a>
-                        <a href="#" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
+                        <a href="https://discord.gg/htr9C8EjKG" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
                             <FaDiscord className="w-5 h-5" />
                         </a>
-                        <a href="#" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
+                        <a href="https://x.com/labwards?s=21" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] flex items-center justify-center text-[#9CA3AF] hover:text-emerald-400 hover:border-emerald-400 transition-all">
                             <FaTwitter className="w-5 h-5" />
                         </a>
                     </div>

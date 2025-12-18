@@ -215,19 +215,19 @@ export default function WhyChooseUs() {
                             {/* App Icons with earnings */}
                             <div className="flex gap-3 mb-4">
                                 <div className="text-center">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center mb-1 overflow-hidden">
+                                    <div className="w-12 h-12 rounded-xl bg-[#2A2D3E] border border-purple-500/30 flex items-center justify-center mb-1 overflow-hidden">
                                         <Image src={App1} alt="App 1" className="w-full h-full object-cover" />
                                     </div>
                                     <span className="text-xs text-emerald-400 font-bold">+$8.50</span>
                                 </div>
                                 <div className="text-center">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-1 overflow-hidden">
+                                    <div className="w-12 h-12 rounded-xl bg-[#2A2D3E] border border-purple-500/30 flex items-center justify-center mb-1 overflow-hidden">
                                         <Image src={App2} alt="App 2" className="w-full h-full object-cover" />
                                     </div>
                                     <span className="text-xs text-emerald-400 font-bold">+$25</span>
                                 </div>
                                 <div className="text-center">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center mb-1 overflow-hidden">
+                                    <div className="w-12 h-12 rounded-xl bg-[#2A2D3E] border border-purple-500/30 flex items-center justify-center mb-1 overflow-hidden">
                                         <Image src={App3} alt="App 3" className="w-full h-full object-cover" />
                                     </div>
                                     <span className="text-xs text-emerald-400 font-bold">+$12</span>

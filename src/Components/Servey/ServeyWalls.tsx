@@ -11,6 +11,10 @@ type Offerwall = {
     metadata?: any;
 };
 
+// Helper to replace EarnLab with Labwards in display names
+const formatName = (name?: string) => 
+    name?.replace(/EarnLab/gi, "Labwards") ?? "Offerwall";
+
 const ServeyWalls: React.FC = () => {
     const [offerwalls, setOfferwalls] = useState<Offerwall[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -102,13 +106,13 @@ const ServeyWalls: React.FC = () => {
                                 />
                             ) : (
                                 <div className="h-16 w-36 rounded bg-[#11131a] flex items-center justify-center text-xs text-[#8C8FA8]">
-                                    {offer.name ?? "Offerwall"}
+                                    {formatName(offer.name)}
                                 </div>
                             )}
                         </div>
 
                         <div className="w-full text-center py-2 rounded-md border-t border-[#2C2F44] bg-[#1E2133]">
-                            <p className="text-xs font-medium">{offer.name}</p>
+                            <p className="text-xs font-medium">{formatName(offer.name)}</p>
                             <div className="mt-2">
                                 <button
                                     onClick={() => openOffer(offer)}

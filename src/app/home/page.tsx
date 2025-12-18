@@ -8,12 +8,12 @@ import FeedBar from "@/Components/HomePage/FeedBar";
 
 export default function Home() {
     return (
-        <>
+        <div className="overflow-x-hidden">
             <TopBar />
             <PageNavigation />
-            <main className="min-h-screen bg-[#0A0C1A] pb-20 lg:pb-0">
+            <main className="min-h-screen bg-[#0A0C1A] pb-20 lg:pb-0 overflow-x-hidden">
                 {/* Container with max width */}
-                <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-3 sm:space-y-4 md:space-y-6">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-hidden">
                     {/* Dashboard Header */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
@@ -70,6 +70,6 @@ export default function Home() {
                     </div>
                 </div>
             </main>
-        </>
+        </div>
     );
 }
