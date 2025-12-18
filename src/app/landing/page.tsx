@@ -513,8 +513,8 @@ export default function Landing() {
             <Testimonials />
             <Question />
             <Benefits />
-            <Verify />
-            <Footer />
+            <Verify onOpenLogin={() => setOpen(true)} />
+            <Footer onOpenLogin={() => setOpen(true)} />
         </div>
     );
 }

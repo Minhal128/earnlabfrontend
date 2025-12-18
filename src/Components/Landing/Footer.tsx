@@ -2,11 +2,28 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { FaTelegramPlane, FaDiscord, FaTwitter } from "react-icons/fa";
-import { Zap, Heart, ArrowRight, Mail, MapPin } from "lucide-react";
+import { Zap, Heart, ArrowRight, Mail } from "lucide-react";
 import Logo from "../../../public/assets/logo.png";
 
-const Footer = () => {
+interface FooterProps {
+    onOpenLogin?: () => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onOpenLogin }) => {
+    const handleGetStarted = () => {
+        // Scroll to top of the page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Open login modal after a short delay to allow scroll
+        if (onOpenLogin) {
+            setTimeout(() => {
+                onOpenLogin();
+            }, 500);
+        }
+    };
+
     return (
         <footer className="w-full bg-gradient-to-b from-[#0A0C1A] via-[#0D0F1E] to-[#000000] text-white px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative overflow-hidden">
             {/* Animated background elements */}
@@ -23,7 +40,10 @@ const Footer = () => {
                             <h3 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Ready to Start Earning?</h3>
                             <p className="text-[#9CA3AF]">Join thousands of users making real money today</p>
                         </div>
-                        <button className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 rounded-lg font-semibold whitespace-nowrap transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/20">
+                        <button 
+                            onClick={handleGetStarted}
+                            className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 rounded-lg font-semibold whitespace-nowrap transition-all duration-300 transform hover:scale-105 shadow-lg shadow-emerald-500/20"
+                        >
                             Get Started <ArrowRight className="w-5 h-5" />
                         </button>
                     </div>
@@ -57,10 +77,10 @@ const Footer = () => {
                         Product
                     </h4>
                     <ul className="space-y-3 text-sm">
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Games</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Tasks</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Surveys</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Rewards</a></li>
+                        <li><Link href="/games" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Games</Link></li>
+                        <li><Link href="/tasks-info" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Tasks</Link></li>
+                        <li><Link href="/surveys-info" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Surveys</Link></li>
+                        <li><Link href="/rewards-info" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Rewards</Link></li>
                     </ul>
                 </div>
 
@@ -68,10 +88,9 @@ const Footer = () => {
                 <div>
                     <h4 className="text-white font-bold mb-6">Support</h4>
                     <ul className="space-y-3 text-sm">
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Help Center</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Contact Us</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">FAQ</a></li>
-                        <li><a href="#" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Status</a></li>
+                        <li><Link href="/help-center" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Help Center</Link></li>
+                        <li><Link href="/contact" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">Contact Us</Link></li>
+                        <li><Link href="/faq" className="text-[#9CA3AF] hover:text-emerald-400 transition-colors">FAQ</Link></li>
                     </ul>
                 </div>
 
@@ -102,9 +121,9 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row justify-between items-center text-sm text-[#9CA3AF] mt-12 pt-8 gap-4">
                 <p>© 2025 LabWards. All rights reserved.</p>
                 <div className="flex gap-6">
-                    <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>
-                    <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>
-                    <a href="#" className="hover:text-emerald-400 transition-colors">Cookie Policy</a>
+                    <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Service</Link>
+                    <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+                    <Link href="/cookies" className="hover:text-emerald-400 transition-colors">Cookie Policy</Link>
                 </div>
             </div>
             </div>

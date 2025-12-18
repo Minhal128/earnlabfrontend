@@ -12,42 +12,21 @@ import LockImg from "../../../public/assets/locak.png";
 
 type VerifyProps = {
     height?: string;
+    onOpenLogin?: () => void;
 };
 
-const Verify: React.FC<VerifyProps> = () => {
+const Verify: React.FC<VerifyProps> = ({ onOpenLogin }) => {
     const [isClaiming, setIsClaiming] = useState(false);
 
-    const handleClaimBonus = async () => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const handleStartEarning = () => {
+        // Scroll to top of the page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        if (!token) {
-            toast.info("Please sign up first to claim your bonus");
-            return;
-        }
-
-        setIsClaiming(true);
-        try {
-            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const res = await fetch(`${api}/api/v1/user/claim-email-verification-bonus`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                toast.success("🎉 Bonus claimed! You received $0.25 + 3 Free Boxes!");
-            } else {
-                toast.error(data.message || "Failed to claim bonus");
-            }
-        } catch (err) {
-            console.error("Error claiming bonus:", err);
-            toast.error("Failed to claim bonus. Please try again.");
-        } finally {
-            setIsClaiming(false);
+        // Open login modal after a short delay to allow scroll
+        if (onOpenLogin) {
+            setTimeout(() => {
+                onOpenLogin();
+            }, 500);
         }
     };
 
@@ -87,11 +66,11 @@ const Verify: React.FC<VerifyProps> = () => {
                         {/* Buttons */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
                             <button 
-                                onClick={handleClaimBonus}
+                                onClick={handleStartEarning}
                                 disabled={isClaiming}
                                 className="flex items-center gap-2 px-8 py-4 bg-white text-[#0D9488] font-bold rounded-full shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isClaiming ? "Starting..." : "Start Earning Free"}
+                                Start Earning Free
                                 <ArrowRight className="w-5 h-5" />
                             </button>
                             
