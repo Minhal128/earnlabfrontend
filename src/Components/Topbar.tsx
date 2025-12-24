@@ -301,12 +301,12 @@ const TopBar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Left Side */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-1.5 md:gap-3">
             <button
-              className="lg:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
+              className="lg:hidden flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
               onClick={() => setMenuOpen(true)}
             >
-              <Menu size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <Menu size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
             </button>
 
             {/* Logo */}
@@ -314,12 +314,12 @@ const TopBar: React.FC = () => {
               <Image
                 src={LogoImg}
                 alt="Logo"
-                className="h-6 sm:h-8 w-auto object-contain hover:opacity-80 transition-opacity"
+                className="h-5 sm:h-6 md:h-8 w-auto object-contain hover:opacity-80 transition-opacity"
               />
             </Link>
 
-            {/* Payout Methods Section */}
-            <div className="flex">
+            {/* Payout Methods Section - Hidden on small mobile screens */}
+            <div className="hidden min-[400px]:flex">
               <PayoutMethods isLoggedIn={!!username} />
             </div>
 
@@ -386,11 +386,11 @@ const TopBar: React.FC = () => {
             {/* Notification */}
             <button
               onClick={() => setOpen(!open)}
-              className="relative cursor-pointer flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
+              className="relative cursor-pointer flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors"
             >
-              <Bell size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <Bell size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
               {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] text-white rounded-full min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] flex items-center justify-center font-semibold">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-[8px] sm:text-[10px] text-white rounded-full min-w-[14px] h-[14px] sm:min-w-[16px] sm:h-[16px] md:min-w-[18px] md:h-[18px] flex items-center justify-center font-semibold">
                   {notificationCount}
                 </span>
               )}
@@ -402,46 +402,47 @@ const TopBar: React.FC = () => {
               <WalletDropdown onClose={() => setWalletOpen(false)} />
             )}
 
-            <div className="flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-1.5 sm:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E]">
-              <div className="flex items-center gap-0.5 sm:gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-2 h-7 sm:h-8 md:h-9 px-1 sm:px-2 md:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E]">
+              <div className="flex items-center gap-0.5">
                 <Image
                   src={DolarImg}
-                  className="w-4 h-4 sm:w-5 sm:h-5 object-contain"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 object-contain"
                   alt=""
                 />
-                <span className="text-white font-semibold text-xs sm:text-sm">
+                <span className="text-white font-semibold text-[10px] sm:text-xs md:text-sm">
                   {balance !== null ? "$" + (balance / 100).toFixed(2) : "--"}
                 </span>
               </div>
-              <span className="h-3 sm:h-4 w-[1px] bg-[#2A2D3E]"></span>
+              <span className="h-3 sm:h-4 w-[1px] bg-[#2A2D3E] hidden sm:block"></span>
               <button
                 onClick={() => setWalletOpen(!walletOpen)}
-                className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-medium flex items-center gap-0.5 sm:gap-1 transition-colors"
+                className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer px-1 sm:px-2 md:px-2.5 py-0.5 rounded-md text-[9px] sm:text-[10px] md:text-xs font-medium flex items-center gap-0.5 transition-colors"
               >
                 <Image
                   src={WalletImg}
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 object-contain"
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 object-contain"
                   alt=""
                 />
-                <span className="hidden sm:inline">Wallet</span>
+                <span className="hidden md:inline">Wallet</span>
               </button>
             </div>
 
             <div className="relative flex">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center h-8 sm:h-9 px-1.5 sm:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] gap-1 sm:gap-2 cursor-pointer transition-colors"
+                className="flex items-center h-7 sm:h-8 md:h-9 px-1 sm:px-1.5 md:px-2.5 rounded-md bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] gap-0.5 sm:gap-1 md:gap-2 cursor-pointer transition-colors"
               >
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
                   <ProfileInfo
-                    size={24}
+                    size={20}
                     username={username}
                     avatarUrl={avatarUrl}
+                    showInitialOnly={true}
                   />
                 </div>
                 <ChevronDown
-                  size={12}
-                  className="hidden sm:flex cursor-pointer sm:w-[14px] sm:h-[14px]"
+                  size={10}
+                  className="hidden md:flex cursor-pointer md:w-[14px] md:h-[14px]"
                 />
               </button>
 

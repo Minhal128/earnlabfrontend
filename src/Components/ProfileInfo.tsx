@@ -14,11 +14,15 @@ export default function ProfileInfo({
   username: propUsername,
   avatarUrl: propAvatarUrl,
   showEmail = false,
+  showFirstNameOnly = false,
+  showInitialOnly = false,
 }: {
   size?: number,
   username?: string | null,
   avatarUrl?: string | null,
   showEmail?: boolean,
+  showFirstNameOnly?: boolean,
+  showInitialOnly?: boolean,
 }) {
   const [storedUser, setStoredUser] = useState<StoredUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,6 +45,8 @@ export default function ProfileInfo({
 
   // Use props first, then stored user data
   const fullName = propUsername || storedUser?.displayName || storedUser?.username || "";
+  const firstName = fullName.split(" ")[0];
+  const displayName = showInitialOnly ? firstName.charAt(0).toUpperCase() : (showFirstNameOnly ? firstName : fullName);
   const email = storedUser?.email || "";
   const imageUrl = propAvatarUrl || storedUser?.avatarUrl || null;
 
@@ -62,7 +68,7 @@ export default function ProfileInfo({
         <div style={{ width: size, height: size, borderRadius: 999, background: "#2A2D44" }} />
       )}
       <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-        <span style={{ fontWeight: 600, fontSize: 14 }}>{fullName || "User"}</span>
+        <span style={{ fontWeight: 600, fontSize: 14 }}>{displayName || "User"}</span>
         {showEmail && email && <span style={{ fontSize: 12, color: "#9AA0B5" }}>{email}</span>}
       </div>
     </div>

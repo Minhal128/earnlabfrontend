@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image, { type StaticImageData } from "next/image";
+import Link from "next/link";
 import { ChevronDown, Menu, X, Sparkles, TrendingUp, Users, Target, Gift, Star, Zap } from "lucide-react";
 import { IoMdArrowDropdown } from "react-icons/io";
 import CountryFlag from "react-country-flag";
@@ -172,10 +173,10 @@ export default function Landing() {
 
                         {/* Desktop Nav */}
                         <div className="hidden md:flex items-center gap-1">
-                            <a href="#games" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Games</a>
-                            <a href="#tasks" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Tasks</a>
-                            <a href="#rewards" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Rewards</a>
-                            <a href="#contact" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Contact</a>
+                            <Link href="/games" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Games</Link>
+                            <Link href="/tasks-info" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Tasks</Link>
+                            <Link href="/rewards-info" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Rewards</Link>
+                            <Link href="/contact" className="px-3 py-1.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#252840] transition-all">Contact</Link>
                         </div>
 
                         {/* Right Section */}
@@ -281,10 +282,10 @@ export default function Landing() {
                     <div className="p-5 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
                         {/* Navigation Links */}
                         <nav className="space-y-1">
-                            <a href="#games" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Games</a>
-                            <a href="#tasks" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Tasks</a>
-                            <a href="#rewards" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Rewards</a>
-                            <a href="#contact" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Contact</a>
+                            <Link href="/games" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Games</Link>
+                            <Link href="/tasks-info" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Tasks</Link>
+                            <Link href="/rewards-info" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Rewards</Link>
+                            <Link href="/contact" onClick={() => setMenuOpen(false)} className="flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-[#9CA3AF] hover:text-white hover:bg-[#1A1D2E] transition-all">Contact</Link>
                         </nav>
 
                         {/* Auth Buttons */}

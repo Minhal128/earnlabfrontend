@@ -28,7 +28,7 @@ const payoutMethods = [
     {
         icon: BitcoinImg,
         name: "Bitcoin",
-        minWithdraw: "$20",
+        minWithdraw: "$2",
         processingTime: "Instant",
         fee: "Network fee",
     },
