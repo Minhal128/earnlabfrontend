@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Set dark background on root elements to prevent white flash on iOS */
+html,
+body {
+    background-color: #000000;
+}
 
 /* Hide scrollbar but keep scroll functionality */
 .scrollbar-hide::-webkit-scrollbar {
