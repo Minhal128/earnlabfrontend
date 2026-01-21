@@ -107,14 +107,32 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
     if (!destination) {
       setError(
         selectedMethod === "giftcard"
-          ? "Please enter your email address"
-          : "Please enter a valid destination"
+          ? "Please enter your email address for gift card delivery"
+          : selectedMethod === "paypal"
+            ? "Please enter your PayPal email address"
+            : selectedMethod === "crypto"
+              ? "Please enter your wallet address"
+              : "Please enter a valid destination"
       );
       return;
     }
 
+    // Validate email format for PayPal and gift card
+    if ((selectedMethod === "paypal" || selectedMethod === "giftcard") && destination) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(destination)) {
+        setError("Please enter a valid email address");
+        return;
+      }
+    }
+
     if (selectedMethod === "giftcard" && !giftCardType) {
       setError("Please select a gift card type");
+      return;
+    }
+
+    if (selectedMethod === "crypto" && !cryptoType) {
+      setError("Please select a cryptocurrency");
       return;
     }
 
@@ -299,10 +317,14 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
             <div>
               <label className="block text-xs font-medium text-gray-300 mb-1.5">
                 {selectedMethod === "giftcard"
-                  ? "Email Address"
+                  ? "Email Address (for gift card delivery)"
                   : selectedMethod === "crypto"
                     ? "Wallet Address"
-                    : "PayPal Email"}
+                    : selectedMethod === "paypal"
+                      ? "PayPal Email Address"
+                      : selectedMethod === "bank_transfer"
+                        ? "Bank Account Details"
+                        : "Destination"}
               </label>
               <input
                 type={selectedMethod === "giftcard" || selectedMethod === "paypal" ? "email" : "text"}
@@ -312,20 +334,33 @@ const WithdrawalRequestModal: React.FC<WithdrawalRequestModalProps> = ({
                   selectedMethod === "giftcard"
                     ? "your@email.com"
                     : selectedMethod === "paypal"
-                      ? "paypal@email.com"
+                      ? "your.paypal@email.com"
                       : selectedMethod === "crypto"
                         ? "Enter wallet address..."
-                        : "Enter destination"
+                        : selectedMethod === "bank_transfer"
+                          ? "Enter bank account details..."
+                          : "Enter destination"
                 }
                 className="w-full bg-[#151728] border border-[#2A2D44] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#18C3A7]"
               />
+              {/* PayPal specific help text */}
+              {selectedMethod === "paypal" && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter the email address linked to your PayPal account
+                </p>
+              )}
             </div>
 
             {/* Info Message */}
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2.5 text-blue-400 text-xs">
               <p>
-                Your withdrawal will be reviewed by our admin team. Once
-                approved, you'll receive your funds via email.
+                {selectedMethod === "paypal" 
+                  ? "PayPal withdrawals will be sent directly to your PayPal email address."
+                  : selectedMethod === "giftcard"
+                    ? "Gift card codes will be sent to your email address."
+                    : selectedMethod === "crypto"
+                      ? "Cryptocurrency will be sent to your wallet address."
+                      : "Your withdrawal will be reviewed by our admin team."}
               </p>
             </div>
 

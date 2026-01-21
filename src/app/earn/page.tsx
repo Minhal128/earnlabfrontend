@@ -10,6 +10,7 @@ import FeaturedSurvey from "@/Components/HomePage/FeaturedSurvey";
 import ServeyWalls from "@/Components/Servey/ServeyWalls";
 import WatchWalls from "@/Components/HomePage/WatchWalls";
 import PricingHoldTimes from "@/Components/HomePage/PricingHoldTimes";
+import RecentActivity from "@/Components/HomePage/RecentActivity";
 
 export default function Earn() {
     return (
@@ -43,12 +44,13 @@ export default function Earn() {
                         </p>
                     </div>
 
-                    {/* Earning Opportunities */}
+                    {/* Earning Opportunities - FeaturedTask now includes Premium Offers */}
                     <FeaturedTask />
                     <OfferWalls />
                     <FeaturedSurvey />
                     <ServeyWalls />
                     <WatchWalls />
+                    <RecentActivity />
 
                     {/* Pricing & Hold Times Section */}
                     <PricingHoldTimes />

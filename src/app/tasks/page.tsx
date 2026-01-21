@@ -28,7 +28,7 @@ export default function Task() {
 
                 {/* Page Content */}
                 <FeaturedTask />
-                <Tasks />
+                {/* <Tasks /> */}
             </main>
         </>
     );

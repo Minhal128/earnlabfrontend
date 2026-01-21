@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { toast } from 'react-toastify';
+
 import Image, { StaticImageData } from "next/image";
 import { FaLaptop, FaApple, FaAndroid, FaChevronDown, FaSearch } from "react-icons/fa";
 import TaskModal from "./TaskModal";
@@ -74,37 +74,7 @@ const Tasks: React.FC = () => {
                         </p>
                     </div>
 
-                    <div>
-                        <button
-                            onClick={async () => {
-                                const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                                if (!token) {
-                                    toast.warn("Please sign in to mark notifications as read.");
-                                    return;
-                                }
-                                try {
-                                    const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-                                    const res = await fetch(`${api}/api/v1/user/notifications/read`, {
-                                        method: "POST",
-                                        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-                                        body: JSON.stringify({}),
-                                    });
-                                    if (!res.ok) {
-                                        const b = await res.json().catch(() => ({}));
-                                        toast.error(b?.message || "Failed to mark notifications read");
-                                        return;
-                                    }
-                                    // backend emits notifications:read which Topbar listens to — no extra UI update needed here
-                                } catch (err) {
-                                    console.error(err);
-                                    toast.error("Failed to mark notifications read");
-                                }
-                            }}
-                            className="px-3 py-1 rounded text-sm text-[#B3B6C7] hover:bg-[#30334A] hover:text-white"
-                        >
-                            Mark all as read
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Filter/Search Row */}
@@ -199,9 +169,9 @@ const Tasks: React.FC = () => {
                 task={
                     selectedTask
                         ? {
-                              ...selectedTask,
-                              description: selectedTask.description ?? "",
-                          }
+                            ...selectedTask,
+                            description: selectedTask.description ?? "",
+                        }
                         : null
                 }
             />
