@@ -1,58 +1,48 @@
 "use client";
 
 import React from "react";
-import { StaticImageData } from "next/image";
-import { Gift } from "lucide-react";
-import Fe1 from "../../../public/assets/freedom.png";
-import Fe2 from "../../../public/assets/kobo.png";
-import Fe3 from "../../../public/assets/amaz.png";
-import Fe4 from "../../../public/assets/mor.png";
-import ModernSection from "../Shared/ModernSection";
-import ModernCard from "../Shared/ModernCard";
-
-interface OfferWallItem {
-    image: StaticImageData;
-    title: string;
-}
-
-const offers: OfferWallItem[] = [
-    { image: Fe1, title: "Vegas Craze" },
-    { image: Fe2, title: "The Morning Show" },
-    { image: Fe3, title: "Amazon" },
-    { image: Fe4, title: "Rakuten Kobo" },
-    { image: Fe1, title: "Daily Rewards" },
-];
+import { Layers } from "lucide-react";
+import ProviderCard from "../Shared/ProviderCard";
 
 const OfferWalls: React.FC = () => {
-    const handleSeeMore = () => {
-        // Navigate to offers page or show more offers
-        console.log("See more offers");
-    };
-
-    const handleOfferClick = (offer: OfferWallItem) => {
-        // Handle offer click
-        console.log("Clicked offer:", offer.title);
-    };
+    const providers = [
+        { name: "Lootably", logo: "/assets/lootably.png", rating: 0.94, bonus: "15" },
+        { name: "Torox", logo: "/assets/torox_logo.png", rating: 0.88 },
+        { name: "Ayetstudios", logo: "/assets/ayet.png", rating: 0.96 },
+        { name: "Revlum", logo: "/assets/revlum.png", rating: 0.92, bonus: "5" },
+        { name: "Adgate", logo: "/assets/adgate.png", rating: 0.85 },
+    ];
 
     return (
-        <ModernSection
-            title="Offer Walls"
-            description="Complete offers to earn bigger rewards"
-            onSeeMore={handleSeeMore}
-            icon={<Gift className="text-teal-400" size={20} />}
-        >
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-                {offers.map((offer, index) => (
-                    <ModernCard
-                        key={index}
-                        image={offer.image}
-                        title={offer.title}
-                        onClick={() => handleOfferClick(offer)}
-                        variant="compact"
+        <section className="w-full mt-8 sm:mt-10 md:mt-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 px-3 sm:px-6 md:px-10 lg:px-16 gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-2.5 bg-[#151728] border border-[#30334A] rounded-[8px] sm:rounded-[10px] text-white flex-shrink-0">
+                        <Layers size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-white text-[20px] sm:text-[24px] md:text-[28px] font-bold leading-tight" style={{ fontFamily: "var(--font-manrope)" }}>
+                            Offer Walls
+                        </h2>
+                        <p className="text-[#6B6E8A] text-xs sm:text-sm md:text-base font-medium leading-tight sm:leading-[24px]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                            Complete offers to earn bigger rewards
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-[25px] px-3 sm:px-6 md:px-10 lg:px-16">
+                {providers.map((p, i) => (
+                    <ProviderCard
+                        key={i}
+                        name={p.name}
+                        logo={p.logo}
+                        rating={p.rating}
+                        bonus={p.bonus}
                     />
                 ))}
             </div>
-        </ModernSection>
+        </section>
     );
 };
 

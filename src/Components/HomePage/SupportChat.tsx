@@ -1,30 +1,29 @@
 "use client";
 
-import React from "react";
-import { X, Send } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { toast } from "@/utils/toast";
-import AnaImg from "../../../public/assets/anna.png";
 import { useSocket } from "@/contexts/SocketProvider";
+import { toast } from "@/utils/toast";
+import LogoImg from "../../../public/assets/logo.png";
 
-interface ChatRoom {
-  _id: string;
-  participants: string[];
-  subject?: string | null;
-  status: "open" | "closed" | "archived";
-  lastMessageAt?: string | null;
-  createdAt?: string;
-}
+const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const WELCOME_MESSAGE =
+  "Before contacting our live support, kindly check the help desk link. You might find an immediate answer to your issue or question there!";
 
 interface Message {
   _id?: string;
-  id?: number;
   room: string;
-  senderUser?: string | null;
   senderRole: "user" | "support" | "system";
   text: string;
-  meta?: unknown;
   createdAt?: string;
+}
+
+interface ChatRoom {
+  _id: string;
+  subject?: string | null;
+  status: string;
+  lastMessageAt?: string | null;
 }
 
 interface SupportMessagePayload {
@@ -32,426 +31,386 @@ interface SupportMessagePayload {
   message: Message;
 }
 
-interface RoomUpdatedPayload {
-  room: ChatRoom;
-}
-
 interface SupportChatProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+function HeadsetIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path
+        d="M3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10V15C17 15.5523 16.5523 16 16 16H14C13.4477 16 13 15.5523 13 15V12C13 11.4477 13.4477 11 14 11H15.5V10C15.5 6.96243 13.0376 4.5 10 4.5C6.96243 4.5 4.5 6.96243 4.5 10V11H6C6.55228 11 7 11.4477 7 12V15C7 15.5523 6.55228 16 6 16H4C3.44772 16 3 15.5523 3 15V10Z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M1 1L11 11M1 11L11 1" stroke="#1E2133" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FAQIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="#8C8FA8" strokeWidth="1.5" />
+      <path
+        d="M6.5 6C6.5 5.17157 7.17157 4.5 8 4.5C8.82843 4.5 9.5 5.17157 9.5 6C9.5 6.82843 8.82843 7.5 8 7.5V9"
+        stroke="#8C8FA8"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="8" cy="11" r="0.75" fill="#8C8FA8" />
+    </svg>
+  );
+}
+
+function EmojiIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="8.5" stroke="#50536F" strokeWidth="1.5" />
+      <path d="M7 12C7 12 8 14 10 14C12 14 13 12 13 12" stroke="#50536F" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="7.5" cy="8.5" r="1" fill="#50536F" />
+      <circle cx="12.5" cy="8.5" r="1" fill="#50536F" />
+    </svg>
+  );
+}
+
+function AttachIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path
+        d="M17 9.5L10 16.5C8.34315 18.1569 5.65685 18.1569 4 16.5C2.34315 14.8431 2.34315 12.1569 4 10.5L10.5 4C11.6046 2.89543 13.3954 2.89543 14.5 4C15.6046 5.10457 15.6046 6.89543 14.5 8L8.5 14C7.94772 14.5523 7.05228 14.5523 6.5 14C5.94772 13.4477 5.94772 12.5523 6.5 12L12 6.5"
+        stroke="#50536F"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function SendIconSmall() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path
+        d="M18.5 1.5L1.5 8.5L8 10.5M18.5 1.5L11.5 18.5L8 10.5M18.5 1.5L8 10.5"
+        stroke="white"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
-  const [rooms, setRooms] = React.useState<ChatRoom[]>([]);
-  const [activeRoomId, setActiveRoomId] = React.useState<string | null>(null);
-  const [messages, setMessages] = React.useState<Record<string, Message[]>>({});
-  const [input, setInput] = React.useState("");
-  const [loadingRooms, setLoadingRooms] = React.useState(false);
-  const [sending, setSending] = React.useState(false);
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
   const { socket } = useSocket();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // helper: get token
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Fetch user's chat rooms
-  const fetchRooms = React.useCallback(async () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const fetchRooms = useCallback(async () => {
     const token = getToken();
-    if (!token) {
-      // no auth -> don't show chat
-      return;
-    }
-    setLoadingRooms(true);
+    if (!token) return;
     try {
       const res = await fetch(`${apiBase}/api/v1/support/chat`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        throw new Error(b?.message || "Failed to load chat rooms");
-      }
+      if (!res.ok) return;
       const data = await res.json();
       if (data && Array.isArray(data.rooms)) {
         setRooms(data.rooms);
-        // choose active room if not set
-        if (!activeRoomId && data.rooms.length > 0) {
-          setActiveRoomId(String(data.rooms[0]._id));
+        if (data.rooms.length > 0 && !activeRoomId) {
+          const rid = String(data.rooms[0]._id);
+          setActiveRoomId(rid);
+          fetchRoomMessages(rid, token);
         }
       }
-    } catch (err: unknown) {
-      console.error("fetchRooms error", err);
-      // be quiet in UI but show toast if meaningful
-      // toast.error((err as Error).message || "Could not load support chat");
-    } finally {
-      setLoadingRooms(false);
-    }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRoomId]);
 
-  // Fetch messages for a room
-  const fetchMessagesForRoom = React.useCallback(async (roomId: string) => {
-    const token = getToken();
-    if (!token) return;
+  const fetchRoomMessages = async (roomId: string, token: string) => {
     try {
       const res = await fetch(`${apiBase}/api/v1/support/chat/${roomId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        throw new Error(b?.message || "Failed to load messages");
-      }
+      if (!res.ok) return;
       const data = await res.json();
-      if (data && Array.isArray(data.messages)) {
-        setMessages((prev) => ({ ...prev, [roomId]: data.messages }));
-      }
-    } catch (err: unknown) {
-      console.error("fetchMessagesForRoom error", err);
+      if (data && Array.isArray(data.messages)) setMessages(data.messages);
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (isOpen) fetchRooms();
+    else {
+      setRooms([]);
+      setActiveRoomId(null);
+      setMessages([]);
     }
-  }, []);
+  }, [isOpen, fetchRooms]);
 
-  // Load rooms on open
-  React.useEffect(() => {
-    if (!isOpen) return;
-    fetchRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  // Load messages when active room changes
-  React.useEffect(() => {
-    if (!activeRoomId) return;
-    // If we already have messages, skip initial fetch (but still attempt to refresh)
-    fetchMessagesForRoom(activeRoomId);
-  }, [activeRoomId, fetchMessagesForRoom]);
-
-  // Socket handling for real-time updates
-  React.useEffect(() => {
+  useEffect(() => {
     if (!socket) return;
-    // Expected events (best-effort): 'support:message' { room, message }, 'support:room' { room }
-    const onSupportMessage = (payload: SupportMessagePayload) => {
-      try {
-        const { room, message } = payload || {};
-        if (!room || !message) return;
+    const onSupportMsg = (payload: SupportMessagePayload) => {
+      const { room, message } = payload || {};
+      if (!room || !message) return;
+      if (room === activeRoomId) {
         setMessages((prev) => {
-          const cur = prev[room] || [];
-          // Avoid duplicates if message has _id
-          const exists = message._id
-            ? cur.some((m) => m._id === message._id)
-            : false;
+          const exists = message._id ? prev.some((m) => m._id === message._id) : false;
           if (exists) return prev;
-          const next = { ...prev, [room]: [...cur, message] };
-          return next;
+          return [...prev, message];
         });
-        // If the incoming message belongs to a room we don't have, add it
-        if (
-          !rooms.some((r) => String(r._id) === String(room)) &&
-          message?.room
-        ) {
-          // try to fetch rooms to sync state
-          fetchRooms();
-        }
-      } catch {
-        // ignore
       }
     };
-
-    const onRoomUpdated = (payload: RoomUpdatedPayload) => {
-      try {
-        const { room } = payload || {};
-        if (!room) return;
-        setRooms((prev) => {
-          // replace or prepend
-          const idx = prev.findIndex((r) => String(r._id) === String(room._id));
-          if (idx !== -1) {
-            const copy = [...prev];
-            copy[idx] = room;
-            return copy;
-          }
-          return [room, ...prev];
-        });
-      } catch {}
-    };
-
-    const onConnect = () => {
-      // When socket reconnects, refetch to ensure we haven't missed events
-      if (isOpen) {
-        fetchRooms();
-        if (activeRoomId) {
-          fetchMessagesForRoom(activeRoomId);
-        }
-      }
-    };
-
-    socket.on("support:message", onSupportMessage);
-    socket.on("support:room", onRoomUpdated);
-    socket.on("connect", onConnect);
-
+    socket.on("support:message", onSupportMsg);
     return () => {
-      try {
-        socket.off("support:message", onSupportMessage);
-        socket.off("support:room", onRoomUpdated);
-        socket.off("connect", onConnect);
-      } catch {}
+      try { socket.off("support:message", onSupportMsg); } catch {}
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, rooms, activeRoomId, isOpen]);
+  }, [socket, activeRoomId]);
 
-  // Send message (POST /api/v1/support/chat)
-  const handleSend = React.useCallback(async () => {
-    if (!input || input.trim().length === 0) return;
+  const handleSend = async () => {
+    if (!input.trim()) return;
     const token = getToken();
-    if (!token) {
-      toast.warn("Please sign in to send messages to support.");
-      return;
-    }
+    if (!token) { toast.warn("Please sign in to contact support."); return; }
     setSending(true);
     try {
-      const body: { text: string; roomId?: string; subject?: string } = { text: input.trim() };
+      const body: any = { text: input.trim() };
       if (activeRoomId) body.roomId = activeRoomId;
-      // subject only when creating a new room and one doesn't exist
-      if (!activeRoomId) {
-        body.subject = "User initiated chat";
-      }
+      else body.subject = "User support request";
       const res = await fetch(`${apiBase}/api/v1/support/chat`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(payload?.message || "Failed to send message");
-      }
-
-      // Backend returns { roomId, messageId, sentAt }
-      const newRoomId = payload?.roomId ? String(payload.roomId) : activeRoomId;
-      const sentAt = payload?.sentAt || new Date().toISOString();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to send");
+      const newRoomId = data.roomId ? String(data.roomId) : activeRoomId;
       const newMsg: Message = {
         room: newRoomId || "",
-        senderUser: null, // server stores user; we represent as 'user' role below
         senderRole: "user",
         text: input.trim(),
-        createdAt: sentAt,
+        createdAt: data.sentAt || new Date().toISOString(),
       };
-
-      // Update rooms and messages locally
-      if (
-        newRoomId &&
-        !rooms.some((r) => String(r._id) === String(newRoomId))
-      ) {
-        const created: ChatRoom = {
-          _id: newRoomId,
-          participants: [],
-          subject: body.subject || null,
-          status: "open",
-          lastMessageAt: sentAt,
-        };
-        setRooms((prev) => [created, ...prev]);
+      if (newRoomId && !rooms.some((r) => String(r._id) === newRoomId)) {
+        setRooms((prev) => [{ _id: newRoomId, subject: "Support", status: "open", lastMessageAt: newMsg.createdAt || null }, ...prev]);
       }
-      setMessages((prev) => {
-        if (!newRoomId) return prev;
-        const cur = prev[newRoomId] || [];
-        return { ...prev, [newRoomId]: [...cur, newMsg] };
-      });
-
-      // switch active room if a new room was created
-      if (!activeRoomId && newRoomId) {
-        setActiveRoomId(newRoomId);
-      }
-
+      setMessages((prev) => [...prev, newMsg]);
+      if (!activeRoomId && newRoomId) setActiveRoomId(newRoomId);
       setInput("");
-    } catch (err: unknown) {
-      console.error("send message error", err);
-      toast.error((err as Error)?.message || "Failed to send message");
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to send");
     } finally {
       setSending(false);
     }
-  }, [input, activeRoomId, rooms]);
+  };
 
-  // Basic UI: side list of rooms + message area
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
   if (!isOpen) return null;
 
-  const activeMessages = activeRoomId ? messages[activeRoomId] || [] : [];
+  const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="fixed top-11 right-4 z-50">
-      <div className="w-[360px] h-[520px] bg-[#121428] text-white rounded-xl shadow-2xl flex">
-        {/* Left: rooms */}
-        <div className="w-36 border-r border-[#30334A] flex flex-col">
-          <div className="px-3 py-2 flex items-center justify-between border-b border-[#30334A]">
-            <span className="text-xs font-semibold">Support</span>
-            <button
-              onClick={onClose}
-              className="bg-[#8C8FA8] text-black rounded-md p-0.5"
-            >
-              <X size={16} />
-            </button>
+    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+      <div
+        className="flex flex-col overflow-hidden"
+        style={{ width: "100%", maxWidth: 380, height: "100%", background: "#0D0F1E" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center gap-3 px-4 shrink-0"
+          style={{ height: 68, borderBottom: "1px solid #1E2133" }}
+        >
+          <div
+            className="flex items-center justify-center rounded-[8px] bg-[#14A28A] shrink-0"
+            style={{ width: 36, height: 36 }}
+          >
+            <HeadsetIcon />
           </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <button
-              onClick={() => {
-                // create new conversation (set activeRoomId null and clear messages preview)
-                setActiveRoomId(null);
-              }}
-              className={`w-full text-left px-3 py-2 text-xs border-b border-[#26293E] ${activeRoomId === null ? "bg-[#26293E]" : ""}`}
-            >
-              + New
-            </button>
-
-            {loadingRooms ? (
-              <div className="p-3 text-xs text-gray-400">Loading...</div>
-            ) : rooms.length === 0 ? (
-              <div className="p-3 text-xs text-gray-400">
-                No conversations yet
-              </div>
-            ) : (
-              rooms.map((r) => (
-                <div
-                  key={r._id}
-                  onClick={() => setActiveRoomId(String(r._id))}
-                  className={`px-3 py-2 text-xs cursor-pointer border-b border-[#26293E] ${activeRoomId === String(r._id) ? "bg-[#26293E]" : "hover:bg-[#1C1F33]"}`}
-                >
-                  <div className="font-medium truncate">
-                    {r.subject || "Conversation"}
-                  </div>
-                  <div className="text-[11px] text-gray-400">
-                    {r.lastMessageAt
-                      ? new Date(r.lastMessageAt).toLocaleString()
-                      : ""}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <span
+            className="font-bold text-[20px] text-white flex-1 tracking-[0.02em]"
+            style={{ fontFamily: "'Manrope', sans-serif", lineHeight: "34px" }}
+          >
+            Support
+          </span>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center rounded-[5px] bg-[#8C8FA8] shrink-0 hover:bg-[#a0a3bb] transition-colors"
+            style={{ width: 24, height: 24 }}
+            aria-label="Close"
+          >
+            <XIcon />
+          </button>
         </div>
 
-        {/* Right: messages */}
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#30334A]">
-            <div className="flex items-center gap-3">
-              <Image
-                src={AnaImg}
-                alt="Agent"
-                width={28}
-                height={28}
-                className="rounded-full"
-              />
-              <div>
-                <div className="text-sm font-semibold">Live Support</div>
-                <div className="text-xs text-gray-400">
-                  {activeRoomId
-                    ? rooms.find((r) => String(r._id) === String(activeRoomId))
-                        ?.subject || "Support"
-                    : "New conversation"}
+        {/* In need of help section */}
+        <div
+          className="flex flex-col items-center gap-3 px-4 py-6 shrink-0"
+          style={{ borderBottom: "1px solid #1E2133" }}
+        >
+          <p
+            className="font-bold text-[18px] text-white"
+            style={{ fontFamily: "'Manrope', sans-serif" }}
+          >
+            In need of help?
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#14A28A]" />
+            <span
+              className="text-[#14A28A] text-sm"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              Our support is online
+            </span>
+          </div>
+          <a
+            href="/faq"
+            className="flex items-center gap-2 rounded-[8px] px-5 py-2 transition-colors hover:bg-[#1E2133]"
+            style={{ background: "#151728", border: "1px solid #26293E" }}
+            onClick={onClose}
+          >
+            <FAQIcon />
+            <span
+              className="text-white text-sm font-medium"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              FAQ
+            </span>
+          </a>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+          {/* Static welcome message from LabWards */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center justify-center rounded-[6px] overflow-hidden shrink-0"
+                style={{ width: 32, height: 32, background: "#151728" }}
+              >
+                <Image src={LogoImg} alt="LabWards" width={24} height={24} className="object-contain" />
+              </div>
+              <span
+                className="text-white text-sm font-semibold"
+                style={{ fontFamily: "'Manrope', sans-serif" }}
+              >
+                LabWards
+              </span>
+              <div className="w-1 h-1 rounded-full bg-[#8C8FA8] opacity-50" />
+              <span className="text-[#8C8FA8] text-xs" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {now}
+              </span>
+            </div>
+            <div
+              className="rounded-[10px_10px_10px_0px] p-3 ml-2"
+              style={{ background: "#151728", maxWidth: "90%" }}
+            >
+              <p
+                className="text-white text-[13px] leading-[1.6]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                {WELCOME_MESSAGE}
+              </p>
+            </div>
+          </div>
+
+          {/* Dynamic messages */}
+          {messages.map((msg, idx) => {
+            const isUser = msg.senderRole === "user";
+            const isSystem = msg.senderRole === "system";
+            if (isSystem) {
+              return (
+                <p key={msg._id || idx} className="text-[#8C8FA8] text-xs text-center">
+                  {msg.text}
+                </p>
+              );
+            }
+            return (
+              <div key={msg._id || idx} className={`flex flex-col gap-1 ${isUser ? "items-end" : "items-start"}`}>
+                {!isUser && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center rounded-[6px] overflow-hidden shrink-0" style={{ width: 24, height: 24, background: "#151728" }}>
+                      <Image src={LogoImg} alt="Support" width={18} height={18} className="object-contain" />
+                    </div>
+                    <span className="text-[#8C8FA8] text-xs">Support</span>
+                    {msg.createdAt && (
+                      <span className="text-[#8C8FA8] text-xs">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div
+                  className="rounded-[10px] p-3"
+                  style={{
+                    background: isUser ? "#14A28A" : "#151728",
+                    maxWidth: "80%",
+                    borderRadius: isUser ? "10px 10px 0px 10px" : "10px 10px 10px 0px",
+                  }}
+                >
+                  <p className="text-white text-[13px] leading-[1.6]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {msg.text}
+                  </p>
                 </div>
               </div>
-            </div>
-            <div className="text-xs text-gray-400">
-              {activeMessages.length} messages
-            </div>
-          </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
 
-          {/* Messages */}
-          <div
-            className="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm"
-            id="support-messages"
+        {/* Input */}
+        <div
+          className="flex items-center gap-2 px-4 py-4 shrink-0"
+          style={{ borderTop: "1px solid #1E2133", background: "#0D0F1E" }}
+        >
+          <button className="shrink-0">
+            <EmojiIcon />
+          </button>
+          <button className="shrink-0">
+            <AttachIcon />
+          </button>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter your message...."
+            disabled={sending}
+            className="flex-1 bg-transparent outline-none text-white placeholder-[#50536F] text-[14px]"
+            style={{ fontFamily: "'Manrope', sans-serif" }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || sending}
+            className="flex items-center justify-center rounded-[10px] shrink-0 disabled:opacity-40 transition-opacity"
+            style={{
+              width: 44,
+              height: 44,
+              background: "linear-gradient(12.07deg, rgba(255,255,255,0) 16.27%, rgba(255,255,255,0.7) 93.68%), #099F86",
+              boxShadow: "0px 6px 16px rgba(20,169,144,0.3)",
+            }}
           >
-            {activeMessages.length === 0 ? (
-              <div className="text-xs text-gray-400">
-                {activeRoomId
-                  ? "No messages in this conversation yet."
-                  : "Start a new conversation. Describe your issue and our team will respond."}
-              </div>
-            ) : (
-              activeMessages.map((msg, idx) => {
-                if (msg.senderRole === "system") {
-                  return (
-                    <p
-                      key={msg._id || idx}
-                      className="text-gray-400 text-xs bg-[#26293E] p-2 rounded-md"
-                    >
-                      {msg.text}
-                    </p>
-                  );
-                }
-                if (msg.senderRole === "support") {
-                  return (
-                    <div
-                      key={msg._id || idx}
-                      className="flex flex-col items-start"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                          <Image
-                            src={AnaImg}
-                            alt="Agent"
-                            width={20}
-                            height={20}
-                            className="rounded-full"
-                          />
-                          <span className="text-xs text-gray-300">Support</span>
-                        </div>
-                      <div className="bg-[#26293E] px-3 py-2 rounded-lg max-w-[80%]">
-                        <p className="text-[13px] leading-snug">{msg.text}</p>
-                        <div className="text-[10px] text-gray-400 mt-1">
-                          {msg.createdAt
-                            ? new Date(msg.createdAt).toLocaleString()
-                            : ""}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                // user message
-                return (
-                  <div key={msg._id || idx} className="flex flex-col items-end">
-                    <div className="flex items-center gap-2 mb-2">
-                      {/* removed default profile image — neutral placeholder */}
-                      <div className="h-5 w-5 rounded-full bg-[#2A2D44]" />
-                      <span className="text-xs text-gray-300">You</span>
-                    </div>
-                    <div className="bg-[#3A3E57] px-3 py-2 rounded-lg max-w-[80%]">
-                      <p className="text-[13px] leading-snug">{msg.text}</p>
-                      <div className="text-[10px] text-gray-400 mt-1">
-                        {msg.createdAt
-                          ? new Date(msg.createdAt).toLocaleString()
-                          : ""}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Input */}
-          <div className="flex items-center bg-[#121428] p-3 border-t border-[#30334A]">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter your message..."
-              className="flex-1 px-3 py-2 bg-[#26293E] text-white text-sm rounded-md outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              disabled={sending}
-            />
-            <button
-              onClick={() => handleSend()}
-              className={`ml-2 p-2 rounded-md hover:opacity-90 transition ${sending ? "bg-gray-600" : "bg-[#099F86]"}`}
-              disabled={sending}
-              aria-label="Send message"
-            >
-              <Send size={18} />
-            </button>
-          </div>
+            <SendIconSmall />
+          </button>
         </div>
       </div>
     </div>

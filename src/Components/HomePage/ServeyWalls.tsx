@@ -1,51 +1,48 @@
 "use client";
 
 import React from "react";
-import { StaticImageData } from "next/image";
 import { ClipboardList } from "lucide-react";
-import Fe1 from "../../../public/assets/freedom.png";
-import Fe2 from "../../../public/assets/kobo.png";
-import Fe3 from "../../../public/assets/amaz.png";
-import Fe4 from "../../../public/assets/mor.png";
-import ModernSection from "../Shared/ModernSection";
-import ModernCard from "../Shared/ModernCard";
-
-interface ServeyWallItem {
-    image: StaticImageData;
-    title: string;
-}
-
-const offers: ServeyWallItem[] = [
-    { image: Fe1, title: "Vegas Craze" },
-    { image: Fe2, title: "The Morning Show" },
-    { image: Fe3, title: "Amazon" },
-    { image: Fe4, title: "Rakuten Kobo" },
-    { image: Fe1, title: "Daily Survey" },
-];
+import ProviderCard from "../Shared/ProviderCard";
 
 const ServeyWalls: React.FC = () => {
-    const handleSurveyClick = (survey: ServeyWallItem) => {
-        console.log("Clicked survey:", survey.title);
-    };
+    const providers = [
+        { name: "Bitlab", logo: "/assets/bit.png", rating: 0.94 },
+        { name: "CPX Research", logo: "/assets/cpx.png", rating: 0.88 },
+        { name: "Pollfish", logo: "/assets/pol.png", rating: 0.96, bonus: "10" },
+        { name: "Inbrain", logo: "/assets/i.png", rating: 0.92 },
+        { name: "TheoremReach", logo: "/assets/tet.png", rating: 0.85 },
+    ];
 
     return (
-        <ModernSection
-            title="Survey Walls"
-            description="Share your opinion and earn rewards"
-            icon={<ClipboardList className="text-teal-400" size={20} />}
-        >
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-                {offers.map((offer, index) => (
-                    <ModernCard
-                        key={index}
-                        image={offer.image}
-                        title={offer.title}
-                        onClick={() => handleSurveyClick(offer)}
-                        variant="compact"
+        <section className="w-full mt-12 mb-20">
+            <div className="flex items-center justify-between mb-6 px-16">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-[#151728] border border-[#30334A] rounded-[10px] text-white">
+                        <ClipboardList size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-white text-[28px] font-bold leading-[34px]" style={{ fontFamily: "var(--font-manrope)" }}>
+                            Survey Walls
+                        </h2>
+                        <p className="text-[#6B6E8A] text-base font-medium leading-[24px]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                            Share your opinion and earn rewards
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[25px] px-16">
+                {providers.map((p, i) => (
+                    <ProviderCard
+                        key={i}
+                        name={p.name}
+                        logo={p.logo}
+                        rating={p.rating}
+                        bonus={p.bonus}
                     />
                 ))}
             </div>
-        </ModernSection>
+        </section>
     );
 };
 

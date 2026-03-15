@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, ChevronDown, Image as ImageIcon, Users, Hash } from "lucide-react";
 import Image from "next/image";
-import ReactCountryFlag from "react-country-flag";
 import { useSocket } from "@/contexts/SocketProvider";
 import UserProfileModal from "@/Components/UserProfileModal";
+import NotificationDropdown from "@/Components/HomePage/NotificationDropdown";
+import SupportChat from "@/Components/HomePage/SupportChat";
 import { toast } from "@/utils/toast";
+import TopBar from "@/Components/Topbar";
 
 interface ChatMessage {
   _id?: string;
@@ -25,7 +26,15 @@ interface ChatMessage {
 interface ChatRoom {
   id: string;
   name: string;
-  icon?: string;
+}
+
+interface StoredUser {
+  id?: string;
+  _id?: string;
+  email?: string;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
 }
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -35,13 +44,91 @@ const defaultRooms: ChatRoom[] = [
   { id: "support", name: "Support" },
 ];
 
-interface StoredUser {
-  id?: string;
-  _id?: string;
-  email?: string;
-  username?: string;
-  displayName?: string;
-  avatarUrl?: string;
+interface Language {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+const LANGUAGES: Language[] = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "ru", name: "Русский", flag: "🇷🇺" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+  { code: "pl", name: "Polski", flag: "🇵🇱" },
+  { code: "nl", name: "Nederlands", flag: "🇳🇱" },
+  { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+  { code: "sv", name: "Svenska", flag: "🇸🇪" },
+  { code: "uk", name: "Українська", flag: "🇺🇦" },
+  { code: "th", name: "แปลไทย", flag: "🇹🇭" },
+  { code: "vi", name: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "id", name: "Indonesia", flag: "🇮🇩" },
+  { code: "ms", name: "Melayu", flag: "🇲🇾" },
+  { code: "cs", name: "Čeština", flag: "🇨🇿" },
+  { code: "ro", name: "Română", flag: "🇷🇴" },
+  { code: "el", name: "Ελληνικά", flag: "🇬🇷" },
+  { code: "hu", name: "Magyar", flag: "🇭🇺" },
+  { code: "fi", name: "Suomi", flag: "🇫🇮" },
+  { code: "da", name: "Dansk", flag: "🇩🇰" },
+  { code: "no", name: "Norsk", flag: "🇳🇴" },
+  { code: "he", name: "עברית", flag: "🇮🇱" },
+  { code: "fa", name: "فارسی", flag: "🇮🇷" },
+];
+
+const tickerItems = [
+  { img: "/img6.png", user: "User XY withdrew", label: "Slots", amount: "$0.5" },
+  { img: "/img7.png", user: "User YZ earned", label: "Worldcoin", amount: "$10" },
+  { img: "/img8.png", user: "User AB earned", label: "Offer walls", amount: "$2" },
+  { img: "/img9.png", user: "User CD withdrew", label: "Torox", amount: "$1.5" },
+];
+
+function ChatIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" fill="#14A28A" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M26.25 1.75L1.75 11.0833L11.0833 14.9167M26.25 1.75L16.9167 26.25L11.0833 14.9167M26.25 1.75L11.0833 14.9167" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function EmojiIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke="#50536F" strokeWidth="1.8"/>
+      <path d="M8.5 14C8.5 14 9.5 16 12 16C14.5 16 15.5 14 15.5 14" stroke="#50536F" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="9" cy="10.5" r="1.2" fill="#50536F"/>
+      <circle cx="15" cy="10.5" r="1.2" fill="#50536F"/>
+    </svg>
+  );
+}
+
+function UserAvatar({ avatar, username, role }: { avatar?: string; username: string; role?: string }) {
+  const initial = username?.charAt(0)?.toUpperCase() || "U";
+  const color = role === "admin" ? "text-red-400" : role === "moderator" ? "text-blue-400" : "text-[#14A28A]";
+  return (
+    <div className="w-10 h-10 rounded-[5px] bg-[#151728] flex-shrink-0 flex items-center justify-center overflow-hidden">
+      {avatar ? (
+        <Image src={avatar} alt={username} width={40} height={40} className="w-full h-full object-cover rounded-full" />
+      ) : (
+        <span className={`text-[18px] font-bold ${color}`}>{initial}</span>
+      )}
+    </div>
+  );
 }
 
 export default function ChatPage() {
@@ -56,8 +143,10 @@ export default function ChatPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(LANGUAGES[0]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
@@ -65,21 +154,16 @@ export default function ChatPage() {
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Check authentication on mount
   useEffect(() => {
     const token = getToken();
     const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
-    
     if (token) {
       setAuthToken(token);
-      setIsAuthenticated(true);
-      
       if (userStr) {
         try {
-          setCurrentUser(JSON.parse(userStr));
-        } catch {
-          // Invalid user JSON
-        }
+          const u: StoredUser = JSON.parse(userStr);
+          setCurrentUserId(u._id || u.id || null);
+        } catch {}
       }
     }
   }, []);
@@ -88,20 +172,15 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  useEffect(() => { scrollToBottom(); }, [messages]);
 
-  // Fetch messages for the selected room
   const fetchMessages = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/v1/chat/messages?room=${selectedRoom.id}`);
       if (res.ok) {
         const data = await res.json();
-        if (data && Array.isArray(data.messages)) {
-          setMessages(data.messages);
-        }
+        if (data && Array.isArray(data.messages)) setMessages(data.messages);
       }
     } catch (err) {
       console.error("Failed to fetch chat messages", err);
@@ -110,19 +189,14 @@ export default function ChatPage() {
     }
   }, [selectedRoom.id]);
 
-  // Fetch online count
   const fetchOnlineCount = useCallback(async () => {
     try {
       const res = await fetch(`${apiBase}/api/v1/chat/online`);
       if (res.ok) {
         const data = await res.json();
-        if (typeof data.count === "number") {
-          setOnlineCount(data.count);
-        }
+        if (typeof data.count === "number") setOnlineCount(data.count);
       }
-    } catch {
-      // Silently fail
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -130,51 +204,30 @@ export default function ChatPage() {
     fetchOnlineCount();
   }, [fetchMessages, fetchOnlineCount]);
 
-  // Polling for new messages (fallback for when WebSockets aren't available)
   useEffect(() => {
-    // Poll for new messages every 3 seconds
-    const pollInterval = setInterval(() => {
-      fetchMessages();
-    }, 3000);
-
-    // Poll for online count every 30 seconds
-    const onlineInterval = setInterval(() => {
-      fetchOnlineCount();
-    }, 30000);
-
-    return () => {
-      clearInterval(pollInterval);
-      clearInterval(onlineInterval);
-    };
+    const pollInterval = setInterval(fetchMessages, 3000);
+    const onlineInterval = setInterval(fetchOnlineCount, 30000);
+    return () => { clearInterval(pollInterval); clearInterval(onlineInterval); };
   }, [fetchMessages, fetchOnlineCount]);
 
-  // Send heartbeat to track online status
   useEffect(() => {
     const token = getToken() || authToken;
     if (!token) return;
-
     const sendHeartbeat = async () => {
       try {
         await fetch(`${apiBase}/api/v1/chat/heartbeat`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
-      } catch {
-        // Silently fail
-      }
+      } catch {}
     };
-
-    // Send immediately and then every minute
     sendHeartbeat();
     const heartbeatInterval = setInterval(sendHeartbeat, 60000);
-
     return () => clearInterval(heartbeatInterval);
   }, [authToken]);
 
-  // Socket events for real-time chat (works locally, gracefully fails on Vercel)
   useEffect(() => {
     if (!socket) return;
-
     const onChatMessage = (msg: ChatMessage) => {
       if (msg.room === selectedRoom.id || !msg.room) {
         setMessages((prev) => {
@@ -184,17 +237,12 @@ export default function ChatPage() {
         });
       }
     };
-
     const onOnlineUpdate = (data: { count: number }) => {
-      if (typeof data.count === "number") {
-        setOnlineCount(data.count);
-      }
+      if (typeof data.count === "number") setOnlineCount(data.count);
     };
-
     socket.on("chat:message", onChatMessage);
     socket.on("chat:online", onOnlineUpdate);
     socket.emit("chat:join", { room: selectedRoom.id });
-
     return () => {
       socket.off("chat:message", onChatMessage);
       socket.off("chat:online", onOnlineUpdate);
@@ -204,48 +252,32 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-
     const token = getToken() || authToken;
-    
-    console.log("[Chat] handleSend - token:", !!token, "authToken:", !!authToken);
-    
-    // If we have a token, use it
     if (!token) {
-      console.log("[Chat] No token, prompting sign in");
       toast.warn("Please sign in to send messages");
       router.push("/sign-in");
       return;
     }
-
     setSending(true);
     try {
       const res = await fetch(`${apiBase}/api/v1/chat/messages`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: input.trim(),
-          room: selectedRoom.id,
-        }),
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input.trim(), room: selectedRoom.id }),
       });
-
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.message || "Failed to send message");
       }
-
       setInput("");
     } catch (err) {
-      console.error("Send message error", err);
       toast.error((err as Error)?.message || "Failed to send message");
     } finally {
       setSending(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -259,209 +291,239 @@ export default function ChatPage() {
     }
   };
 
-  const formatTime = (timestamp: string | Date) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+  const formatTime = (timestamp: string | Date) =>
+    new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const getRoleBadge = (role?: string) => {
-    switch (role) {
-      case "admin":
-        return (
-          <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded ml-1.5">
-            Admin
-          </span>
-        );
-      case "moderator":
-        return (
-          <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded ml-1.5">
-            Mod
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
+  const isImageUrl = (text: string) =>
+    /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim());
 
   return (
-    <div className="flex flex-col h-screen bg-[#0A0C1A] pb-16 sm:pb-0">
-      {/* Header */}
-      <div className="flex items-center justify-between p-2 sm:p-4 bg-[#0F1123] border-b border-[#1E2035]">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            onClick={() => router.back()}
-            className="p-1.5 sm:p-2 rounded-lg bg-[#1A1D2E] hover:bg-[#252840] transition-colors"
+    <div className="flex flex-col min-h-screen bg-[#0D0F1E] pb-16 lg:pb-0">
+      <TopBar />
+
+      {/* ── Sub-header: language / room selector ── */}
+      <div className="flex flex-row items-center px-4 gap-[10px] h-[48px] bg-[#0D0F1E] border-b border-[#1E2133] flex-shrink-0">
+        <div className="flex flex-row items-center gap-2 flex-1">
+          <ChatIcon />
+          <span
+            className="font-bold text-[16px] leading-[24px] tracking-[0.02em] text-white"
+            style={{ fontFamily: "'Manrope', sans-serif" }}
           >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </button>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-sm sm:text-lg">💬</span>
-            </div>
-            <div>
-              <h1 className="text-sm sm:text-lg font-bold text-white">Chat</h1>
-              <p className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1">
-                <Users size={10} className="sm:w-3 sm:h-3" />
-                {onlineCount} online
-              </p>
-            </div>
-          </div>
+            Chat room
+          </span>
         </div>
 
-        {/* Room Selector */}
+        {/* Language selector */}
         <div className="relative">
           <button
             onClick={() => setShowRoomDropdown(!showRoomDropdown)}
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-[#1A1D2E] rounded-lg hover:bg-[#252840] transition-colors border border-[#2A2D3E]"
+            className="flex flex-row items-center gap-1 bg-[#151728] border border-[#1E2133] rounded-[5px] px-[4px] py-[5px] h-[34px]"
           >
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400" />
-            <span className="text-xs sm:text-sm font-medium text-white">{selectedRoom.name}</span>
-            <ChevronDown
-              size={14}
-              className={`text-gray-400 transition-transform sm:w-4 sm:h-4 ${showRoomDropdown ? "rotate-180" : ""}`}
-            />
+            <div className="w-6 h-6 rounded-[3px] bg-[#1E2133] flex items-center justify-center text-[14px]">
+              {selectedLanguage.flag}
+            </div>
+            <div className="flex flex-col items-start pl-1 pr-0.5">
+              <span
+                className="font-medium text-[12px] leading-[14px] tracking-[0.02em] text-[#B3B6C7]"
+                style={{ fontFamily: "'Manrope', sans-serif" }}
+              >
+                {selectedLanguage.name}
+              </span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mx-1">
+              <path d="M2 8L6 4L10 8" stroke="#50536F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
 
           {showRoomDropdown && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-[#1A1D2E] rounded-lg border border-[#2A2D3E] shadow-xl z-10">
-              {defaultRooms.map((room) => (
-                <button
-                  key={room.id}
-                  onClick={() => {
-                    setSelectedRoom(room);
-                    setShowRoomDropdown(false);
-                    setMessages([]);
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 w-full hover:bg-[#252840] transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                    selectedRoom.id === room.id ? "bg-[#252840]" : ""
-                  }`}
-                >
-                  <Hash size={14} className="text-gray-400" />
-                  <span className="text-sm text-white">{room.name}</span>
-                  {selectedRoom.id === room.id && (
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 ml-auto" />
-                  )}
-                </button>
-              ))}
+            <div
+              className="absolute top-full right-0 mt-1 bg-[#151728] border border-[#1E2133] rounded-[8px] shadow-xl z-20 overflow-hidden"
+              style={{ width: 180, maxHeight: 320, overflowY: "auto" }}
+            >
+              {/* Languages */}
+              <div className="px-2 pt-2 pb-1">
+                <p className="text-[10px] font-semibold text-[#50536F] uppercase tracking-wider px-1 pb-1">Language</p>
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setSelectedLanguage(lang); setShowRoomDropdown(false); }}
+                    className={`flex items-center gap-2 px-2 py-1.5 w-full text-left hover:bg-[#1E2133] rounded-[5px] transition-colors ${
+                      selectedLanguage.code === lang.code ? "bg-[#1E2133]" : ""
+                    }`}
+                  >
+                    <span className="text-[15px]">{lang.flag}</span>
+                    <span className="text-[12px] text-[#B3B6C7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                      {lang.name}
+                    </span>
+                    {selectedLanguage.code === lang.code && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#14A28A] ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              {/* Rooms */}
+              <div className="px-2 pt-1 pb-2" style={{ borderTop: "1px solid #1E2133" }}>
+                <p className="text-[10px] font-semibold text-[#50536F] uppercase tracking-wider px-1 py-1">Rooms</p>
+                {defaultRooms.map((room) => (
+                  <button
+                    key={room.id}
+                    onClick={() => { setSelectedRoom(room); setShowRoomDropdown(false); setMessages([]); }}
+                    className={`flex items-center gap-2 px-2 py-1.5 w-full text-left hover:bg-[#1E2133] rounded-[5px] transition-colors ${
+                      selectedRoom.id === room.id ? "bg-[#1E2133]" : ""
+                    }`}
+                  >
+                    <span className="text-[12px] text-[#B3B6C7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                      {room.name}
+                    </span>
+                    {selectedRoom.id === room.id && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#14A28A] ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
+
+        {/* Close / back */}
+        <button onClick={() => router.back()} className="w-7 h-7 flex items-center justify-center flex-shrink-0">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M7.5 7.5L20.5 20.5M7.5 20.5L20.5 7.5" stroke="#8C8FA8" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+        </button>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-sm text-gray-400">Loading messages...</div>
+      {/* ── Activity ticker ── */}
+      <div className="flex flex-row overflow-x-auto gap-[10px] px-4 py-2 border-b border-[#1E2133] flex-shrink-0">
+        {tickerItems.map((item, i) => (
+          <div key={i} className="flex-shrink-0 flex flex-row items-center gap-2 bg-[#151728] rounded-[8px] px-3 py-1.5 min-w-[160px] h-[48px]">
+            <div className="w-8 h-8 rounded-[5px] overflow-hidden flex-shrink-0 bg-[#1E2133]">
+              <Image src={item.img} alt={item.label} width={32} height={32} className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col justify-center">
+              <span className="text-[10px] font-medium text-[#8C8FA8] leading-[14px]">{item.user}</span>
+              <span className="text-[11px] font-medium text-[#B3B6C7] leading-[14px]">{item.label}</span>
+            </div>
+            <span className="text-[14px] font-bold text-[#0AC07D] ml-auto pl-2">{item.amount}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Messages area ── */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-[21px]">
+        {loading && messages.length === 0 ? (
+          <div className="flex items-center justify-center flex-1 h-full">
+            <p className="text-sm text-[#8C8FA8]">Loading messages...</p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center flex-1 h-full">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-[#1A1D2E] flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">💭</span>
-              </div>
-              <p className="text-sm text-gray-400">No messages yet</p>
-              <p className="text-xs text-gray-500 mt-1">Be the first to say hello!</p>
+              <p className="text-sm text-[#8C8FA8]">No messages yet</p>
+              <p className="text-xs text-[#50536F] mt-1">Be the first to say hello!</p>
             </div>
           </div>
         ) : (
-          messages.map((msg, index) => (
-            <div key={msg._id || msg.id || index} className="group">
-              <div className="flex items-start gap-2 sm:gap-3">
+          messages.map((msg, idx) => {
+            const isMention = msg.text?.startsWith("@");
+            const isImg = isImageUrl(msg.text || "");
+            return (
+              <div key={msg._id || msg.id || idx} className="flex flex-row items-end gap-2">
                 {/* Avatar */}
-                <div
-                  onClick={() => handleUserClick(msg.userId)}
-                  className="relative cursor-pointer flex-shrink-0"
-                >
-                  {msg.avatar ? (
-                    <Image
-                      src={msg.avatar}
-                      alt={msg.username}
-                      width={40}
-                      height={40}
-                      className="rounded-full w-8 h-8 sm:w-10 sm:h-10"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs sm:text-sm font-bold uppercase">
-                      {msg.username?.charAt(0) || "U"}
-                    </div>
-                  )}
+                <div className="cursor-pointer flex-shrink-0" onClick={() => handleUserClick(msg.userId)}>
+                  <UserAvatar avatar={msg.avatar} username={msg.username} role={msg.role} />
                 </div>
 
-                {/* Message Content */}
-                <div className="flex-1 min-w-0">
-                  {/* Username, Badge, Flag, Time */}
-                  <div className="flex items-center gap-1.5 mb-1">
+                {/* Content column */}
+                <div className="flex flex-col gap-[6px] flex-1 min-w-0">
+                  {/* Name row */}
+                  <div className="flex flex-row items-center gap-1">
+                    <div className="w-4 h-4 rounded-[4px] border border-[#0088FF] bg-[#0D0F1E] flex-shrink-0 overflow-hidden flex items-center justify-center">
+                      {msg.avatar ? (
+                        <Image src={msg.avatar} alt={msg.username} width={16} height={16} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[8px] font-bold text-[#0088FF]">{msg.username?.charAt(0)?.toUpperCase()}</span>
+                      )}
+                    </div>
                     <span
+                      className="text-[13px] font-medium text-[#8C8FA8] leading-[21px] tracking-[-0.03em] cursor-pointer hover:text-white"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
                       onClick={() => handleUserClick(msg.userId)}
-                      className="text-sm font-semibold text-white hover:underline cursor-pointer"
                     >
                       {msg.username}
                     </span>
-                    {getRoleBadge(msg.role)}
-                    {msg.countryCode && (
-                      <ReactCountryFlag
-                        countryCode={msg.countryCode}
-                        svg
-                        style={{ width: "16px", height: "12px" }}
-                        className="ml-1"
-                      />
-                    )}
-                    <span className="text-[11px] text-gray-500 ml-2">
+                    <span className="w-1 h-1 rounded-full bg-[#B3B6C7] opacity-40 flex-shrink-0" />
+                    <span
+                      className="text-[10px] font-medium text-[#8C8FA8] leading-[21px] tracking-[-0.03em] flex-shrink-0"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
                       {formatTime(msg.timestamp)}
                     </span>
                   </div>
 
-                  {/* Message Text */}
-                  <div className="bg-[#1A1D2E] rounded-lg sm:rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2.5 inline-block max-w-full">
-                    <p className="text-xs sm:text-sm text-gray-200 break-words whitespace-pre-wrap">
-                      {msg.text}
-                    </p>
-                  </div>
+                  {/* Bubble */}
+                  {isImg ? (
+                    <div className="rounded-[10px_10px_10px_0px] overflow-hidden w-[133px] h-[109px]">
+                      <Image src={msg.text} alt="image" width={133} height={109} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="bg-[#151728] rounded-[10px_10px_10px_0px] px-2 py-3 max-w-lg w-fit">
+                      <p
+                        className={`text-[13px] leading-[21px] tracking-[-0.03em] break-words whitespace-pre-wrap ${isMention ? "font-semibold text-[#8C8FA8]" : "font-medium text-white"}`}
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {msg.text}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-2 sm:p-4 bg-[#0F1123] border-t border-[#1E2035]">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button className="p-1.5 sm:p-2.5 hover:bg-[#1A1D2E] rounded-lg transition-colors hidden sm:block">
-            <ImageIcon size={22} className="text-gray-400" />
+      {/* ── Input area ── */}
+      <div className="flex flex-row items-center gap-2 px-4 py-4 flex-shrink-0 bg-[#0D0F1E]">
+        <div className="flex-1 flex flex-row items-center gap-[10px] bg-[#151728] border border-[#26293E] rounded-[10px] h-14 px-[10px]">
+          <button className="flex-shrink-0">
+            <EmojiIcon />
           </button>
-          <div className="flex-1 bg-[#1A1D2E] rounded-lg sm:rounded-xl border border-[#2A2D3E] focus-within:border-emerald-500/50 transition-colors">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Enter a message..."
-              disabled={sending}
-              className="w-full bg-transparent text-white text-xs sm:text-sm placeholder-gray-500 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl outline-none"
-            />
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || sending}
-            className="p-2 sm:p-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-[#1A1D2E] disabled:cursor-not-allowed rounded-lg sm:rounded-xl transition-colors"
-          >
-            <Send size={18} className="text-white sm:w-5 sm:h-5" />
-          </button>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter your message...."
+            disabled={sending}
+            className="flex-1 bg-transparent outline-none font-medium text-[14px] leading-[14px] tracking-[0.02em] text-white placeholder-[#50536F] min-w-0"
+            style={{ fontFamily: "'Manrope', sans-serif" }}
+          />
         </div>
+        <button
+          onClick={handleSend}
+          disabled={!input.trim() || sending}
+          className="w-[78px] h-14 flex items-center justify-center rounded-[10px] flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          style={{
+            background: "linear-gradient(12.07deg, rgba(255,255,255,0) 16.27%, rgba(255,255,255,0.7) 93.68%), #099F86",
+            boxShadow: "0px 11px 29px rgba(20,169,144,0.3)",
+          }}
+        >
+          <SendIcon />
+        </button>
       </div>
 
-      {/* User Profile Modal */}
       <UserProfileModal
         userId={selectedUserId}
         isOpen={showProfileModal}
-        onClose={() => {
-          setShowProfileModal(false);
-          setSelectedUserId(null);
-        }}
+        onClose={() => { setShowProfileModal(false); setSelectedUserId(null); }}
       />
+
+      {showNotifications && (
+        <NotificationDropdown onClose={() => setShowNotifications(false)} />
+      )}
+
+      <SupportChat isOpen={showSupport} onClose={() => setShowSupport(false)} />
     </div>
   );
 }

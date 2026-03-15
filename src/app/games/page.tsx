@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Gamepad2, Star, Clock, DollarSign, Users, Zap, Trophy, Target, ChevronRight } from "lucide-react";
+import { Gamepad2, Star, Clock, DollarSign, Users, Zap, Trophy, Target, ChevronRight } from "lucide-react";
+import TopBar from "@/Components/Topbar";
 
 // Game images
 import Game1 from "../../../public/assets/fe1.png";
@@ -69,20 +70,7 @@ const features = [
 export default function GamesPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#0A0C1A] via-[#0D0F1E] to-[#0A0C1A] text-white">
-            {/* Header */}
-            <div className="bg-[#0A0C1A] border-b border-[#2A2D3E] sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
-                    <div className="flex items-center gap-4">
-                        <Link href="/landing" className="p-2 rounded-lg bg-[#1A1D2E] border border-[#2A2D3E] hover:bg-[#252840] transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                        <div className="flex items-center gap-2">
-                            <Gamepad2 className="w-6 h-6 text-pink-400" />
-                            <h1 className="text-xl font-bold">Games</h1>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <TopBar />
 
             {/* Hero Section */}
             <section className="py-16 px-4 relative overflow-hidden">

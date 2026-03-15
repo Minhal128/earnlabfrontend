@@ -220,37 +220,37 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <div className="fixed top-16 right-4 z-50">
-        <div className="w-[400px] h-[600px] bg-[#0F1123] text-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#1E2035]">
+      <div className="fixed top-14 sm:top-16 right-2 sm:right-4 z-50 w-[calc(100vw-16px)] sm:w-[400px] max-w-[400px]">
+        <div className="h-[calc(100vh-72px)] sm:h-[600px] bg-[#0F1123] text-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#1E2035]">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#1E2035]">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <span className="text-sm font-bold">💬</span>
+          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-[#1E2035]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <span className="text-xs sm:text-sm font-bold">💬</span>
               </div>
               <div>
-                <h2 className="text-base font-bold">Chat</h2>
-                <p className="text-xs text-gray-400">{onlineCount} User(s) online</p>
+                <h2 className="text-sm sm:text-base font-bold">Chat</h2>
+                <p className="text-[10px] sm:text-xs text-gray-400">{onlineCount} User(s) online</p>
               </div>
             </div>
             <button
               onClick={onClose}
               className="p-1.5 hover:bg-[#1E2035] rounded-lg transition-colors"
             >
-              <X size={20} className="text-gray-400" />
+              <X size={18} className="text-gray-400 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Room Selector */}
-          <div className="px-4 py-2 border-b border-[#1E2035]">
+          <div className="px-3 sm:px-4 py-2 border-b border-[#1E2035]">
             <div className="relative">
               <button
                 onClick={() => setShowRoomDropdown(!showRoomDropdown)}
-                className="flex items-center gap-2 px-3 py-2 bg-[#1A1D2E] rounded-lg hover:bg-[#252840] transition-colors w-full"
+                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#1A1D2E] rounded-lg hover:bg-[#252840] transition-colors w-full"
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-sm font-medium flex-1 text-left">{selectedRoom.name}</span>
-                <ChevronDown size={16} className={`text-gray-400 transition-transform ${showRoomDropdown ? "rotate-180" : ""}`} />
+                <span className="text-xs sm:text-sm font-medium flex-1 text-left">{selectedRoom.name}</span>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform sm:w-4 sm:h-4 ${showRoomDropdown ? "rotate-180" : ""}`} />
               </button>
 
               {showRoomDropdown && (
@@ -277,22 +277,22 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 space-y-3 sm:space-y-4">
             {loading ? (
               <div className="flex items-center justify-center h-full">
-                <div className="text-sm text-gray-400">Loading messages...</div>
+                <div className="text-xs sm:text-sm text-gray-400">Loading messages...</div>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <p className="text-sm text-gray-400">No messages yet</p>
-                  <p className="text-xs text-gray-500 mt-1">Be the first to say hello!</p>
+                  <p className="text-xs sm:text-sm text-gray-400">No messages yet</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Be the first to say hello!</p>
                 </div>
               </div>
             ) : (
               messages.map((msg, index) => (
                 <div key={msg._id || msg.id || index} className="group">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2 sm:gap-3">
                     {/* Avatar */}
                     <div
                       onClick={() => handleUserClick(msg.userId)}
@@ -302,12 +302,12 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                         <Image
                           src={msg.avatar}
                           alt={msg.username}
-                          width={36}
-                          height={36}
-                          className="rounded-full"
+                          width={32}
+                          height={32}
+                          className="rounded-full sm:w-9 sm:h-9"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm font-bold uppercase">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs sm:text-sm font-bold uppercase">
                           {msg.username?.charAt(0) || "U"}
                         </div>
                       )}
@@ -316,10 +316,10 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                     {/* Message Content */}
                     <div className="flex-1 min-w-0">
                       {/* Username, Badge, Flag, Time */}
-                      <div className="flex items-center gap-1.5 mb-1">
+                      <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
                         <span
                           onClick={() => handleUserClick(msg.userId)}
-                          className="text-sm font-semibold text-white hover:underline cursor-pointer"
+                          className="text-xs sm:text-sm font-semibold text-white hover:underline cursor-pointer truncate"
                         >
                           {msg.username}
                         </span>
@@ -328,18 +328,18 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                           <ReactCountryFlag
                             countryCode={msg.countryCode}
                             svg
-                            style={{ width: "14px", height: "10px" }}
-                            className="ml-1"
+                            style={{ width: "12px", height: "9px" }}
+                            className="ml-1 sm:w-[14px] sm:h-[10px]"
                           />
                         )}
-                        <span className="text-[11px] text-gray-500 ml-auto">
+                        <span className="text-[10px] sm:text-[11px] text-gray-500 ml-auto flex-shrink-0">
                           {formatTime(msg.timestamp)}
                         </span>
                       </div>
 
                       {/* Message Text */}
-                      <div className="bg-[#1A1D2E] rounded-lg px-3 py-2">
-                        <p className="text-sm text-gray-200 break-words">{msg.text}</p>
+                      <div className="bg-[#1A1D2E] rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2">
+                        <p className="text-xs sm:text-sm text-gray-200 break-words">{msg.text}</p>
                       </div>
                     </div>
                   </div>
@@ -350,10 +350,10 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Input Area */}
-          <div className="p-3 border-t border-[#1E2035]">
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-[#1A1D2E] rounded-lg transition-colors">
-                <ImageIcon size={20} className="text-gray-400" />
+          <div className="p-2 sm:p-3 border-t border-[#1E2035]">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button className="p-1.5 sm:p-2 hover:bg-[#1A1D2E] rounded-lg transition-colors">
+                <ImageIcon size={18} className="text-gray-400 sm:w-5 sm:h-5" />
               </button>
               <input
                 type="text"
@@ -362,14 +362,14 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                 onKeyPress={handleKeyPress}
                 placeholder="Enter a message..."
                 disabled={sending}
-                className="flex-1 bg-[#1A1D2E] text-white text-sm placeholder-gray-500 px-4 py-2.5 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500/50"
+                className="flex-1 bg-[#1A1D2E] text-white text-xs sm:text-sm placeholder-gray-500 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500/50"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || sending}
-                className="p-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
+                className="p-2 sm:p-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
               >
-                <Send size={18} className="text-white" />
+                <Send size={16} className="text-white sm:w-[18px] sm:h-[18px]" />
               </button>
             </div>
           </div>
