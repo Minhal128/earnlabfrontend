@@ -291,14 +291,16 @@ function Footer() {
         </div>
         <div className="flex flex-col gap-5">
           <div style={{height:1,background:"#243B46"}}/>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <span className="text-[#B3B6C7] text-lg" style={{fontFamily:"'Manrope',sans-serif"}}>©2026 Lab Wards, All Rights Reserved</span>
-            <div className="flex items-center gap-4">
-              <Link href="/terms" className="text-[#B3B6C7] text-lg hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Terms of Use</Link>
-              <div style={{width:1,height:18,background:"#50536F"}}/>
-              <Link href="/privacy" className="text-[#B3B6C7] text-lg hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Privacy Policy</Link>
-              <div style={{width:1,height:18,background:"#50536F"}}/>
-              <Link href="/cookies" className="text-[#B3B6C7] text-lg hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Cookie Policy</Link>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4 text-center sm:text-left">
+              <span className="text-[#B3B6C7] text-sm sm:text-base relative z-10" style={{fontFamily:"'Manrope',sans-serif"}}>©2026 Lab Wards, All Rights Reserved</span>
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 relative z-10">
+                <Link href="/terms" className="text-[#B3B6C7] text-sm sm:text-base hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Terms of Use</Link>
+                <div className="hidden sm:block" style={{width:1,height:18,background:"#50536F"}}/>
+                <span className="sm:hidden text-[#50536F]">|</span>
+                <Link href="/privacy" className="text-[#B3B6C7] text-sm sm:text-base hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Privacy Policy</Link>
+                <div className="hidden sm:block" style={{width:1,height:18,background:"#50536F"}}/>
+                <span className="sm:hidden text-[#50536F]">|</span>
+                <Link href="/cookies" className="text-[#B3B6C7] text-sm sm:text-base hover:text-white transition-colors" style={{fontFamily:"'Manrope',sans-serif"}}>Cookie Policy</Link>
             </div>
           </div>
         </div>

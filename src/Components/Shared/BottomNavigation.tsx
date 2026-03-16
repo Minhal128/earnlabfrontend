@@ -2,129 +2,185 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { DollarSign, Users, MessageCircle, User, Wallet } from "lucide-react";
+import { DollarSign, CheckSquare, FileText, Menu, X, Wallet, Users, User, LogOut } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import { clearUser } from "@/store/userSlice";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   path: string;
-  isCenter?: boolean;
+  isAction?: boolean;
 }
 
 const BottomNavigation: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  
+  const dispatch = useDispatch();
+  const profile = useSelector((s: RootState) => s.user.profile);
+  const token = useSelector((s: RootState) => s.user.token);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
 
   // Check for authentication
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    setIsAuthenticated(!!token);
-  }, []);
+    const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    setIsAuthenticated(!!localToken);
+  }, [token]);
 
-  // Navigation items matching the reference design: Cashout, Referrals, Earn (center), Profile, Chat
+  // Fetch notification count
+  useEffect(() => {
+    const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!localToken) return;
+    const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${api}/api/v1/user/notifications`, { headers: { Authorization: `Bearer ${localToken}` } })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && Array.isArray(data.notifications)) {
+          const unread = data.notifications.filter((n: any) => !n.read).length;
+          setNotificationCount(unread);
+        }
+      })
+      .catch(() => { });
+  }, [token]);
+
+  const handleSignOut = async () => {
+    try {
+      const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      if (localToken) {
+        try { await fetch(`${api}/api/v1/auth/logout`, { method: "POST", headers: { Authorization: `Bearer ${localToken}` } }); } catch { }
+      }
+      if (typeof window !== "undefined") { localStorage.removeItem("token"); localStorage.removeItem("user"); }
+      setIsAuthenticated(false);
+      setIsMenuOpen(false);
+      dispatch(clearUser());
+      try { router.push("/"); } catch { }
+    } catch { }
+  };
+
   const navItems: NavItem[] = [
     {
-      id: "cashout",
-      label: "Cashout",
-      icon: <Wallet className="w-5 h-5" />,
-      path: "/cashout",
-    },
-    {
-      id: "referrals",
-      label: "Referrals",
-      icon: <Users className="w-5 h-5" />,
-      path: "/referrals",
+      id: "home",
+      label: "Home",
+      icon: (
+        <div className="relative flex items-center justify-center w-[22px] h-[22px] rounded-full bg-[#E5484D] text-white font-medium text-[11px] uppercase">
+          {profile?.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="User" className="w-[22px] h-[22px] rounded-full object-cover" />
+          ) : (
+            (profile?.displayName?.[0] || profile?.username?.[0] || "?")
+          )}
+          {notificationCount > 0 && (
+            <span className="absolute -top-[3px] -right-[3px] w-[9px] h-[9px] bg-white border border-[#16192E] rounded-full shadow-sm"></span>
+          )}
+        </div>
+      ),
+      path: "/home",
     },
     {
       id: "earn",
       label: "Earn",
-      icon: <DollarSign className="w-6 h-6" />,
+      icon: <DollarSign className="w-5 h-5" />,
       path: "/earn",
-      isCenter: true, // Center button with special styling
     },
     {
-      id: "profile",
-      label: "Profile",
-      icon: <User className="w-5 h-5" />,
-      path: "/profile",
+      id: "tasks",
+      label: "Tasks",
+      icon: <CheckSquare className="w-5 h-5" />,
+      path: "/tasks",
     },
     {
-      id: "chat",
-      label: "Chat",
-      icon: <MessageCircle className="w-5 h-5" />,
-      path: "/chat",
+      id: "surveys",
+      label: "Surveys",
+      icon: <FileText className="w-5 h-5" />,
+      path: "/surveys",
+    },
+    {
+      id: "menu",
+      label: "Menu",
+      icon: <Menu className="w-5 h-5" />,
+      path: "#",
+      isAction: true,
     },
   ];
 
-  const handleNavClick = (path: string) => {
-    router.push(path);
+  const handleNavClick = (item: NavItem) => {
+    if (item.isAction) {
+      if (item.id === "menu") {
+        setIsMenuOpen(!isMenuOpen);
+      }
+      return;
+    }
+    setIsMenuOpen(false);
+    router.push(item.path);
   };
 
   const isActive = (path: string) => {
-    return pathname === path;
+    if (path === "#") return false;
+    return pathname === path || pathname.startsWith(path + '/');
   };
 
-  // Only render navbar if user is authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <>
-      {/* Bottom Navigation Bar - Mobile Only */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0A0C1A]/95 backdrop-blur-lg border-t border-[#1A1D2E] shadow-2xl">
-        <div className="flex items-center justify-around h-16 px-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleNavClick(item.path)}
-              className={`flex flex-col items-center justify-center transition-all duration-200 ${
-                item.isCenter 
-                  ? "relative -mt-6" // Lift center button up
-                  : "gap-0.5 px-2 py-1.5 min-w-[56px]"
-              } ${
-                isActive(item.path)
-                  ? "text-emerald-400"
-                  : "text-[#6B7280] hover:text-white"
-              }`}
-            >
-              {item.isCenter ? (
-                // Center Earn button with special circular design
-                <>
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
-                    isActive(item.path)
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/40"
-                      : "bg-emerald-500 text-white hover:bg-emerald-400"
-                  }`}>
-                    {item.icon}
-                  </div>
-                  <span className={`text-[10px] font-medium mt-1 ${
-                    isActive(item.path) ? "text-emerald-400" : "text-emerald-400"
-                  }`}>
-                    {item.label}
-                  </span>
-                </>
-              ) : (
-                // Regular nav items
-                <>
-                  <div className={`relative p-1.5 rounded-lg transition-all duration-200 ${
-                    isActive(item.path) 
-                      ? "bg-emerald-500/15" 
-                      : "hover:bg-[#1A1D2E]"
-                  }`}>
-                    <div className={`transition-transform duration-200 ${isActive(item.path) ? "scale-110" : ""}`}>
-                      {item.icon}
-                    </div>
-                  </div>
-                  <span className={`text-[10px] font-medium ${isActive(item.path) ? "text-emerald-400" : ""}`}>
-                    {item.label}
-                  </span>
-                </>
-              )}
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="lg:hidden fixed bottom-[60px] left-0 right-0 z-[45] bg-[#151728] border-t border-[#1E2133] animate-in slide-in-from-bottom-2 duration-200 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-xl overflow-hidden pb-safe">
+          <div className="flex justify-between items-center px-5 py-4 border-b border-[#1E2133]">
+            <span className="text-white font-bold font-['Manrope']">Menu</span>
+            <button onClick={() => setIsMenuOpen(false)} className="text-[#8C8FA8] hover:text-white transition-colors bg-[#26293E] p-1 rounded-md">
+              <X className="w-4 h-4" />
             </button>
-          ))}
+          </div>
+          <div className="flex flex-col p-2 max-h-[60vh] overflow-y-auto">
+            <button onClick={() => { setIsMenuOpen(false); router.push('/profile'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
+              <User className="w-[18px] h-[18px]" /> Profile
+            </button>
+            <button onClick={() => { setIsMenuOpen(false); router.push('/referrals'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
+              <Users className="w-[18px] h-[18px]" /> Referrals
+            </button>
+            <button onClick={() => { setIsMenuOpen(false); router.push('/cashout'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
+              <Wallet className="w-[18px] h-[18px]" /> Cashout
+            </button>
+            <div className="h-[1px] bg-[#1E2133] my-1 mx-2"></div>
+            <button onClick={handleSignOut} className="flex items-center gap-3 px-4 py-3.5 text-[#F87171] hover:bg-[#1E2133] rounded-lg transition-colors font-medium">
+              <LogOut className="w-[18px] h-[18px]" /> Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Navigation Bar */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0D0F1E] border-t border-[#1C1E32] pb-safe">
+        <div className="flex items-center justify-between h-[60px] px-2">
+          {navItems.map((item) => {
+            const active = isActive(item.path) && !item.isAction;
+            // The menu is active if it's open
+            const isMenuActive = item.id === 'menu' && isMenuOpen;
+            const displayActive = active || isMenuActive;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item)}
+                className={`flex flex-col items-center justify-center flex-1 h-full gap-[3px] transition-colors duration-200 ${
+                  displayActive ? "text-[#0AC07D]" : "text-[#6B6E8A] hover:text-[#B3B6C7]"
+                }`}
+              >
+                <div className={`transition-transform duration-200 flex items-center justify-center ${displayActive ? "scale-110" : "scale-100"} ${item.id === "home" && displayActive ? "" : ""}`}>
+                  {item.icon}
+                </div>
+                <span className={`text-[10px] font-medium leading-none ${displayActive ? "text-[#0AC07D]" : "text-[#6B6E8A]"}`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </nav>
     </>

@@ -1,10 +1,12 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setProfile } from "@/store/userSlice";
 import TopBar from "@/Components/Topbar";
+import OfferWalls from "./HomePage/OfferWalls";
+import FeaturedTask from "./HomePage/FeaturedTask";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -97,11 +99,14 @@ function TrustStars() {
   return (
     <div className="flex gap-1">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-[34px] h-[34px] bg-[#00B67A]" />
+        <div key={i} className="w-[34px] h-[34px] bg-[#00B67A] flex items-center justify-center">
+          <span className="text-white text-lg">★</span>
+        </div>
       ))}
-      <div className="relative w-[34px] h-[34px]">
-        <div className="absolute left-0 top-0 w-[17px] h-[34px] bg-[#30334A]" />
-        <div className="absolute right-0 top-0 w-[17px] h-[34px] bg-[#00B67A]" />
+      <div className="relative w-[34px] h-[34px] flex items-center justify-center">
+        <div className="absolute left-0 top-0 w-[17px] h-[34px] bg-[#00B67A]" />
+        <div className="absolute right-0 top-0 w-[17px] h-[34px] bg-[#30334A]" />
+        <span className="relative z-10 text-white text-lg">★</span>
       </div>
     </div>
   );
@@ -188,26 +193,31 @@ const HOMEPAGEComponent = () => {
     { icon: <ToroxIcon />, label: "User earned", value: "Torox", amount: "$0.80" },
     { icon: <OfferwallIcon />, label: "User earned", value: "Offer walls", amount: "$0.50" },
   ];
-  const tickerItems =
-    feedEvents.length > 0
-      ? feedEvents.slice(0, 8).map((ev: any) => {
-          const isWithdrawal = ev.type === "withdrawal";
-          const amountStr = `$${((ev.amountCents || 0) / 100).toFixed(2)}`;
-          // Try to extract the platform/source from the text
-          const fromMatch = ev.text?.match(/from (.+)$/i);
-          const value = fromMatch
-            ? fromMatch[1]
-            : isWithdrawal
-            ? "Withdrawal"
-            : "Offer";
-          return {
-            icon: isWithdrawal ? <WorldcoinIcon /> : <OfferwallIcon />,
-            label: isWithdrawal ? "User withdrew" : "User earned",
-            value,
-            amount: amountStr,
-          };
-        })
-      : STATIC_TICKER;
+let baseTickerItems =
+      feedEvents.length > 0
+        ? feedEvents.slice(0, 8).map((ev: any) => {
+            const isWithdrawal = ev.type === "withdrawal";
+            const amountStr = `$${((ev.amountCents || 0) / 100).toFixed(2)}`;
+            // Try to extract the platform/source from the text
+            const fromMatch = ev.text?.match(/from (.+)$/i);
+            const value = fromMatch
+              ? fromMatch[1]
+              : isWithdrawal
+              ? "Withdrawal"
+              : "Offer";
+            return {
+              icon: isWithdrawal ? <WorldcoinIcon /> : <OfferwallIcon />,
+              label: isWithdrawal ? "User withdrew" : "User earned",
+              value,
+              amount: amountStr,
+            };
+          })
+        : STATIC_TICKER;
+
+    if (baseTickerItems.length < 6) {
+      baseTickerItems = [...baseTickerItems, ...STATIC_TICKER];
+    }
+    const tickerItems = [...baseTickerItems, ...baseTickerItems, ...baseTickerItems, ...baseTickerItems];
 
   // Build offers — use live premium offers if available, else static fallback
   const STATIC_OFFERS = [
@@ -230,11 +240,11 @@ const HOMEPAGEComponent = () => {
       <TopBar />
 
       {/* Ticker bar */}
-      <div className="w-full bg-[#0D0F1E] overflow-x-auto flex justify-center scrollbar-hide">
-        <div className="flex flex-row gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 flex-shrink-0">
-          {tickerItems.map((item, i) => (
-            <TickerItem key={i} icon={item.icon} label={item.label} value={item.value} amount={item.amount} />
-          ))}
+        <div className="w-full bg-[#0D0F1E] overflow-hidden border-b border-[#1E2133] pointer-events-none">
+          <div className="flex animate-scroll-left flex-row gap-[15px] px-4 py-2 sm:py-3 w-max">
+            {tickerItems.map((item, i) => (
+              <TickerItem key={i} icon={item.icon} label={item.label} value={item.value} amount={item.amount} />
+            ))}
         </div>
       </div>
 
@@ -271,15 +281,11 @@ const HOMEPAGEComponent = () => {
         } />
       </div>
 
-      {/* Offers section */}
-      <div className="mx-3 sm:mx-4 md:mx-8 lg:mx-16 my-4 sm:my-5 md:my-6">
-        <h2 className="text-[22px] sm:text-[26px] md:text-[30px] font-semibold tracking-[-1px] sm:tracking-[-1.2px] text-white mb-3 sm:mb-4 md:mb-5 m-0">Offers available</h2>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5">
-          {offerCards.map((offer, i) => (
-            <OfferCard key={i} title={offer.title} img={offer.img} subtitle={offer.subtitle} amount={offer.amount} />
-          ))}
-        </div>
-      </div>
+      {/* Featured Games */}
+      <FeaturedTask />
+
+      {/* Offer Walls */}
+      <OfferWalls />
 
       {/* Footer */}
       <footer className="mx-3 sm:mx-4 md:mx-8 lg:mx-16 mt-8 sm:mt-10 md:mt-12 mb-4 sm:mb-6">
@@ -333,14 +339,14 @@ const HOMEPAGEComponent = () => {
           </div>
         </div>
         <div className="border-t border-[#243B46] my-5" />
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4">
-          <span className="text-[14px] font-normal text-[#B3B6C7]">@2026 Lab Wards, All Rights Reserved</span>
-          <div className="flex flex-row items-center gap-4">
-            <span className="text-[14px] font-normal text-[#B3B6C7]">Terms of Use</span>
-            <span className="text-[#50536F]">|</span>
-            <span className="text-[14px] font-normal text-[#B3B6C7]">Privacy Policy</span>
-            <span className="text-[#50536F]">|</span>
-            <span className="text-[14px] font-normal text-[#B3B6C7]">Cookie Policy</span>
+          <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 pb-4 text-center sm:text-left">
+            <span className="text-[14px] font-normal text-[#B3B6C7]">@2026 Lab Wards, All Rights Reserved</span>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4">
+              <span className="text-[14px] font-normal text-[#B3B6C7] cursor-pointer hover:text-white transition-colors">Terms of Use</span>
+              <span className="text-[#50536F] hidden sm:block">|</span>
+              <span className="text-[14px] font-normal text-[#B3B6C7] cursor-pointer hover:text-white transition-colors">Privacy Policy</span>
+              <span className="text-[#50536F] hidden sm:block">|</span>
+              <span className="text-[14px] font-normal text-[#B3B6C7] cursor-pointer hover:text-white transition-colors">Cookie Policy</span>
           </div>
         </div>
         <div className="text-center pb-2 overflow-hidden">

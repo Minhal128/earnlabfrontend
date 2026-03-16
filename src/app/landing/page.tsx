@@ -231,6 +231,7 @@ const LANDINGPAGEComponent = () => {
   const [testimonialSlide, setTestimonialSlide] = useState(0);
   const testimonialRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Detect mobile for testimonial slider
   useEffect(() => {
@@ -258,7 +259,9 @@ const LANDINGPAGEComponent = () => {
       <nav className="w-full bg-[#16192E] px-4 sm:px-10 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-50">
         <img src="/landing-image-003.png" alt="Lab Wards" className="h-7 sm:h-9" />
         {/* Mobile hamburger */}
-        <button className="sm:hidden w-10 h-10 bg-[#26293E] rounded-lg flex items-center justify-center">
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="sm:hidden w-10 h-10 bg-[#26293E] rounded-lg flex items-center justify-center">
           <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
             <path d="M1 1h16M1 7h16M1 13h16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
           </svg>
@@ -273,6 +276,31 @@ const LANDINGPAGEComponent = () => {
           </Link>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] bg-[#0D0F1E] flex flex-col p-4 sm:hidden animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="flex items-center justify-between mb-8">
+            <img src="/landing-image-003.png" alt="Lab Wards" className="h-7" />
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="w-10 h-10 bg-[#26293E] rounded-lg flex items-center justify-center text-[#8C8FA8]">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 1L13 13M1 13L13 1" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
+              Sign in
+            </Link>
+            <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+              Sign up
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* ═══════ HERO ═══════ */}
       <section className="relative">
@@ -325,9 +353,9 @@ const LANDINGPAGEComponent = () => {
             Complete surveys, play games, and finish quick offers to earn real
             money, crypto, and rewards.
           </p>
-          <button className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
+          <Link href="/signup" className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
             Start Earning Now
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -426,7 +454,7 @@ const LANDINGPAGEComponent = () => {
             </div>
 
             {/* Mobile: 2x2 grid */}
-            <div className="sm:hidden grid grid-cols-2 gap-3">
+            <div className="sm:hidden flex flex-col gap-3">
               <PayoutItem
                 icon={<GlobeIcon />}
                 label="User withdrew"
@@ -945,9 +973,9 @@ const LANDINGPAGEComponent = () => {
               answering surveys to earn real cash and rewards. It only takes a
               few minutes to get started.
             </p>
-            <button className="px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
+            <Link href="/signup" className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -1144,36 +1172,36 @@ const LANDINGPAGEComponent = () => {
 
       {/* ═══════ MOBILE BOTTOM NAV ═══════ */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-[#111324] border-t border-[#1C1E32] flex items-center justify-around py-2 z-50">
-        <a href="#" className="flex flex-col items-center gap-0.5 text-[#0AC07D]">
+        <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="flex flex-col items-center gap-0.5 text-[#0AC07D]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
           <span className="text-[10px] font-medium">Home</span>
-        </a>
-        <a href="#" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </button>
+        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
           <span className="text-[10px]">Earn</span>
-        </a>
-        <a href="#" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </Link>
+        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/>
           </svg>
           <span className="text-[10px]">Tasks</span>
-        </a>
-        <a href="#" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </Link>
+        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
           <span className="text-[10px]">Surveys</span>
-        </a>
-        <a href="#" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </Link>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
           <span className="text-[10px]">Menu</span>
-        </a>
+        </button>
       </nav>
     </div>
   );

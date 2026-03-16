@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Gamepad2, Layers } from "lucide-react";
-import GameCard from "../Shared/GameCard";
-import ModernSection from "../Shared/ModernSection";
+import NewGameCard from "../Shared/NewGameCard";
 
 const FeaturedTask: React.FC = () => {
     const [premiumOffers, setPremiumOffers] = useState<any[]>([]);
@@ -51,20 +50,27 @@ const FeaturedTask: React.FC = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-[25px] px-3 sm:px-6 md:px-10 lg:px-16">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-[25px] px-3 sm:px-6 md:px-10 lg:px-16">
                 {loading ? (
-                    Array(4).fill(0).map((_, i) => (
+                    Array(5).fill(0).map((_, i) => (
                         <div key={i} className="w-full aspect-[286/211] bg-[#181A2C] animate-pulse rounded-[10px]" />
                     ))
                 ) : (
                     premiumOffers.map((offer) => (
-                        <GameCard
+                        <NewGameCard
                             key={offer._id}
                             title={offer.title}
                             image={offer.imageUrl || "/assets/fe1.png"}
                             reward={`${(offer.rewardCents / 100).toFixed(1)}`}
                             platforms={offer.platform === "all" ? ["ios", "android", "desktop"] : [offer.platform]}
                             isNew={offer.status === "new"}
+                            onClick={() => {
+                                if (!localStorage.getItem("token")) {
+                                    window.dispatchEvent(new CustomEvent("openSignIn"));
+                                    return;
+                                }
+                                window.location.href = `/earn/?provider=${offer.providerId || offer.offerwallId || ''}`;
+                            }}
                         />
                     ))
                 )}

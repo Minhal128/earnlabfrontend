@@ -1,17 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Layers } from "lucide-react";
-import ProviderCard from "../Shared/ProviderCard";
+import ProviderCard from "../Shared/NewProviderCard";
+
+interface Offerwall {
+  _id: string;
+  name: string;
+  category: "survey" | "game" | "survey & game";
+  metadata?: {
+    logoUrl?: string;
+    description?: string;
+    rating?: number;
+    pointsMultiplier?: number;
+  };
+}
 
 const OfferWalls: React.FC = () => {
-    const providers = [
-        { name: "Lootably", logo: "/assets/lootably.png", rating: 0.94, bonus: "15" },
-        { name: "Torox", logo: "/assets/torox_logo.png", rating: 0.88 },
-        { name: "Ayetstudios", logo: "/assets/ayet.png", rating: 0.96 },
-        { name: "Revlum", logo: "/assets/revlum.png", rating: 0.92, bonus: "5" },
-        { name: "Adgate", logo: "/assets/adgate.png", rating: 0.85 },
-    ];
+    const [providers, setProviders] = useState<Offerwall[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOfferwalls = async () => {
+            try {
+                // Determine layout mode
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/offerwalls`);
+                const data = await res.json();
+                
+                if (data.success && data.data) {
+                    // Filter to strictly offerwalls or let all show, let's filter purely "game" out if wanted, but generally all go to offerwalls anyway, we can show ones without 'survey' as mainly offerwalls. But the design from images means all that aren't purely surveys.
+                    const walls = data.data.filter((ow: Offerwall) => ow.category !== 'survey');
+                    setProviders(walls.length > 0 ? walls : data.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch offerwalls:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOfferwalls();
+    }, []);
 
     return (
         <section className="w-full mt-8 sm:mt-10 md:mt-12">
@@ -32,15 +61,35 @@ const OfferWalls: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-[25px] px-3 sm:px-6 md:px-10 lg:px-16">
-                {providers.map((p, i) => (
-                    <ProviderCard
-                        key={i}
-                        name={p.name}
-                        logo={p.logo}
-                        rating={p.rating}
-                        bonus={p.bonus}
-                    />
-                ))}
+                {loading ? (
+                    Array(5).fill(0).map((_, i) => (
+                        <div key={i} className="w-full aspect-square bg-[#151728] animate-pulse rounded-[10px]" />
+                    ))
+                ) : (
+                    providers.map((p, i) => {
+                        const progress = p.metadata?.rating ? p.metadata.rating * 10 : 55;
+                        const bonus = p.metadata?.pointsMultiplier && p.metadata.pointsMultiplier > 1 
+                            ? ((p.metadata.pointsMultiplier - 1) * 100).toFixed(0) 
+                            : undefined;
+
+                        return (
+                            <ProviderCard
+                                key={p._id || i}
+                                name={p.name}
+                                logoUrl={p.metadata?.logoUrl}
+                                progress={progress}
+                                bonus={bonus}
+                                onClick={() => {
+                                   if (!localStorage.getItem("token")) {
+                                       window.dispatchEvent(new CustomEvent("openSignIn"));
+                                       return;
+                                   }
+                                   window.location.href = `/earn/?provider=${p._id}`;
+                                }}
+                            />
+                        );
+                    })
+                )}
             </div>
         </section>
     );

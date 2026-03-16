@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import TopBar from "@/Components/Topbar";
+import TickerBar from "@/Components/Shared/TickerBar";
+import FeedBar from "@/Components/HomePage/FeedBar";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -222,8 +224,10 @@ const OwnProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0F1E] flex flex-col" style={{ background: "#0D0F1E" }}>
-        <TopBar />
-
+        <TopBar />      <TickerBar />
+      <div className="px-[12px] sm:px-4 md:px-6 mt-4">
+        <FeedBar />
+      </div>
         {/* Loading */}
         {loading && (
           <div className="flex flex-1 items-center justify-center py-20">
