@@ -298,7 +298,7 @@ export default function ChatPage() {
     /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim());
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0D0F1E] pb-16 lg:pb-0">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0D0F1E] pb-20 lg:pb-0">
       <TopBar />
 
       {/* ── Sub-header: language / room selector ── */}

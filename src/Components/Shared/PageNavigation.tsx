@@ -13,7 +13,7 @@ const PageNavigation = () => {
     { href: "/home", label: "Dashboard", icon: Home },
     { href: "/earn", label: "Earn", icon: Zap },
     { href: "/tasks", label: "Tasks", icon: CheckSquare },
-    { href: "/servey", label: "Surveys", icon: MessageSquare },
+    { href: "/surveys", label: "Surveys", icon: MessageSquare },
     { href: "/rewards", label: "Rewards", icon: Gift },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
     { href: "/referrals", label: "Referrals", icon: Share2 },

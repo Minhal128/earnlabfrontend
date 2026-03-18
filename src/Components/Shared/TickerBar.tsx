@@ -60,6 +60,10 @@ const STATIC_TICKER = [
   { icon: <OfferwallIcon />, label: "User earned", value: "AdGate", amount: "$1.20" },
   { icon: <WorldcoinIcon />, label: "User withdrew", value: "Bitcoin", amount: "$42.50" },
   { icon: <OfferwallIcon />, label: "User earned", value: "RevU", amount: "$2.10" },
+  { icon: <WorldcoinIcon />, label: "User withdrew", value: "PayPal", amount: "$5.00" },
+  { icon: <OfferwallIcon />, label: "User earned", value: "Lootably", amount: "$0.45" },
+  { icon: <WorldcoinIcon />, label: "User withdrew", value: "Dogecoin", amount: "$1.50" },
+  { icon: <OfferwallIcon />, label: "User earned", value: "Ayestudios", amount: "$3.75" },
 ];
 
 export default function TickerBar() {

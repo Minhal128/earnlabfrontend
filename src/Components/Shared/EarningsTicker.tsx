@@ -13,11 +13,14 @@ interface TickerEvent {
 
 const EarningsTicker: React.FC = () => {
   const [events] = useState<TickerEvent[]>([
-    { id: 1, username: "User", type: "withdrew", amount: "$0.8", category: "Slots", icon: "/assets/18918.png" },
-    { id: 2, username: "User", type: "withdrew", amount: "$0.8", category: "Worldcoin", icon: "/assets/0CNf0QJUenb2.png" },
-    { id: 3, username: "User", type: "withdrew", amount: "$0.8", category: "Slot", icon: "/assets/17365.png" },
-    { id: 4, username: "User", type: "withdrew", amount: "$0.8", category: "Monopoly", icon: "/assets/17065.png" },
-    { id: 5, username: "User", type: "withdrew", amount: "$0.8", category: "Worldcoin", icon: "/assets/0CNf0QJUenb2.png" },
+    { id: 1, username: "User", type: "withdrew", amount: "$15.5", category: "Ethereum", icon: "/assets/18918.png" },
+    { id: 2, username: "User", type: "earned", amount: "$2.2", category: "OfferToro", icon: "/assets/0CNf0QJUenb2.png" },
+    { id: 3, username: "User", type: "withdrew", amount: "$8.4", category: "Bitcoin", icon: "/assets/17365.png" },
+    { id: 4, username: "User", type: "earned", amount: "$0.5", category: "Tapjoy", icon: "/assets/17065.png" },
+    { id: 5, username: "User", type: "withdrew", amount: "$25.0", category: "PayPal", icon: "/assets/0CNf0QJUenb2.png" },
+    { id: 6, username: "User", type: "earned", amount: "$1.8", category: "RevU", icon: "/assets/18918.png" },
+    { id: 7, username: "User", type: "withdrew", amount: "$4.1", category: "Litecoin", icon: "/assets/17365.png" },
+    { id: 8, username: "User", type: "earned", amount: "$0.9", category: "Ayestudios", icon: "/assets/17065.png" },
   ]);
 
   // Triple duplicate for seamless infinite scroll

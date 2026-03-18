@@ -229,10 +229,10 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
   const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[10000] flex justify-end bg-black/50" onClick={onClose} style={{ height: "100dvh" }}>
       <div
         className="flex flex-col overflow-hidden"
-        style={{ width: "100%", maxWidth: 380, height: "100%", background: "#0D0F1E" }}
+        style={{ width: "100%", maxWidth: 380, height: "100dvh", background: "#0D0F1E" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

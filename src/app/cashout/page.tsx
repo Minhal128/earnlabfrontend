@@ -160,8 +160,8 @@ interface CardDef {
 function PayoutCard({ card }: { card: CardDef }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[15px] cursor-pointer hover:scale-[1.02] transition-transform shrink-0"
-      style={{ width:224, height:246, background:card.bg }}
+      className="relative overflow-hidden rounded-[15px] cursor-pointer hover:scale-[1.02] transition-transform shrink-0 w-full sm:w-[224px] h-[200px] sm:h-[246px]"
+      style={{ background:card.bg }}
     >
       {/* Dot pattern texture */}
       <DotPattern color={card.dotColor}/>
@@ -224,9 +224,11 @@ const GIFTCARDS: CardDef[] = [
 function Section({ title, cards }: { title: string; cards: CardDef[] }) {
   return (
     <div className="flex flex-col gap-5">
-      <h2 className="font-bold text-white" style={{ fontFamily:"'Manrope',sans-serif", fontSize:28, lineHeight:"34px", letterSpacing:"0.02em" }}>{title}</h2>
-      <div className="flex flex-wrap gap-4">
-        {cards.map((c) => <PayoutCard key={c.id} card={c}/>)}
+      <h2 className="font-bold text-white px-2 sm:px-0" style={{ fontFamily:"'Manrope',sans-serif", fontSize:28, lineHeight:"34px", letterSpacing:"0.02em" }}>{title}</h2>
+      <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap gap-2 sm:gap-4 justify-between sm:justify-start">
+        {cards.map(card => (
+          <PayoutCard key={card.id} card={card} />
+        ))}
       </div>
     </div>
   );

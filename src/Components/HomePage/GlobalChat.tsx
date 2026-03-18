@@ -220,8 +220,8 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <div className="fixed top-14 sm:top-16 right-2 sm:right-4 z-50 w-[calc(100vw-16px)] sm:w-[400px] max-w-[400px]">
-        <div className="h-[calc(100vh-72px)] sm:h-[600px] bg-[#0F1123] text-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#1E2035]">
+      <div className="fixed bottom-0 left-0 right-0 top-14 sm:top-16 sm:bottom-auto sm:left-auto sm:right-4 z-[9999] p-2 sm:p-0 pointer-events-none flex flex-col justify-end sm:block">
+        <div className="w-full h-[calc(100dvh-5rem)] sm:w-[400px] sm:h-[600px] pointer-events-auto bg-[#0F1123] text-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#1E2035]">
           {/* Header */}
           <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-[#1E2035]">
             <div className="flex items-center gap-2 sm:gap-3">

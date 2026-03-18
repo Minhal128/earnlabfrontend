@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import SignInModal from '@/Components/HomePage/SigninModal';
+import SignupModal from '@/Components/HomePage/SignupModal';
 
 /* ───────────── Star Rating ───────────── */
 const StarIcon = ({ filled = true }: { filled?: boolean }) => (
@@ -85,21 +87,21 @@ const TestimonialCard = ({
   text: string;
   stars: number;
 }) => (
-  <div className="flex-1 min-w-0 sm:min-w-[300px] bg-[#16182A] border border-[#26293E] rounded-[20px] p-5 sm:p-8 flex flex-col gap-4 sm:gap-6">
+  <div className="flex-1 min-w-0 sm:min-w-[300px] bg-[#16182A] border border-[#26293E] rounded-[20px] p-5 sm:p-8 flex flex-col gap-3 sm:gap-6 w-full">
     <div className="flex items-center gap-3">
       <img
         src={img}
         alt={name}
-        className="w-12 h-12 rounded-full object-cover"
+        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
       />
       <div>
-        <p className="text-white font-semibold text-lg">{name}</p>
+        <p className="text-white font-semibold text-base sm:text-lg">{name}</p>
         <p className="text-[#B3B6C7] text-xs flex items-center gap-1.5">
           <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#0AC07D"/></svg> {country}
         </p>
       </div>
     </div>
-    <p className="text-[#B3B6C7] text-base leading-7">{text}</p>
+    <p className="text-[#B3B6C7] text-sm sm:text-base leading-6 sm:leading-7">{text}</p>
     <Stars count={stars} />
   </div>
 );
@@ -232,6 +234,8 @@ const LANDINGPAGEComponent = () => {
   const testimonialRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   // Detect mobile for testimonial slider
   useEffect(() => {
@@ -268,12 +272,12 @@ const LANDINGPAGEComponent = () => {
         </button>
         {/* Desktop buttons */}
         <div className="hidden sm:flex items-center gap-3">
-          <Link href="/signin" className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
+          <button onClick={() => setIsSignInOpen(true)} className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
             Sign in
-          </Link>
-          <Link href="/signup" className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+          </button>
+          <button onClick={() => setIsSignUpOpen(true)} className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
             Sign up
-          </Link>
+          </button>
         </div>
       </nav>
 
@@ -292,12 +296,12 @@ const LANDINGPAGEComponent = () => {
           </div>
           
           <div className="flex flex-col gap-4">
-            <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
+            <button onClick={() => { setIsMobileMenuOpen(false); setIsSignInOpen(true); }} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
               Sign in
-            </Link>
-            <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+            </button>
+            <button onClick={() => { setIsMobileMenuOpen(false); setIsSignUpOpen(true); }} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
               Sign up
-            </Link>
+            </button>
           </div>
         </div>
       )}
@@ -353,9 +357,9 @@ const LANDINGPAGEComponent = () => {
             Complete surveys, play games, and finish quick offers to earn real
             money, crypto, and rewards.
           </p>
-          <Link href="/signup" className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
+          <button onClick={() => setIsSignUpOpen(true)} className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
             Start Earning Now
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -470,7 +474,7 @@ const LANDINGPAGEComponent = () => {
                   />
                 }
                 label="User earned"
-                name="Torox"
+                name="Tapjoy"
                 amount="$0.8"
               />
               <PayoutItem
@@ -482,7 +486,7 @@ const LANDINGPAGEComponent = () => {
                   />
                 }
                 label="User earned"
-                name="Torox"
+                name="Tapjoy"
                 amount="$0.8"
               />
               <PayoutItem
@@ -511,7 +515,7 @@ const LANDINGPAGEComponent = () => {
                     />
                   }
                   label="User earned"
-                  name="Torox"
+                  name="Tapjoy"
                   amount="$0.8"
                 />
                 <PayoutItem
@@ -542,7 +546,7 @@ const LANDINGPAGEComponent = () => {
                     />
                   }
                   label="User earned"
-                  name="Torox"
+                  name="Tapjoy"
                   amount="$0.8"
                 />
                 <PayoutItem
@@ -580,7 +584,7 @@ const LANDINGPAGEComponent = () => {
                     />
                   }
                   label="User earned"
-                  name="Torox"
+                  name="Tapjoy"
                   amount="$0.8"
                 />
                 <PayoutItem
@@ -611,7 +615,7 @@ const LANDINGPAGEComponent = () => {
                     />
                   }
                   label="User earned"
-                  name="Torox"
+                  name="Tapjoy"
                   amount="$0.8"
                 />
                 <PayoutItem
@@ -720,7 +724,7 @@ const LANDINGPAGEComponent = () => {
       {/* ═══════ TESTIMONIALS ═══════ */}
       <section className="bg-[#111324] py-12 sm:py-20">
         <div className="max-w-[1312px] mx-auto px-4">
-          <h2 className="text-3xl sm:text-5xl font-semibold text-center tracking-tight mb-8 sm:mb-12 animate-fadeIn">
+          <h2 className="text-2xl sm:text-5xl font-semibold text-center tracking-tight mb-8 sm:mb-12 animate-fadeIn">
             What people are saying{' '}
             <span className="text-[#18C2A3]">about us</span>
           </h2>
@@ -973,9 +977,9 @@ const LANDINGPAGEComponent = () => {
               answering surveys to earn real cash and rewards. It only takes a
               few minutes to get started.
             </p>
-            <Link href="/signup" className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
+            <button onClick={() => setIsSignUpOpen(true)} className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
               Get Started
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -998,7 +1002,7 @@ const LANDINGPAGEComponent = () => {
                 </div>
               ))}
             </div>
-            <p className="text-[#B3B6C7] text-sm mb-8">
+            <p className="text-[#B3B6C7] text-xs sm:text-sm mb-8 whitespace-nowrap overflow-hidden text-ellipsis">
               <span className="font-semibold">TrustScore 4.5</span> | 200 reviews
             </p>
 
@@ -1006,7 +1010,7 @@ const LANDINGPAGEComponent = () => {
             <div className="w-full grid grid-cols-2 gap-8 mb-8 px-4">
               <div>
                 <h4 className="text-white font-semibold text-lg mb-4">Platform</h4>
-                <ul className="space-y-3">
+                <ul className="space-y-3 pl-3">
                   <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Earn
                   </a></li>
@@ -1020,7 +1024,7 @@ const LANDINGPAGEComponent = () => {
               </div>
               <div>
                 <h4 className="text-white font-semibold text-lg mb-4">User Center</h4>
-                <ul className="space-y-3">
+                <ul className="space-y-3 pl-3">
                   <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account
                   </a></li>
@@ -1178,24 +1182,24 @@ const LANDINGPAGEComponent = () => {
           </svg>
           <span className="text-[10px] font-medium">Home</span>
         </button>
-        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
           <span className="text-[10px]">Earn</span>
-        </Link>
-        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </button>
+        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/>
           </svg>
           <span className="text-[10px]">Tasks</span>
-        </Link>
-        <Link href="/signup" className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        </button>
+        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
           <span className="text-[10px]">Surveys</span>
-        </Link>
+        </button>
         <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -1203,6 +1207,19 @@ const LANDINGPAGEComponent = () => {
           <span className="text-[10px]">Menu</span>
         </button>
       </nav>
+
+      {/* Modals */}
+      <SignInModal
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
+        onForgotPassword={() => {}} // or actual forgot password flow
+        onSignUp={() => { setIsSignInOpen(false); setIsSignUpOpen(true); }}
+      />
+      <SignupModal
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+        onSignIn={() => { setIsSignUpOpen(false); setIsSignInOpen(true); }}
+      />
     </div>
   );
 };

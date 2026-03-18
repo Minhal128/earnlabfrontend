@@ -282,7 +282,7 @@ const LeaderBoard = () => {
                                         
                                         {/* Reward */}
                                         <div className="flex-shrink-0 bg-emerald-500/20 border border-emerald-500/30 rounded-lg px-2 sm:px-3 py-1 sm:py-1.5">
-                                            <span className="text-emerald-400 font-bold text-xs sm:text-sm">
+                                            <span className="text-emerald-400 font-bold text-[10px] sm:text-xs">
                                                 ${winner.reward}
                                             </span>
                                         </div>
@@ -345,7 +345,7 @@ const LeaderBoard = () => {
                                         
                                         {/* Reward */}
                                         <div className="flex-shrink-0">
-                                            <span className="text-emerald-400 font-semibold text-xs sm:text-sm">
+                                            <span className="text-emerald-400 font-semibold text-[10px] sm:text-xs">
                                                 ${player.reward}
                                             </span>
                                         </div>

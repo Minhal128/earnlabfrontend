@@ -58,8 +58,13 @@ const FeedBar: React.FC = () => {
         if (!socket) return;
 
         const onFeed = (ev: any) => {
-            // prepend new event
-            setEvents((prev) => [ev, ...prev].slice(0, 50));
+            // prepend new event if not already exists
+            setEvents((prev) => {
+                if (ev._id && prev.some(p => p._id === ev._id)) return prev;
+                // If there's no _id, we can compare other properties like timestamp + text
+                if (!ev._id && prev.some(p => p.createdAt === ev.createdAt && p.text === ev.text)) return prev;
+                return [ev, ...prev].slice(0, 50);
+            });
         };
 
         try {

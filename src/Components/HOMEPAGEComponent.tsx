@@ -186,12 +186,16 @@ const HOMEPAGEComponent = () => {
 
   // Build ticker items from live feed events (fall back to static if none)
   const STATIC_TICKER = [
-    { icon: <WorldcoinIcon />, label: "User withdrew", value: "Worldcoin", amount: "$0.80" },
-    { icon: <ToroxIcon />, label: "User earned", value: "Torox", amount: "$0.80" },
-    { icon: <OfferwallIcon />, label: "User earned", value: "Offer walls", amount: "$0.50" },
-    { icon: <WorldcoinIcon />, label: "User withdrew", value: "Worldcoin", amount: "$0.80" },
-    { icon: <ToroxIcon />, label: "User earned", value: "Torox", amount: "$0.80" },
-    { icon: <OfferwallIcon />, label: "User earned", value: "Offer walls", amount: "$0.50" },
+    { icon: <WorldcoinIcon />, label: "User withdrew", value: "Worldcoin", amount: "$3.50" },
+    { icon: <OfferwallIcon />, label: "User earned", value: "Netflix", amount: "$15.00" },
+    { icon: <ToroxIcon />, label: "User earned", value: "Tapjoy", amount: "$2.20" },
+    { icon: <WorldcoinIcon />, label: "User withdrew", value: "PayPal", amount: "$10.00" },
+    { icon: <OfferwallIcon />, label: "User earned", value: "Ayestudios", amount: "$8.40" },
+    { icon: <ToroxIcon />, label: "User earned", value: "RevU", amount: "$1.15" },
+    { icon: <WorldcoinIcon />, label: "User withdrew", value: "Bitcoin", amount: "$42.50" },
+    { icon: <WorldcoinIcon />, label: "User withdrew", value: "Ethereum", amount: "$20.00" },
+    { icon: <OfferwallIcon />, label: "User earned", value: "Monopoly", amount: "$5.80" },
+    { icon: <ToroxIcon />, label: "User earned", value: "Coin Master", amount: "$12.50" },
   ];
 let baseTickerItems =
       feedEvents.length > 0
@@ -294,7 +298,7 @@ let baseTickerItems =
             <img src="/img1.png" alt="Lab Wards" className="h-12 w-auto object-contain object-left" />
             <div className="flex flex-col gap-1">
               <TrustStars />
-              <p className="text-[14px] font-bold text-[#B3B6C7] leading-6 mt-1 m-0">TrustScore 4.5  |  200 reviews</p>
+              <p className="text-[12px] sm:text-[14px] font-bold text-[#B3B6C7] leading-6 mt-1 m-0 break-words whitespace-normal">TrustScore 4.5  |  200 reviews</p>
             </div>
             <p className="text-[16px] font-semibold text-white leading-7 m-0">
               Sign up today and grab your instant bonus. Every task completed puts money in your pocket.

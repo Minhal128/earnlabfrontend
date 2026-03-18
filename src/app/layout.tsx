@@ -4,6 +4,7 @@ import "./globals.css";
 import ToastClient from "@/Components/ToastClient";
 import { SocketProvider } from "@/contexts/SocketProvider";
 import BottomNavigation from "@/Components/Shared/BottomNavigation";
+import ChatBubbles from "@/Components/Shared/ChatBubbles";
 import CookieConsent from "@/Components/Shared/CookieConsent";
 import ReduxProvider from "@/Components/ReduxProvider";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -60,6 +61,7 @@ export default function RootLayout({
               <SocketProvider>
                 {children}
                 <BottomNavigation />
+                <ChatBubbles />
                 <CookieConsent />
                 <ToastClient />
               </SocketProvider>

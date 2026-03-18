@@ -53,7 +53,7 @@ export default function WhyChooseUs() {
                 </div>
 
                 {/* Modern Feature Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 flex-col gap-4 md:gap-6">
                     
                     {/* Mobile Games Card - Larger */}
                     <div className="md:col-span-1 lg:row-span-2 group relative">
