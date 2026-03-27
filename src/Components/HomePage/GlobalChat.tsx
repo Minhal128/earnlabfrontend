@@ -17,6 +17,7 @@ interface ChatMessage {
   avatar?: string;
   countryCode?: string;
   role?: "user" | "admin" | "moderator";
+  activityLevel?: string;
   timestamp: string | Date;
   room?: string;
 }
@@ -39,6 +40,21 @@ const defaultRooms: ChatRoom[] = [
   { id: "trading", name: "Trading" },
   { id: "help", name: "Help" },
 ];
+
+const getLevelBadgeColor = (level?: string): string => {
+  switch ((level || "").toLowerCase()) {
+    case "expert":
+      return "#F59E0B";
+    case "pro":
+      return "#8B5CF6";
+    case "advanced":
+      return "#14A28A";
+    case "amateur":
+      return "#00C8B3";
+    default:
+      return "#0088FF";
+  }
+};
 
 const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -322,6 +338,16 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                           className="text-xs sm:text-sm font-semibold text-white hover:underline cursor-pointer truncate"
                         >
                           {msg.username}
+                        </span>
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none"
+                          style={{
+                            background: `${getLevelBadgeColor(msg.activityLevel)}22`,
+                            color: getLevelBadgeColor(msg.activityLevel),
+                            border: `1px solid ${getLevelBadgeColor(msg.activityLevel)}66`,
+                          }}
+                        >
+                          {msg.activityLevel || "Beginner"}
                         </span>
                         {getRoleBadge(msg.role)}
                         {msg.countryCode && (

@@ -1,0 +1,66 @@
+ ΓÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of H:\Development\pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * H:\Development\earnlab\earnlabFrontend\package-lock.json
+
+   Γû▓ Next.js 15.5.7
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 10.9s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/37) ...
+   Generating static pages (9/37) 
+   Generating static pages (18/37) 
+   Generating static pages (27/37) 
+ Γ£ô Generating static pages (37/37)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+Γöî ╞Æ /                                      177 B         146 kB
+Γö£ ╞Æ /_not-found                             1 kB         103 kB
+Γö£ ╞Æ /Affiliate                             127 B         102 kB
+Γö£ ╞Æ /cashout                             6.68 kB         155 kB
+Γö£ ╞Æ /chat                                5.82 kB         158 kB
+Γö£ ╞Æ /contact                             3.89 kB         111 kB
+Γö£ ╞Æ /cookies                             4.43 kB         110 kB
+Γö£ ╞Æ /earn                                5.48 kB         165 kB
+Γö£ ╞Æ /faq                                 3.95 kB         109 kB
+Γö£ ╞Æ /games                               5.01 kB         153 kB
+Γö£ ╞Æ /help                                2.82 kB         151 kB
+Γö£ ╞Æ /help-center                         3.17 kB         109 kB
+Γö£ ╞Æ /home                                10.1 kB         165 kB
+Γö£ ╞Æ /landing                               177 B         146 kB
+Γö£ ╞Æ /leaderboard                          7.1 kB         155 kB
+Γö£ ╞Æ /privacy                             4.17 kB         110 kB
+Γö£ ╞Æ /profile                             6.99 kB         159 kB
+Γö£ ╞Æ /referrals                           6.61 kB         155 kB
+Γö£ ╞Æ /rewards                             6.94 kB         155 kB
+Γö£ ╞Æ /rewards-info                        4.69 kB         115 kB
+Γö£ ╞Æ /settings                            5.65 kB         154 kB
+Γö£ ╞Æ /sign-in                                2 kB         124 kB
+Γö£ ╞Æ /sign-in/sso-callback                  245 B         123 kB
+Γö£ ╞Æ /sign-up                             2.01 kB         124 kB
+Γö£ ╞Æ /sign-up/sso-callback                  246 B         123 kB
+Γö£ ╞Æ /signin                              5.54 kB         137 kB
+Γö£ ╞Æ /signup                              6.04 kB         137 kB
+Γö£ ╞Æ /support                             3.25 kB         151 kB
+Γö£ ╞Æ /surveys                             6.25 kB         158 kB
+Γö£ ╞Æ /surveys-info                        3.63 kB         109 kB
+Γö£ ╞Æ /tasks                               8.15 kB         160 kB
+Γö£ ╞Æ /tasks-info                          3.78 kB         109 kB
+Γö£ ╞Æ /terms                               4.16 kB         110 kB
+Γöö ╞Æ /wallet                              10.1 kB         158 kB
++ First Load JS shared by all             102 kB
+  Γö£ chunks/1255-404bb8de49c90395.js      45.8 kB
+  Γö£ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  Γöö other shared chunks (total)          2.01 kB
+
+
+╞Æ  (Dynamic)  server-rendered on demand
+

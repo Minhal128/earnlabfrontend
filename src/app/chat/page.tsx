@@ -19,6 +19,7 @@ interface ChatMessage {
   avatar?: string;
   countryCode?: string;
   role?: "user" | "admin" | "moderator";
+  activityLevel?: string;
   timestamp: string | Date;
   room?: string;
 }
@@ -129,6 +130,21 @@ function UserAvatar({ avatar, username, role }: { avatar?: string; username: str
       )}
     </div>
   );
+}
+
+function getLevelBadgeColor(level?: string): string {
+  switch ((level || "").toLowerCase()) {
+    case "expert":
+      return "#F59E0B";
+    case "pro":
+      return "#8B5CF6";
+    case "advanced":
+      return "#14A28A";
+    case "amateur":
+      return "#00C8B3";
+    default:
+      return "#0088FF";
+  }
 }
 
 export default function ChatPage() {
@@ -450,6 +466,16 @@ export default function ChatPage() {
                       onClick={() => handleUserClick(msg.userId)}
                     >
                       {msg.username}
+                    </span>
+                    <span
+                      className="px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none"
+                      style={{
+                        background: `${getLevelBadgeColor(msg.activityLevel)}22`,
+                        color: getLevelBadgeColor(msg.activityLevel),
+                        border: `1px solid ${getLevelBadgeColor(msg.activityLevel)}66`,
+                      }}
+                    >
+                      {msg.activityLevel || "Beginner"}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-[#B3B6C7] opacity-40 flex-shrink-0" />
                     <span

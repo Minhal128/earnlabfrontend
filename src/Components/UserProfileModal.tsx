@@ -20,6 +20,26 @@ interface ProfileStats {
   referralCount: number;
 }
 
+interface ProgressionData {
+  activityScore: number;
+  currentLevel: string;
+  currentRangeStart: number;
+  currentRangeEnd: number;
+  nextLevelThreshold: number | null;
+  progressPercent: number;
+  progressCurrent: number;
+  progressTarget: number | null;
+  nextLevel: string | null;
+}
+
+interface BadgeView {
+  key: string;
+  label: string;
+  description: string;
+  unlocked: boolean;
+  icon: string;
+}
+
 interface RecentOffer {
   _id: string;
   title: string;
@@ -167,6 +187,18 @@ const MuteIcon = () => (
   </svg>
 );
 
+const defaultProgression: ProgressionData = {
+  activityScore: 0,
+  currentLevel: "Beginner",
+  currentRangeStart: 0,
+  currentRangeEnd: 30,
+  nextLevelThreshold: 30,
+  progressPercent: 0,
+  progressCurrent: 0,
+  progressTarget: 30,
+  nextLevel: "Amateur",
+};
+
 // ─── Main Modal ─────────────────────────────────────────────────────────────
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -178,6 +210,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
     referralCount: 0,
   });
   const [recentOffers, setRecentOffers] = useState<RecentOffer[]>([]);
+  const [progression, setProgression] = useState<ProgressionData>(defaultProgression);
+  const [badges, setBadges] = useState<BadgeView[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "badges">("all");
 
@@ -199,6 +233,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
             setProfile(data.profile);
             setStats(data.stats ?? { offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
             setRecentOffers(data.recentOffers ?? []);
+            setProgression(data.progression ?? defaultProgression);
+            setBadges(Array.isArray(data.badges) ? data.badges : []);
             setIsPrivate(false);
           }
         }
@@ -222,6 +258,14 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
             balanceCents: p.balanceCents || 0,
             createdAt: p.createdAt || new Date().toISOString(),
           });
+          setStats({
+            offersCompleted: data?.stats?.offersCompleted || data?.stats?.tasksCompleted || 0,
+            totalEarningsCents: data?.stats?.totalEarningsCents || p.balanceCents || 0,
+            last30DaysCents: data?.stats?.last30DaysCents || data?.stats?.last30DaysEarningsCents || 0,
+            referralCount: data?.stats?.referralCount || data?.stats?.successfulReferrals || 0,
+          });
+          setProgression(data.progression ?? defaultProgression);
+          setBadges(Array.isArray(data.badges) ? data.badges : []);
           setIsPrivate(false);
         }
       }
@@ -239,6 +283,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
       setProfile(null);
       setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
       setRecentOffers([]);
+      setProgression(defaultProgression);
+      setBadges([]);
       setIsPrivate(false);
       setActiveTab("all");
     }
@@ -251,12 +297,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
   const avatarColor = getAvatarColor(displayName);
   const joinedText = profile?.createdAt ? joinedAgo(profile.createdAt) : "—";
   const flag = profile?.countryCode ? countryFlagEmoji(profile.countryCode) : "";
-
-  // Level progress — compute from offersCompleted as XP proxy
-  const xpCurrent = stats.offersCompleted * 10;
-  const xpNext = 3000;
-  const xpStart = 2000;
-  const progressPct = Math.min(100, Math.max(0, ((xpCurrent - xpStart) / (xpNext - xpStart)) * 100));
+  const progressPct = Math.min(100, Math.max(0, progression.progressPercent || 0));
+  const nextLevelName = progression.nextLevel || "MAX";
 
   return (
     <div
@@ -391,7 +433,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                       className="font-[Inter] font-medium text-[13px] text-[#0088FF] tracking-[-0.03em]"
                       style={{ lineHeight: "21px" }}
                     >
-                      Beginner
+                      {progression.currentLevel}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -403,7 +445,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                       className="font-[Inter] font-medium text-[13px] text-[#00C8B3] tracking-[-0.03em]"
                       style={{ lineHeight: "21px" }}
                     >
-                      Amateur
+                      {nextLevelName}
                     </span>
                   </div>
                 </div>
@@ -425,13 +467,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
                     className="font-[Inter] font-medium text-[12px] text-[#6B6E8A] tracking-[-0.03em]"
                     style={{ lineHeight: "21px" }}
                   >
-                    {Math.min(xpCurrent, xpNext).toLocaleString()}
+                    {progression.progressCurrent.toLocaleString()}
                   </span>
                   <span
                     className="font-[Inter] font-medium text-[12px] text-[#6B6E8A] tracking-[-0.03em]"
                     style={{ lineHeight: "21px" }}
                   >
-                    {xpNext.toLocaleString()}
+                    {(progression.progressTarget ?? progression.activityScore).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -639,12 +681,31 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
 
               {/* ── Badges tab ─────────────────────────── */}
               {activeTab === "badges" && (
-                <div className="flex flex-col items-center justify-center py-16 gap-3 px-4">
-                  <div className="text-4xl">🏅</div>
-                  <p className="text-white font-semibold">No badges yet</p>
-                  <p className="text-[#8C8FA8] text-sm text-center">
-                    Complete offers and referrals to earn badges.
-                  </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-4 pb-6">
+                  {badges.map((badge) => (
+                    <div
+                      key={badge.key}
+                      className="rounded-[10px] p-3 border"
+                      style={{
+                        background: badge.unlocked ? "#151728" : "#121424",
+                        borderColor: badge.unlocked ? "#2A9D8F" : "#2A2D44",
+                        opacity: badge.unlocked ? 1 : 0.5,
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-[6px] flex items-center justify-center rotate-45"
+                          style={{ background: badge.unlocked ? "#14A28A" : "#50536F" }}
+                        >
+                          <span className="-rotate-45 text-sm">{badge.icon}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-semibold truncate">{badge.label || (badge as any).title}</p>
+                          <p className="text-[#8C8FA8] text-xs">{badge.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

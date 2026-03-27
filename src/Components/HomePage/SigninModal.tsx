@@ -7,7 +7,6 @@ import FbImg from "../../../public/assets/fb.png";
 import WeldImg from "../../../public/assets/weld.png";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { IoMdMail, IoMdLock } from "react-icons/io";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
@@ -181,157 +180,167 @@ export default function SignInModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-      <div className="bg-[#1E2133] text-white rounded-xl w-[90%] max-w-md md:p-10 px-5 py-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute right-3 cursor-pointer bg-[#8C8FA8] top-3 text-black rounded-md p-1"
-        >
-          <X size={14} />
-        </button>
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4">
+      <div className="relative w-full max-w-[1020px] bg-[#0D0F1E] border border-[#1C2033] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.55)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[620px] md:min-h-[680px]">
+          {/* Left visual panel */}
+          <div className="hidden md:block relative bg-[#11172A]">
+            <img
+              src="/assets/sigin.jpeg"
+              alt="LabWards sign-in"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,79,89,0.22),rgba(13,15,30,0.55))]" />
+          </div>
 
-        <h2 className="text-2xl text-[#E6FAF6] mb-2 font-semibold mt-5 text-center">
-          Welcome back!
-        </h2>
-        <p className="text-sm text-[#8C8FA8] text-center mb-6">
-          Log in to access MORE earnings
-        </p>
+          {/* Right form panel */}
+          <div className="relative bg-[#0D0F1E] px-5 sm:px-7 md:px-10 py-8 md:py-10 flex flex-col">
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 w-7 h-7 rounded-full bg-[#1C2033] hover:bg-[#2A2E45] text-[#8C8FA8] hover:text-white transition-colors flex items-center justify-center"
+              aria-label="Close sign in modal"
+            >
+              <X size={14} />
+            </button>
 
-        <div className="flex justify-between gap-3 mb-4">
-          {/* Google - Direct OAuth */}
-          <button
-            onClick={handleGoogleClick}
-            disabled={!googleScriptLoaded || !!oauthLoading}
-            className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
-          >
-            <Image src={GoogleImg} alt="Google" width={16} height={20} />
-            {oauthLoading === "google" ? "Redirecting..." : "Google"}
-          </button>
-          
-          {/* Facebook - Clerk OAuth */}
-          <button
-            onClick={handleFacebookOAuth}
-            disabled={!isLoaded || !!oauthLoading}
-            className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium"
-          >
-            <Image src={FbImg} alt="Facebook" width={16} height={20} />
-            {oauthLoading === "facebook" ? "Redirecting..." : "Facebook"}
-          </button>
-          
-          {/* Worldcoin - Static for now */}
-          <button className="flex-1 flex items-center text-xs cursor-pointer justify-center gap-2 py-3 rounded-md bg-white text-black font-medium">
-            <Image src={WeldImg} alt="Worldcoin" width={16} height={20} />
-            Worldcoin
-          </button>
+            <div className="w-full max-w-[430px] mx-auto pt-6 md:pt-2 flex-1 flex flex-col">
+              <h2 className="text-white text-[34px] font-bold leading-tight mb-6">Sign in</h2>
+
+              {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+
+              <label className="text-white text-[14px] font-medium mb-2">Email Address</label>
+              <input
+                value={emailValue}
+                onChange={(e) => setEmailValue(e.target.value)}
+                type="email"
+                placeholder="Enter your email address"
+                className="w-full h-[48px] px-4 rounded-[10px] bg-[#151828] border border-[#1E2238] text-white placeholder-[#5A5E79] outline-none focus:border-[#0BBFA0] mb-4"
+              />
+
+              <label className="text-white text-[14px] font-medium mb-2">Password</label>
+              <div className="relative mb-4">
+                <input
+                  value={passwordValue}
+                  onChange={(e) => setPasswordValue(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className="w-full h-[48px] px-4 pr-11 rounded-[10px] bg-[#151828] border border-[#1E2238] text-white placeholder-[#5A5E79] outline-none focus:border-[#0BBFA0]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6E8A] hover:text-[#9BA0C2] transition-colors"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              <button
+                onClick={async () => {
+                  if (!emailValue || !passwordValue) {
+                    setError("Please enter email and password");
+                    return;
+                  }
+                  setLoading(true);
+                  setError(null);
+                  try {
+                    const resp = await fetch(`${apiBase}/api/v1/auth/login`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        email: emailValue,
+                        password: passwordValue,
+                      }),
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) {
+                      setError(data?.message || "Login failed");
+                      setLoading(false);
+                      return;
+                    }
+                    if (data?.token) {
+                      try {
+                        localStorage.setItem("token", data.token);
+                      } catch {}
+                      try {
+                        const evt = new CustomEvent("app-auth-changed", {
+                          detail: { token: data.token, user: data.user },
+                        });
+                        window.dispatchEvent(evt);
+                      } catch {}
+                    }
+                    onClose();
+                    router.push("/home");
+                  } catch (err: any) {
+                    console.error("Login error", err);
+                    setError(err?.message || "Login failed. Please try again.");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="w-full h-[50px] rounded-[10px] font-semibold text-white shadow-[0px_8px_24px_rgba(9,159,134,0.35)] hover:opacity-90 transition-all active:scale-[0.99]"
+                style={{ background: "linear-gradient(135deg, #0BBFA0 0%, #079E85 100%)" }}
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </button>
+
+              <div className="flex items-center justify-center gap-1 text-[15px] leading-6 text-[#6B6E8A] mt-5 mb-6">
+                <span>Don't have an account yet?</span>
+                <button
+                  onClick={() => {
+                    onClose();
+                    onSignUp();
+                  }}
+                  className="text-white font-semibold hover:text-[#0BBFA0] transition-colors"
+                >
+                  Sign up
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3 mt-auto">
+                <button
+                  type="button"
+                  className="w-full h-[48px] bg-[#151828] border border-[#1E2238] rounded-[10px] flex items-center justify-center gap-3 hover:border-[#0BBFA055] hover:bg-[#1A1E32] transition-all"
+                >
+                  <Image src={WeldImg} alt="Worldcoin" width={18} height={18} />
+                  <span className="text-[#9093AC] text-[14px] font-medium">Sign in via Worldcoin</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleClick}
+                  disabled={!googleScriptLoaded || !!oauthLoading}
+                  className="w-full h-[48px] bg-[#151828] border border-[#1E2238] rounded-[10px] flex items-center justify-center gap-3 hover:border-[#4285F455] hover:bg-[#1A1E32] transition-all disabled:opacity-60"
+                >
+                  <Image src={GoogleImg} alt="Google" width={18} height={18} />
+                  <span className="text-[#9093AC] text-[14px] font-medium">{oauthLoading === "google" ? "Redirecting..." : "Sign in via Google"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleFacebookOAuth}
+                  disabled={!isLoaded || !!oauthLoading}
+                  className="w-full h-[48px] bg-[#151828] border border-[#1E2238] rounded-[10px] flex items-center justify-center gap-3 hover:border-[#1877F255] hover:bg-[#1A1E32] transition-all disabled:opacity-60"
+                >
+                  <Image src={FbImg} alt="Facebook" width={18} height={18} />
+                  <span className="text-[#9093AC] text-[14px] font-medium">{oauthLoading === "facebook" ? "Redirecting..." : "Sign in via Facebook"}</span>
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  onForgotPassword?.();
+                }}
+                className="self-start mt-4 text-[13px] text-[#18C3A7] hover:text-[#3CE6CC] transition-colors"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="flex items-center my-5">
-          <div className="flex-1 h-px bg-[#30334A]"></div>
-          <span className="px-3 text-xs text-[#B3B6C7]">Or sign in with</span>
-          <div className="flex-1 h-px bg-[#30334A]"></div>
-        </div>
-
-        {error && <div className="text-red-400 text-sm mb-3 text-center">{error}</div>}
-
-        <div className="relative mb-3">
-          <IoMdMail size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
-          <input
-            value={emailValue}
-            onChange={(e) => setEmailValue(e.target.value)}
-            type="email"
-            placeholder="Email address"
-            className="w-full pl-10 pr-4 py-3 rounded-md bg-[#26293E] outline-none text-sm"
-          />
-        </div>
-
-        <div className="relative">
-          <IoMdLock size={18} className="absolute left-3 top-3 text-[#18C3A7]" />
-          <input
-            value={passwordValue}
-            onChange={(e) => setPasswordValue(e.target.value)}
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            className="w-full pl-10 pr-10 py-3 rounded-md bg-[#26293E] outline-none text-sm"
-          />
-          <span
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-[#6B6E8A] cursor-pointer"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </span>
-        </div>
-
-        <p
-          onClick={() => {
-            onClose();
-            onForgotPassword?.();
-          }}
-          className="text-sm text-[#18C3A7] cursor-pointer mt-2 mb-4"
-        >
-          Forgot password?
-        </p>
-
-        <button
-          onClick={async () => {
-            if (!emailValue || !passwordValue) {
-              setError("Please enter email and password");
-              return;
-            }
-            setLoading(true);
-            setError(null);
-            try {
-              const resp = await fetch(`${apiBase}/api/v1/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email: emailValue,
-                  password: passwordValue,
-                }),
-              });
-              const data = await resp.json();
-              if (!resp.ok) {
-                setError(data?.message || "Login failed");
-                setLoading(false);
-                return;
-              }
-              if (data?.token) {
-                try {
-                  localStorage.setItem("token", data.token);
-                } catch {}
-                try {
-                  const evt = new CustomEvent("app-auth-changed", {
-                    detail: { token: data.token, user: data.user },
-                  });
-                  window.dispatchEvent(evt);
-                } catch {}
-              }
-              onClose();
-              router.push("/home");
-            } catch (err: any) {
-              console.error("Login error", err);
-              setError(err?.message || "Login failed. Please try again.");
-            } finally {
-              setLoading(false);
-            }
-          }}
-          className="w-full py-3 bg-[#18C3A7] cursor-pointer rounded-md font-medium"
-          disabled={loading}
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-
-        <p className="text-center text-sm text-[#8C8FA8] mt-4">
-          Don't have an account?{" "}
-          <span
-            onClick={() => {
-              onClose();
-              onSignUp();
-            }}
-            className="text-[#18C3A7] cursor-pointer"
-          >
-            Sign up
-          </span>
-        </p>
       </div>
     </div>
   );
