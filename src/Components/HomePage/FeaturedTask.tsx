@@ -8,6 +8,30 @@ const FeaturedTask: React.FC = () => {
     const [premiumOffers, setPremiumOffers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const startPremiumOffer = async (offerId?: string) => {
+        if (!offerId) {
+            window.location.href = "/tasks";
+            return;
+        }
+
+        try {
+            const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const res = await fetch(`${api}/api/v1/offerwalls/premium/${offerId}`);
+            const data = await res.json();
+            const trackingUrl = data?.offer?.trackingUrl;
+
+            if (trackingUrl && /^https?:\/\//i.test(trackingUrl)) {
+                window.open(trackingUrl, "_blank", "noopener,noreferrer");
+                return;
+            }
+
+            window.location.href = "/tasks";
+        } catch (error) {
+            console.error("Failed to start premium offer:", error);
+            window.location.href = "/tasks";
+        }
+    };
+
     const fetchFeatured = async () => {
         setLoading(true);
         try {
@@ -69,7 +93,7 @@ const FeaturedTask: React.FC = () => {
                                     window.dispatchEvent(new CustomEvent("openSignIn"));
                                     return;
                                 }
-                                window.location.href = `/earn/?provider=${offer.providerId || offer.offerwallId || ''}`;
+                                startPremiumOffer(offer._id);
                             }}
                         />
                     ))

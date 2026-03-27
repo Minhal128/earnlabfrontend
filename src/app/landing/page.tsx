@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import SignInModal from '@/Components/HomePage/SigninModal';
-import SignupModal from '@/Components/HomePage/SignupModal';
+import { useRouter } from 'next/navigation';
 
 /* ───────────── Star Rating ───────────── */
 const StarIcon = ({ filled = true }: { filled?: boolean }) => (
@@ -229,13 +228,12 @@ const testimonials = [
 ];
 
 const LANDINGPAGEComponent = () => {
+  const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
   const [testimonialSlide, setTestimonialSlide] = useState(0);
   const testimonialRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   // Detect mobile for testimonial slider
   useEffect(() => {
@@ -272,10 +270,10 @@ const LANDINGPAGEComponent = () => {
         </button>
         {/* Desktop buttons */}
         <div className="hidden sm:flex items-center gap-3">
-          <button onClick={() => setIsSignInOpen(true)} className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
+          <button onClick={() => router.push('/sigin')} className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
             Sign in
           </button>
-          <button onClick={() => setIsSignUpOpen(true)} className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+          <button onClick={() => router.push('/signup')} className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
             Sign up
           </button>
         </div>
@@ -296,10 +294,10 @@ const LANDINGPAGEComponent = () => {
           </div>
           
           <div className="flex flex-col gap-4">
-            <button onClick={() => { setIsMobileMenuOpen(false); setIsSignInOpen(true); }} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
+            <button onClick={() => { setIsMobileMenuOpen(false); router.push('/sigin'); }} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
               Sign in
             </button>
-            <button onClick={() => { setIsMobileMenuOpen(false); setIsSignUpOpen(true); }} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+            <button onClick={() => { setIsMobileMenuOpen(false); router.push('/signup'); }} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
               Sign up
             </button>
           </div>
@@ -357,7 +355,7 @@ const LANDINGPAGEComponent = () => {
             Complete surveys, play games, and finish quick offers to earn real
             money, crypto, and rewards.
           </p>
-          <button onClick={() => setIsSignUpOpen(true)} className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
+          <button onClick={() => router.push('/signup')} className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
             Start Earning Now
           </button>
         </div>
@@ -977,7 +975,7 @@ const LANDINGPAGEComponent = () => {
               answering surveys to earn real cash and rewards. It only takes a
               few minutes to get started.
             </p>
-            <button onClick={() => setIsSignUpOpen(true)} className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
+            <button onClick={() => router.push('/signup')} className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
               Get Started
             </button>
           </div>
@@ -1182,19 +1180,19 @@ const LANDINGPAGEComponent = () => {
           </svg>
           <span className="text-[10px] font-medium">Home</span>
         </button>
-        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
           <span className="text-[10px]">Earn</span>
         </button>
-        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/>
           </svg>
           <span className="text-[10px]">Tasks</span>
         </button>
-        <button onClick={() => setIsSignUpOpen(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
@@ -1208,18 +1206,6 @@ const LANDINGPAGEComponent = () => {
         </button>
       </nav>
 
-      {/* Modals */}
-      <SignInModal
-        isOpen={isSignInOpen}
-        onClose={() => setIsSignInOpen(false)}
-        onForgotPassword={() => {}} // or actual forgot password flow
-        onSignUp={() => { setIsSignInOpen(false); setIsSignUpOpen(true); }}
-      />
-      <SignupModal
-        isOpen={isSignUpOpen}
-        onClose={() => setIsSignUpOpen(false)}
-        onSignIn={() => { setIsSignUpOpen(false); setIsSignInOpen(true); }}
-      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Image, { StaticImageData } from "next/image";
 import { FaLaptop, FaApple, FaAndroid, FaChevronDown, FaSearch } from "react-icons/fa";
@@ -24,6 +25,7 @@ type TaskUI = {
 };
 
 const Tasks: React.FC = () => {
+    const searchParams = useSearchParams();
     const [tasks, setTasks] = useState<TaskUI[]>([]);
     const [selectedTask, setSelectedTask] = useState<TaskUI | null>(null);
     const [isStartOpen, setIsStartOpen] = useState(false);
@@ -34,7 +36,14 @@ const Tasks: React.FC = () => {
         setLoading(true);
         try {
             const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const r = await fetch(`${api}/api/v1/tasks?limit=50`);
+            const offerwallId = searchParams.get("offerwallId");
+            const offerwall = searchParams.get("offerwall");
+
+            const query = new URLSearchParams({ limit: "50" });
+            if (offerwallId) query.set("offerwallId", offerwallId);
+            if (offerwall) query.set("offerwall", offerwall);
+
+            const r = await fetch(`${api}/api/v1/tasks?${query.toString()}`);
             const data = await r.json().catch(() => ({}));
             if (data && Array.isArray(data.tasks)) {
                 const imgs = [Fe1, Fe2, Fe3, Fe4];
@@ -60,7 +69,7 @@ const Tasks: React.FC = () => {
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    }, [searchParams]);
 
     return (
         <div className="w-full bg-[#0f172a] mt-5 md:p-6 px-3 py-5 rounded-lg text-white border border-[0.1px] border-[#50536F]">

@@ -1,13 +1,16 @@
-import SIGNUPComponent from '@/Components/SIGNUPComponent';
+"use client";
 
-export const metadata = {
-  title: 'Sign Up — EarnLab',
-};
+import { useRouter } from "next/navigation";
+import SignupModal from "@/Components/HomePage/SignupModal";
 
 export default function SignUpPage() {
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen overflow-x-auto bg-[#0D0F1E]">
-      <SIGNUPComponent />
-    </div>
+    <SignupModal
+      isOpen={true}
+      onClose={() => router.push("/landing")}
+      onSignIn={() => router.push("/signin")}
+    />
   );
 }
