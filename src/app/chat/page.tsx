@@ -19,7 +19,6 @@ interface ChatMessage {
   avatar?: string;
   countryCode?: string;
   role?: "user" | "admin" | "moderator";
-  activityLevel?: string;
   timestamp: string | Date;
   room?: string;
 }
@@ -41,11 +40,8 @@ interface StoredUser {
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const defaultRooms: ChatRoom[] = [
-  { id: "en", name: "English" },
-  { id: "de", name: "German" },
-  { id: "fr", name: "French" },
-  { id: "tr", name: "Turkish" },
-  { id: "intl", name: "International" },
+  { id: "general", name: "General" },
+  { id: "support", name: "Support" },
 ];
 
 interface Language {
@@ -56,19 +52,35 @@ interface Language {
 
 const LANGUAGES: Language[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "de", name: "German", flag: "🇩🇪" },
-  { code: "fr", name: "French", flag: "🇫🇷" },
-  { code: "tr", name: "Turkish", flag: "🇹🇷" },
-  { code: "intl", name: "International", flag: "🌍" },
-];
-
-const FALLBACK_GIFS = [
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDB3N3A2ZWx4NWhnM2Nsd3N1MWcwY3I4M2NldGE0YWhvNWIxcnNvdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6Zt481isNVuQI1l6/giphy.gif",
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2Nudm5nZG50eDRjM2owMXNqZ2M3YW0zN2xyenBhMm8xcnM0aWh6NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYt5jPR6QX5pnqM/giphy.gif",
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHp2dWc4MWh6c2N6NW53cWo1dXZ4YTRsM3Fyb2N5a2x4NWE2d2NsYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ICOgUNjpvO0PC/giphy.gif",
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDl0dWJ0djQxZjRuOHA4bnlvNjlpN25zaHJkMmd3eTd4eG9za2N2dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3cyNWR6Y2V6aWwzdjk2NW9qc2I1eHVwMTd4YzZrczN5ZnN4bzNpaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/fAnEC88LccN7a/giphy.gif",
-  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJxZnJ2aGx3bnp2dWV4Y2xrc2YzM2RkcnRtMmM4bDlxYjBhdmRhYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7btPCcdNniyf0ArS/giphy.gif",
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "ru", name: "Русский", flag: "🇷🇺" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+  { code: "pl", name: "Polski", flag: "🇵🇱" },
+  { code: "nl", name: "Nederlands", flag: "🇳🇱" },
+  { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+  { code: "sv", name: "Svenska", flag: "🇸🇪" },
+  { code: "uk", name: "Українська", flag: "🇺🇦" },
+  { code: "th", name: "แปลไทย", flag: "🇹🇭" },
+  { code: "vi", name: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "id", name: "Indonesia", flag: "🇮🇩" },
+  { code: "ms", name: "Melayu", flag: "🇲🇾" },
+  { code: "cs", name: "Čeština", flag: "🇨🇿" },
+  { code: "ro", name: "Română", flag: "🇷🇴" },
+  { code: "el", name: "Ελληνικά", flag: "🇬🇷" },
+  { code: "hu", name: "Magyar", flag: "🇭🇺" },
+  { code: "fi", name: "Suomi", flag: "🇫🇮" },
+  { code: "da", name: "Dansk", flag: "🇩🇰" },
+  { code: "no", name: "Norsk", flag: "🇳🇴" },
+  { code: "he", name: "עברית", flag: "🇮🇱" },
+  { code: "fa", name: "فارسی", flag: "🇮🇷" },
 ];
 
 const tickerItems = [
@@ -111,28 +123,12 @@ function UserAvatar({ avatar, username, role }: { avatar?: string; username: str
   return (
     <div className="w-10 h-10 rounded-[5px] bg-[#151728] flex-shrink-0 flex items-center justify-center overflow-hidden">
       {avatar ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatar} alt={username} className="w-full h-full object-cover rounded-full" />
+        <Image src={avatar} alt={username} width={40} height={40} className="w-full h-full object-cover rounded-full" />
       ) : (
         <span className={`text-[18px] font-bold ${color}`}>{initial}</span>
       )}
     </div>
   );
-}
-
-function getLevelBadgeColor(level?: string): string {
-  switch ((level || "").toLowerCase()) {
-    case "expert":
-      return "#F59E0B";
-    case "pro":
-      return "#8B5CF6";
-    case "advanced":
-      return "#14A28A";
-    case "amateur":
-      return "#00C8B3";
-    default:
-      return "#0088FF";
-  }
 }
 
 export default function ChatPage() {
@@ -151,14 +147,9 @@ export default function ChatPage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [showGifPicker, setShowGifPicker] = useState(false);
-  const [gifQuery, setGifQuery] = useState("");
-  const [gifResults, setGifResults] = useState<string[]>(FALLBACK_GIFS);
-  const [gifLoading, setGifLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
-  const giphyApiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY || "dc6zaTOxFJmzC";
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -304,43 +295,7 @@ export default function ChatPage() {
     new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const isImageUrl = (text: string) =>
-    /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim()) ||
-    /giphy\.com|media\d*\.giphy\.com|tenor\.com/i.test(text.trim());
-
-  const handleGifSelect = (gifUrl: string) => {
-    setInput(gifUrl);
-    setShowGifPicker(false);
-  };
-
-  useEffect(() => {
-    if (!showGifPicker) return;
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setGifLoading(true);
-      try {
-        const endpoint = gifQuery.trim()
-          ? `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${encodeURIComponent(gifQuery.trim())}&limit=12&rating=pg`
-          : `https://api.giphy.com/v1/gifs/trending?api_key=${giphyApiKey}&limit=12&rating=pg`;
-        const res = await fetch(endpoint, { signal: controller.signal });
-        const data = await res.json();
-        const urls = Array.isArray(data?.data)
-          ? data.data
-              .map((gif: any) => gif?.images?.fixed_height?.url || gif?.images?.original?.url)
-              .filter(Boolean)
-          : [];
-        setGifResults(urls.length > 0 ? urls : FALLBACK_GIFS);
-      } catch {
-        setGifResults(FALLBACK_GIFS);
-      } finally {
-        setGifLoading(false);
-      }
-    }, 250);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [showGifPicker, gifQuery, giphyApiKey]);
+    /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim());
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#0D0F1E] pb-20 lg:pb-0">
@@ -354,7 +309,7 @@ export default function ChatPage() {
             className="font-bold text-[16px] leading-[24px] tracking-[0.02em] text-white"
             style={{ fontFamily: "'Manrope', sans-serif" }}
           >
-            Chat
+            Chat room
           </span>
         </div>
 
@@ -386,17 +341,12 @@ export default function ChatPage() {
               style={{ width: 180, maxHeight: 320, overflowY: "auto" }}
             >
               {/* Languages */}
-              <div className="px-2 pt-2 pb-2">
-                <p className="text-[10px] font-semibold text-[#50536F] uppercase tracking-wider px-1 pb-1">Category</p>
+              <div className="px-2 pt-2 pb-1">
+                <p className="text-[10px] font-semibold text-[#50536F] uppercase tracking-wider px-1 pb-1">Language</p>
                 {LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => {
-                      setSelectedLanguage(lang);
-                      setSelectedRoom({ id: lang.code, name: lang.name });
-                      setMessages([]);
-                      setShowRoomDropdown(false);
-                    }}
+                    onClick={() => { setSelectedLanguage(lang); setShowRoomDropdown(false); }}
                     className={`flex items-center gap-2 px-2 py-1.5 w-full text-left hover:bg-[#1E2133] rounded-[5px] transition-colors ${
                       selectedLanguage.code === lang.code ? "bg-[#1E2133]" : ""
                     }`}
@@ -406,6 +356,26 @@ export default function ChatPage() {
                       {lang.name}
                     </span>
                     {selectedLanguage.code === lang.code && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#14A28A] ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              {/* Rooms */}
+              <div className="px-2 pt-1 pb-2" style={{ borderTop: "1px solid #1E2133" }}>
+                <p className="text-[10px] font-semibold text-[#50536F] uppercase tracking-wider px-1 py-1">Rooms</p>
+                {defaultRooms.map((room) => (
+                  <button
+                    key={room.id}
+                    onClick={() => { setSelectedRoom(room); setShowRoomDropdown(false); setMessages([]); }}
+                    className={`flex items-center gap-2 px-2 py-1.5 w-full text-left hover:bg-[#1E2133] rounded-[5px] transition-colors ${
+                      selectedRoom.id === room.id ? "bg-[#1E2133]" : ""
+                    }`}
+                  >
+                    <span className="text-[12px] text-[#B3B6C7]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                      {room.name}
+                    </span>
+                    {selectedRoom.id === room.id && (
                       <div className="w-1.5 h-1.5 rounded-full bg-[#14A28A] ml-auto" />
                     )}
                   </button>
@@ -469,8 +439,7 @@ export default function ChatPage() {
                   <div className="flex flex-row items-center gap-1">
                     <div className="w-4 h-4 rounded-[4px] border border-[#0088FF] bg-[#0D0F1E] flex-shrink-0 overflow-hidden flex items-center justify-center">
                       {msg.avatar ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={msg.avatar} alt={msg.username} className="w-full h-full object-cover" />
+                        <Image src={msg.avatar} alt={msg.username} width={16} height={16} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-[8px] font-bold text-[#0088FF]">{msg.username?.charAt(0)?.toUpperCase()}</span>
                       )}
@@ -481,16 +450,6 @@ export default function ChatPage() {
                       onClick={() => handleUserClick(msg.userId)}
                     >
                       {msg.username}
-                    </span>
-                    <span
-                      className="px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none"
-                      style={{
-                        background: `${getLevelBadgeColor(msg.activityLevel)}22`,
-                        color: getLevelBadgeColor(msg.activityLevel),
-                        border: `1px solid ${getLevelBadgeColor(msg.activityLevel)}66`,
-                      }}
-                    >
-                      {msg.activityLevel || "Beginner"}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-[#B3B6C7] opacity-40 flex-shrink-0" />
                     <span
@@ -504,8 +463,7 @@ export default function ChatPage() {
                   {/* Bubble */}
                   {isImg ? (
                     <div className="rounded-[10px_10px_10px_0px] overflow-hidden w-[133px] h-[109px]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={msg.text} alt="gif" className="w-full h-full object-cover" />
+                      <Image src={msg.text} alt="image" width={133} height={109} className="w-full h-full object-cover" />
                     </div>
                   ) : (
                     <div className="bg-[#151728] rounded-[10px_10px_10px_0px] px-2 py-3 max-w-lg w-fit">
@@ -525,53 +483,11 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {showGifPicker && (
-        <div className="px-4 pb-2 border-t border-[#1E2133] bg-[#0D0F1E]">
-          <div className="flex items-center gap-2 py-2">
-            <input
-              type="text"
-              value={gifQuery}
-              onChange={(e) => setGifQuery(e.target.value)}
-              placeholder="Search GIFs..."
-              className="flex-1 bg-[#151728] border border-[#26293E] rounded-[8px] px-3 py-2 text-sm text-white placeholder-[#50536F] outline-none"
-            />
-            <button
-              onClick={() => setShowGifPicker(false)}
-              className="text-xs px-2 py-1 rounded bg-[#1E2133] text-[#B3B6C7]"
-            >
-              Close
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-2 max-h-[180px] overflow-y-auto pb-2">
-            {gifLoading ? (
-              <p className="col-span-3 text-xs text-[#8C8FA8]">Loading GIFs...</p>
-            ) : (
-              gifResults.map((gifUrl, index) => (
-                <button
-                  key={`${gifUrl}-${index}`}
-                  onClick={() => handleGifSelect(gifUrl)}
-                  className="rounded overflow-hidden border border-[#1E2133] hover:border-[#14A28A]"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={gifUrl} alt="gif option" className="w-full h-20 object-cover" />
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ── Input area ── */}
       <div className="flex flex-row items-center gap-2 px-4 py-4 flex-shrink-0 bg-[#0D0F1E]">
         <div className="flex-1 flex flex-row items-center gap-[10px] bg-[#151728] border border-[#26293E] rounded-[10px] h-14 px-[10px]">
           <button className="flex-shrink-0">
             <EmojiIcon />
-          </button>
-          <button
-            onClick={() => setShowGifPicker((prev) => !prev)}
-            className="flex-shrink-0 px-2 py-1 rounded bg-[#1E2133] text-[#B3B6C7] text-[11px] font-semibold"
-          >
-            GIF
           </button>
           <input
             type="text"
