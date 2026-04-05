@@ -15,21 +15,32 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    const configuredSocketUrl = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
+    const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
     // Vercel serverless doesn't support WebSockets - only connect in development
     // or if explicitly configured with a socket-capable backend
     const isVercelProduction = typeof window !== "undefined" && 
       window.location.hostname.includes("vercel.app");
+
+    const isLikelyServerlessVercelApi = !configuredSocketUrl && !!configuredApiUrl && (() => {
+      try {
+        return new URL(configuredApiUrl).hostname.endsWith("vercel.app");
+      } catch {
+        return configuredApiUrl.includes("vercel.app");
+      }
+    })();
     
     // Skip socket connection on Vercel production unless a dedicated socket URL is provided
-    if (isVercelProduction && !process.env.NEXT_PUBLIC_SOCKET_URL) {
-      console.log("[socket] Skipping WebSocket connection on Vercel (not supported)");
+    if ((isVercelProduction && !configuredSocketUrl) || isLikelyServerlessVercelApi) {
+      console.log("[socket] Skipping realtime socket connection (serverless API URL detected, use NEXT_PUBLIC_SOCKET_URL for realtime)");
       return;
     }
 
     // Prefer a dedicated socket URL if provided. Fallback order:
     // 1) NEXT_PUBLIC_SOCKET_URL, 2) NEXT_PUBLIC_API_URL, 3) localhost:5000 (dev)
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL
-      || process.env.NEXT_PUBLIC_API_URL
+    const socketUrl = configuredSocketUrl
+      || configuredApiUrl
       || (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://earnlabbackend.vercel.app");
 
     // Read token early so we can include it as auth during the handshake.
@@ -40,7 +51,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const s = io(socketUrl, {
       path: "/socket.io",
       autoConnect: true,
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
       auth: token ? { token } : undefined,
       reconnection: true,
       reconnectionAttempts: 5, // Limit attempts to avoid spam

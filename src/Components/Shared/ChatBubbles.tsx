@@ -10,7 +10,7 @@ export default function ChatBubbles() {
 
   return (
     <>
-      <div className="fixed bottom-20 left-4 z-50">
+      <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-3">
         <button
           onClick={() => setGlobalOpen(true)}
           className="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"
@@ -18,9 +18,6 @@ export default function ChatBubbles() {
         >
           <MessageCircle className="w-6 h-6 text-white" />
         </button>
-      </div>
-
-      <div className="fixed bottom-20 right-4 z-50">
         <button
           onClick={() => setSupportOpen(true)}
           className="w-12 h-12 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"

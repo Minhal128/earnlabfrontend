@@ -36,9 +36,20 @@ interface GlobalChatProps {
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const defaultRooms: ChatRoom[] = [
-  { id: "general", name: "General", isActive: true },
-  { id: "trading", name: "Trading" },
-  { id: "help", name: "Help" },
+  { id: "en", name: "English", isActive: true },
+  { id: "de", name: "German" },
+  { id: "fr", name: "French" },
+  { id: "tr", name: "Turkish" },
+  { id: "intl", name: "International" },
+];
+
+const FALLBACK_GIFS = [
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDB3N3A2ZWx4NWhnM2Nsd3N1MWcwY3I4M2NldGE0YWhvNWIxcnNvdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6Zt481isNVuQI1l6/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHp2dWc4MWh6c2N6NW53cWo1dXZ4YTRsM3Fyb2N5a2x4NWE2d2NsYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ICOgUNjpvO0PC/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3cyNWR6Y2V6aWwzdjk2NW9qc2I1eHVwMTd4YzZrczN5ZnN4bzNpaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/fAnEC88LccN7a/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDl0dWJ0djQxZjRuOHA4bnlvNjlpN25zaHJkMmd3eTd4eG9za2N2dSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3vR85PnGsBwu1PFK/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJxZnJ2aGx3bnp2dWV4Y2xrc2YzM2RkcnRtMmM4bDlxYjBhdmRhYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7btPCcdNniyf0ArS/giphy.gif",
+  "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2Nudm5nZG50eDRjM2owMXNqZ2M3YW0zN2xyenBhMm8xcnM0aWh6NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYt5jPR6QX5pnqM/giphy.gif",
 ];
 
 const getLevelBadgeColor = (level?: string): string => {
@@ -66,9 +77,14 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifQuery, setGifQuery] = useState("");
+  const [gifResults, setGifResults] = useState<string[]>(FALLBACK_GIFS);
+  const [gifLoading, setGifLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
+  const giphyApiKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY || "dc6zaTOxFJmzC";
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -212,6 +228,45 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  const isImageUrl = (text: string) =>
+    /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim()) ||
+    /giphy\.com|media\d*\.giphy\.com|tenor\.com/i.test(text.trim());
+
+  const handleGifSelect = (gifUrl: string) => {
+    setInput(gifUrl);
+    setShowGifPicker(false);
+  };
+
+  useEffect(() => {
+    if (!showGifPicker) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setGifLoading(true);
+      try {
+        const endpoint = gifQuery.trim()
+          ? `https://api.giphy.com/v1/gifs/search?api_key=${giphyApiKey}&q=${encodeURIComponent(gifQuery.trim())}&limit=12&rating=pg`
+          : `https://api.giphy.com/v1/gifs/trending?api_key=${giphyApiKey}&limit=12&rating=pg`;
+        const res = await fetch(endpoint, { signal: controller.signal });
+        const data = await res.json();
+        const urls = Array.isArray(data?.data)
+          ? data.data
+              .map((gif: any) => gif?.images?.fixed_height?.url || gif?.images?.original?.url)
+              .filter(Boolean)
+          : [];
+        setGifResults(urls.length > 0 ? urls : FALLBACK_GIFS);
+      } catch {
+        setGifResults(FALLBACK_GIFS);
+      } finally {
+        setGifLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [showGifPicker, gifQuery, giphyApiKey]);
 
   const getRoleBadge = (role?: string) => {
     switch (role) {
@@ -364,9 +419,16 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                       </div>
 
                       {/* Message Text */}
-                      <div className="bg-[#1A1D2E] rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2">
-                        <p className="text-xs sm:text-sm text-gray-200 break-words">{msg.text}</p>
-                      </div>
+                      {isImageUrl(msg.text || "") ? (
+                        <div className="rounded-lg overflow-hidden w-[150px] h-[110px]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={msg.text} alt="gif" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="bg-[#1A1D2E] rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2">
+                          <p className="text-xs sm:text-sm text-gray-200 break-words">{msg.text}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -375,10 +437,49 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
             <div ref={messagesEndRef} />
           </div>
 
+          {showGifPicker && (
+            <div className="px-3 sm:px-4 py-2 border-t border-[#1E2035] bg-[#0F1123]">
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  value={gifQuery}
+                  onChange={(e) => setGifQuery(e.target.value)}
+                  placeholder="Search GIFs..."
+                  className="flex-1 bg-[#1A1D2E] text-white text-xs sm:text-sm placeholder-gray-500 px-3 py-2 rounded-lg outline-none"
+                />
+                <button
+                  onClick={() => setShowGifPicker(false)}
+                  className="text-[10px] sm:text-xs px-2 py-1 rounded bg-[#252840] text-[#B3B6C7]"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2 max-h-[160px] overflow-y-auto">
+                {gifLoading ? (
+                  <p className="col-span-3 text-xs text-[#9CA3AF]">Loading GIFs...</p>
+                ) : (
+                  gifResults.map((gifUrl, idx) => (
+                    <button
+                      key={`${gifUrl}-${idx}`}
+                      onClick={() => handleGifSelect(gifUrl)}
+                      className="rounded overflow-hidden border border-[#2A2D3E] hover:border-emerald-500"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={gifUrl} alt="gif option" className="w-full h-16 object-cover" />
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Input Area */}
           <div className="p-2 sm:p-3 border-t border-[#1E2035]">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <button className="p-1.5 sm:p-2 hover:bg-[#1A1D2E] rounded-lg transition-colors">
+              <button
+                onClick={() => setShowGifPicker((prev) => !prev)}
+                className="p-1.5 sm:p-2 hover:bg-[#1A1D2E] rounded-lg transition-colors"
+              >
                 <ImageIcon size={18} className="text-gray-400 sm:w-5 sm:h-5" />
               </button>
               <input

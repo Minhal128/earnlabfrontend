@@ -1,5 +1,5 @@
 "use client";
-import { Bell, ChevronDown, X } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -15,14 +15,13 @@ import {
   clearUser,
   updateProfileFields,
 } from "@/store/userSlice";
-import SupportChat from "../Components/HomePage/SupportChat";
 import { useSocket } from "@/contexts/SocketProvider";
 import LogoImg from "../../public/assets/logo.png";
 
 const TopBar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -171,6 +170,42 @@ const TopBar: React.FC = () => {
       {/* Right controls */}
       <div className="flex items-center gap-1 sm:gap-2">
 
+        {/* Desktop menu */}
+        <div className="relative hidden lg:block">
+          <button
+            onClick={() => setDesktopMenuOpen((v) => !v)}
+            className="flex items-center justify-center rounded-[5px] transition-colors hover:opacity-80"
+            style={{ width: 40, height: 40, background: "#1E2133", border: "1.5px solid #30334A" }}
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5 text-white" />
+          </button>
+
+          {desktopMenuOpen && (
+            <div className="absolute right-0 mt-2 w-56 rounded-[10px] shadow-xl z-50 overflow-hidden" style={{ background: "#151728", border: "1px solid #1E2133" }}>
+              <div className="py-2">
+                {[
+                  { href: "/rewards", label: "Rewards" },
+                  { href: "/leaderboard", label: "Leaderboard" },
+                  { href: "/referrals", label: "Referrals" },
+                  { href: "/chat", label: "Chat" },
+                  { href: "/support", label: "Support" },
+                  { href: "/settings", label: "Settings" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setDesktopMenuOpen(false)}
+                    className="block px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Bell */}
         <div className="relative">
           <button
@@ -229,9 +264,9 @@ const TopBar: React.FC = () => {
         {/* Avatar + dropdown */}
         <div className="relative">
           <div className="flex items-center" style={{ height: 40 }}>
-            {/* Avatar — navigates to profile */}
-            <Link
-              href="/profile"
+            {/* Avatar */}
+            <button
+              onClick={() => setProfileOpen((v) => !v)}
               className="flex items-center justify-center font-bold text-white text-[20px] sm:text-[24px] rounded-[5px] transition-opacity hover:opacity-80"
               style={{
                 width: 40, height: 40,
@@ -245,7 +280,7 @@ const TopBar: React.FC = () => {
                 ? <img src={avatarUrl} alt={username || "User"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 : "B"
               }
-            </Link>
+            </button>
           </div>
 
           {profileOpen && (
@@ -256,8 +291,8 @@ const TopBar: React.FC = () => {
                 </button>
               </div>
               <nav className="flex flex-col gap-1 px-3 pb-3 text-sm">
-                <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
-                  <IoMdPerson size={16} /> Profile
+                <Link href="/account" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
+                  <IoMdPerson size={16} /> Account
                 </Link>
                 <div style={{ height: 1, background: "#1E2133" }} />
                 <Link href="/referrals" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
@@ -274,7 +309,6 @@ const TopBar: React.FC = () => {
         </div>
       </div>
 
-      <SupportChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />
     </header>
   );
 };

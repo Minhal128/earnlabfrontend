@@ -6,6 +6,7 @@ import { SocketProvider } from "@/contexts/SocketProvider";
 import BottomNavigation from "@/Components/Shared/BottomNavigation";
 import ChatBubbles from "@/Components/Shared/ChatBubbles";
 import CookieConsent from "@/Components/Shared/CookieConsent";
+import AppFooter from "@/Components/Shared/AppFooter";
 import ReduxProvider from "@/Components/ReduxProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import ClerkSyncProvider from "@/Components/ClerkSyncProvider";
@@ -60,6 +61,7 @@ export default function RootLayout({
             <ReduxProvider>
               <SocketProvider>
                 {children}
+                <AppFooter />
                 <BottomNavigation />
                 <ChatBubbles />
                 <CookieConsent />

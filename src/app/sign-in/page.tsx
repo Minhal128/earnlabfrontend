@@ -1,15 +1,17 @@
 "use client";
-import React from 'react';
-import { SignIn } from '@clerk/nextjs';
+
+import { useRouter } from "next/navigation";
+import SignInModal from "@/Components/HomePage/SigninModal";
 
 export default function SignInPage() {
-  // Use Clerk's prebuilt SignIn UI for Facebook OAuth redirects
-  // Google OAuth is handled directly in the modals
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0F1220]">
-      <div className="w-full max-w-md p-6">
-        <SignIn routing="path" path="/sign-in" redirectUrl="/home" />
-      </div>
-    </div>
+    <SignInModal
+      isOpen={true}
+      onClose={() => router.push("/landing")}
+      onForgotPassword={() => router.push("/sign-in")}
+      onSignUp={() => router.push("/sign-up")}
+    />
   );
 }

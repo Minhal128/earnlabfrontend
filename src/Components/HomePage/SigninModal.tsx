@@ -181,8 +181,8 @@ export default function SignInModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4">
-      <div className="relative w-full max-w-[1020px] bg-[#0D0F1E] border border-[#1C2033] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.55)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[620px] md:min-h-[680px]">
+      <div className="relative w-full max-w-[560px] md:max-w-[940px] max-h-[88vh] bg-[#0D0F1E] border border-[#1C2033] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.55)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 h-full min-h-[540px] md:min-h-[620px]">
           {/* Left visual panel */}
           <div className="hidden md:block relative bg-[#11172A]">
             <img
@@ -194,7 +194,7 @@ export default function SignInModal({
           </div>
 
           {/* Right form panel */}
-          <div className="relative bg-[#0D0F1E] px-5 sm:px-7 md:px-10 py-8 md:py-10 flex flex-col">
+          <div className="relative bg-[#0D0F1E] px-5 sm:px-7 md:px-10 py-8 md:py-10 flex flex-col overflow-y-auto">
             <button
               onClick={onClose}
               className="absolute right-4 top-4 w-7 h-7 rounded-full bg-[#1C2033] hover:bg-[#2A2E45] text-[#8C8FA8] hover:text-white transition-colors flex items-center justify-center"

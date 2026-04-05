@@ -138,15 +138,27 @@ const BottomNavigation: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-col p-2 max-h-[60vh] overflow-y-auto">
-            <button onClick={() => { setIsMenuOpen(false); router.push('/profile'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
-              <User className="w-[18px] h-[18px]" /> Profile
-            </button>
-            <button onClick={() => { setIsMenuOpen(false); router.push('/referrals'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
-              <Users className="w-[18px] h-[18px]" /> Referrals
-            </button>
-            <button onClick={() => { setIsMenuOpen(false); router.push('/cashout'); }} className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium">
-              <Wallet className="w-[18px] h-[18px]" /> Cashout
-            </button>
+            {[
+              { label: "Account", path: "/account", icon: <User className="w-[18px] h-[18px]" /> },
+              { label: "Rewards", path: "/rewards", icon: <DollarSign className="w-[18px] h-[18px]" /> },
+              { label: "Leaderboard", path: "/leaderboard", icon: <Users className="w-[18px] h-[18px]" /> },
+              { label: "Referrals", path: "/referrals", icon: <Users className="w-[18px] h-[18px]" /> },
+              { label: "Chat", path: "/chat", icon: <FileText className="w-[18px] h-[18px]" /> },
+              { label: "Support", path: "/support", icon: <FileText className="w-[18px] h-[18px]" /> },
+              { label: "Settings", path: "/settings", icon: <FileText className="w-[18px] h-[18px]" /> },
+              { label: "Cashout", path: "/cashout", icon: <Wallet className="w-[18px] h-[18px]" /> },
+            ].map((item) => (
+              <button
+                key={item.path}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  router.push(item.path);
+                }}
+                className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium"
+              >
+                {item.icon} {item.label}
+              </button>
+            ))}
             <div className="h-[1px] bg-[#1E2133] my-1 mx-2"></div>
             <button onClick={handleSignOut} className="flex items-center gap-3 px-4 py-3.5 text-[#F87171] hover:bg-[#1E2133] rounded-lg transition-colors font-medium">
               <LogOut className="w-[18px] h-[18px]" /> Sign Out

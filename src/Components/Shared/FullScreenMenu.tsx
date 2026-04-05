@@ -64,10 +64,10 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
 
   const menuTiles: MenuTile[] = [
     {
-      id: "profile",
-      label: "Profile",
+      id: "account",
+      label: "Account",
       icon: <User className="w-6 h-6" />,
-      path: "/profile",
+      path: "/account",
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
     },
