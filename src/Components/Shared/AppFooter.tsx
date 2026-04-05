@@ -69,15 +69,15 @@ export default function AppFooter() {
         <div>
           <h4 className="text-white font-semibold">Account</h4>
           <div className="mt-2 space-y-2 text-sm">
-            <Link href="/account" className="block text-[#B3B6C7] hover:text-white transition-colors">Account</Link>
+            <Link href="/account" className="block text-[#B3B6C7] hover:text-white transition-colors">Profile</Link>
             <Link href="/referrals" className="block text-[#B3B6C7] hover:text-white transition-colors">Referrals</Link>
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-1 text-[#F87171] hover:text-red-300 transition-colors"
+              className="flex items-center gap-2 text-[#F87171] hover:text-red-300 transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sign Out
             </button>
-            <div className="inline-flex items-center gap-1 text-[#B3B6C7]">
+            <div className="flex items-center gap-2 text-[#B3B6C7]">
               <Globe className="w-4 h-4" /> English
             </div>
           </div>
