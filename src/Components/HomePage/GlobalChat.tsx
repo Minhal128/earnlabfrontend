@@ -51,7 +51,6 @@ const FALLBACK_GIFS = [
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJxZnJ2aGx3bnp2dWV4Y2xrc2YzM2RkcnRtMmM4bDlxYjBhdmRhYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o7btPCcdNniyf0ArS/giphy.gif",
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2Nudm5nZG50eDRjM2owMXNqZ2M3YW0zN2xyenBhMm8xcnM0aWh6NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYt5jPR6QX5pnqM/giphy.gif",
 ];
-
 const getLevelBadgeColor = (level?: string): string => {
   switch ((level || "").toLowerCase()) {
     case "expert":
