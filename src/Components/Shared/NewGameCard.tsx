@@ -8,6 +8,23 @@ const IcoApple = () => (
   </svg>
 );
 
+const IcoAndroid = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 10v7a2 2 0 0 0 2 2h1v3h2v-3h4v3h2v-3h1a2 2 0 0 0 2-2v-7" />
+        <path d="M8 10V8a4 4 0 1 1 8 0v2" />
+        <line x1="9" y1="4" x2="7" y2="2" />
+        <line x1="15" y1="4" x2="17" y2="2" />
+    </svg>
+);
+
+const IcoDesktop = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="12" rx="2" />
+        <path d="M8 20h8" />
+        <path d="M12 16v4" />
+    </svg>
+);
+
 
 interface GameCardProps {
     title: string;
@@ -36,19 +53,37 @@ const NewGameCard: React.FC<GameCardProps> = ({ title, image, reward, platforms,
                 <img src={image} alt={title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/20" />
             </div>
-            {platforms && platforms.includes("ios") && (
-                <div className="absolute top-[10px] right-[10px] w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
-                    <IcoApple />
-                </div>
-            )}
-            {platforms && platforms.includes("android") && !platforms.includes("ios") && (
-                <div className="absolute top-[10px] right-[10px] w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                </div>
-            )}
+            <div className="absolute top-[10px] right-[10px] flex items-center gap-1">
+                {platforms?.includes("ios") && (
+                    <div className="w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
+                        <IcoApple />
+                    </div>
+                )}
+                {platforms?.includes("android") && (
+                    <div className="w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
+                        <IcoAndroid />
+                    </div>
+                )}
+                {platforms?.includes("desktop") && (
+                    <div className="w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
+                        <IcoDesktop />
+                    </div>
+                )}
+            </div>
             <div className="px-3 pt-[10px] pb-3 flex flex-col gap-[5px]">
                 <p className="text-[14px] font-medium text-[#B3B6C7] leading-5 truncate m-0">{title}</p>
                 <span className="text-[18px] font-bold text-[#0AC07D] leading-6 tracking-[0.4px]">{reward}</span>
+                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    {platforms?.includes("ios") && (
+                        <span className="px-2 py-0.5 rounded bg-[#1E2133] text-[#8C8FA8] text-[10px] font-medium">iPhone</span>
+                    )}
+                    {platforms?.includes("android") && (
+                        <span className="px-2 py-0.5 rounded bg-[#1E2133] text-[#8C8FA8] text-[10px] font-medium">Android</span>
+                    )}
+                    {platforms?.includes("desktop") && (
+                        <span className="px-2 py-0.5 rounded bg-[#1E2133] text-[#8C8FA8] text-[10px] font-medium">Desktop</span>
+                    )}
+                </div>
             </div>
         </div>
     );

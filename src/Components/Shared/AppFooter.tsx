@@ -3,28 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  CheckSquare,
   CircleHelp,
   CreditCard,
   FileText,
+  Gamepad2,
   Gift,
-  Globe,
   Headset,
   Home,
-  Moon,
   Shield,
   Trophy,
   UserRound,
   Smile,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
-
-const HIDDEN_PREFIXES = ["/sign-in", "/sign-up", "/signin", "/signup", "/sigin"];
-const HIDDEN_ROUTES = new Set(["/", "/landing"]);
 
 const platformLinks = [
   { href: "/earn", label: "Earn", icon: Home },
-  { href: "/leaderboard", label: "Leaderboards", icon: Trophy },
+  { href: "/games", label: "Games", icon: Gamepad2 },
+  { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/rewards", label: "Rewards", icon: Gift },
+  { href: "/leaderboard", label: "Leaderboards", icon: Trophy },
 ];
 
 const userCenterLinks = [
@@ -40,6 +38,10 @@ const termsLinks = [
   { href: "/cookies", label: "Cookie policy", icon: Smile },
 ];
 
+const DISCORD_URL = process.env.NEXT_PUBLIC_DISCORD_URL || "https://discord.gg/htr9C8EjKG";
+const TELEGRAM_URL = "https://t.me/labwardscom";
+const X_URL = "https://x.com/labwards?s=21";
+
 function StarTile({ dimmed = false }: { dimmed?: boolean }) {
   return (
     <div className={`w-6 h-6 ${dimmed ? "bg-[#00B67A]/60" : "bg-[#00B67A]"} flex items-center justify-center`}>
@@ -50,11 +52,25 @@ function StarTile({ dimmed = false }: { dimmed?: boolean }) {
   );
 }
 
-function SocialIconBox({ children }: { children: React.ReactNode }) {
+function SocialIconBox({
+  children,
+  href,
+  label,
+}: {
+  children: React.ReactNode;
+  href: string;
+  label: string;
+}) {
   return (
-    <div className="w-10 h-10 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="w-10 h-10 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center text-[#B3B6C7] hover:text-white hover:border-[#0AC07D] transition-colors"
+    >
       {children}
-    </div>
+    </a>
   );
 }
 
@@ -91,12 +107,6 @@ function LinkGroup({
 }
 
 export default function AppFooter() {
-  const pathname = usePathname();
-
-  if (HIDDEN_ROUTES.has(pathname || "") || HIDDEN_PREFIXES.some((prefix) => pathname?.startsWith(prefix))) {
-    return null;
-  }
-
   return (
     <footer className="bg-[#0D0F1E] border-t border-[#1C1E32] mt-10 mb-[70px] md:mb-0">
       <div className="max-w-[1312px] mx-auto px-4 pt-10 sm:pt-14 pb-8">
@@ -164,42 +174,23 @@ export default function AppFooter() {
         <div className="border-t border-[#1C1E32] pt-6 w-full flex flex-col items-center gap-4 mt-8">
           <p className="text-[#B3B6C7] text-sm">©2026 Lab Wards, All Rights Reserved</p>
 
-          <div className="flex gap-3" aria-hidden="true">
-            <SocialIconBox>
+          <div className="flex gap-3">
+            <SocialIconBox href={X_URL} label="Open X (Twitter)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
             </SocialIconBox>
-            <SocialIconBox>
+            <SocialIconBox href={TELEGRAM_URL} label="Open Telegram">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
                 <circle cx="12" cy="12" r="4" />
               </svg>
             </SocialIconBox>
-            <SocialIconBox>
+            <SocialIconBox href={DISCORD_URL} label="Join Discord">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
               </svg>
             </SocialIconBox>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5"
-              aria-label="Language"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              English
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5"
-              aria-label="Theme"
-            >
-              <Moon className="w-3.5 h-3.5" />
-              Light
-            </button>
           </div>
         </div>
 
