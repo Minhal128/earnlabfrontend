@@ -175,6 +175,16 @@ body {
     }
 }
 
+@keyframes partnerScrollRight {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
 .animate-fadeInUp {
     animation: fadeInUp 0.7s ease-out both;
 }
@@ -189,6 +199,21 @@ body {
 
 .animate-slideLeft {
     animation: slideLeft 30s linear infinite;
+}
+
+.animate-partner-scroll-right {
+    animation: partnerScrollRight 32s linear infinite;
+}
+
+.animate-partner-scroll-right:hover {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-partner-scroll-right {
+        animation: none;
+        transform: translateX(0);
+    }
 }
 
 .animate-pulse-glow {

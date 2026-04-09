@@ -1,25 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-/* ───────────── Star Rating ───────────── */
-const StarIcon = ({ filled = true }: { filled?: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path
-      d="M10 1.5l2.47 5.01 5.53.8-4 3.9.94 5.49L10 14.26 5.06 16.7l.94-5.49-4-3.9 5.53-.8L10 1.5z"
-      fill={filled ? '#FF8D28' : '#30334A'}
-    />
-  </svg>
-);
-const Stars = ({ count = 5 }: { count?: number }) => (
-  <div className="flex gap-0.5">
-    {[...Array(5)].map((_, i) => (
-      <StarIcon key={i} filled={i < count} />
-    ))}
-  </div>
-);
 
 /* ───────────── FAQ Accordion ───────────── */
 const faqData = [
@@ -72,36 +54,65 @@ const FAQItem = ({
 
 /* ───────────── Testimonial Card ───────────── */
 const TestimonialCard = ({
-  img,
+  avatarUrl,
   name,
   country,
-  flag,
   text,
-  stars,
+  amount,
+  activityDate,
 }: {
-  img: string;
+  avatarUrl?: string | null;
   name: string;
   country: string;
-  flag: string;
   text: string;
-  stars: number;
+  amount: string;
+  activityDate: string;
 }) => (
-  <div className="flex-1 min-w-0 sm:min-w-[300px] bg-[#16182A] border border-[#26293E] rounded-[20px] p-5 sm:p-8 flex flex-col gap-3 sm:gap-6 w-full">
-    <div className="flex items-center gap-3">
-      <img
-        src={img}
-        alt={name}
-        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
-      />
+  <div className="bg-[#16182A] border border-[#26293E] rounded-xl p-3 sm:p-4 flex flex-col gap-2.5 sm:gap-3 h-full">
+    <div className="flex items-center gap-2.5 sm:gap-3">
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={name}
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover"
+        />
+      ) : (
+        <div
+          className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full shrink-0 ring-1 ring-white/10 overflow-hidden flex items-center justify-center"
+          style={{ background: getGeneratedAvatarBackground(name) }}
+          aria-label={`${name} generated avatar`}
+        >
+          <div
+            aria-hidden="true"
+            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-white/25"
+          />
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      )}
       <div>
-        <p className="text-white font-semibold text-base sm:text-lg">{name}</p>
-        <p className="text-[#B3B6C7] text-xs flex items-center gap-1.5">
+        <p className="text-white font-semibold text-[13px] sm:text-sm">{name}</p>
+        <p className="text-[#B3B6C7] text-[10px] sm:text-[11px] flex items-center gap-1.5">
           <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#0AC07D"/></svg> {country}
         </p>
       </div>
     </div>
-    <p className="text-[#B3B6C7] text-sm sm:text-base leading-6 sm:leading-7">{text}</p>
-    <Stars count={stars} />
+    <p className="text-[#B3B6C7] text-[12px] sm:text-[13px] leading-5">{text}</p>
+    <div className="flex items-center justify-between text-[11px] text-[#8C8FA8] pt-1">
+      <span>{activityDate}</span>
+      <span className="text-[#0AC07D] font-semibold">{amount}</span>
+    </div>
   </div>
 );
 
@@ -148,13 +159,6 @@ const PayoutItem = ({
   </div>
 );
 
-/* ───────────── Reward Icon Box ───────────── */
-const RewardBox = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-[#111324] border border-[#26293E] rounded-2xl flex items-center justify-center ${className}`}>
-    {children}
-  </div>
-);
-
 /* ───────────── SVG Icons ───────────── */
 const GlobeIcon = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round">
@@ -175,85 +179,500 @@ const SolanaCircleIcon = () => (
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
-/* ───────────── Testimonial Data ───────────── */
-const testimonials = [
+type RecentActivityResponse = {
+  activities?: Array<{
+    type?: 'payout' | 'earning' | 'referral';
+    username?: string;
+    avatarUrl?: string | null;
+    countryCode?: string | null;
+    countryName?: string | null;
+    amount?: number;
+    method?: string;
+    offerName?: string;
+    provider?: string;
+    timestamp?: string;
+  }>;
+  stats?: {
+    totalPayout24hCents?: number;
+    completedPayouts24hCount?: number;
+    totalRewardsEarnedCents?: number;
+    averageMoneyEarnedCents?: number;
+    tasksCompletedCount?: number;
+  };
+};
+
+type LandingActivity = NonNullable<
+  NonNullable<RecentActivityResponse['activities']>[number]
+>;
+
+type LandingViewModel = {
+  activities: LandingActivity[];
+  stats: {
+    totalPayout24hCents: number | null;
+    completedPayouts24hCount: number | null;
+    totalRewardsEarnedCents: number | null;
+    averageMoneyEarnedCents: number | null;
+    tasksCompletedCount: number | null;
+  };
+};
+
+const LANDING_BACKEND_CHECK_TIMEOUT_MS = 3_000;
+
+const MOCK_LANDING_VIEW_MODEL: LandingViewModel = {
+  activities: [
+    {
+      type: 'payout',
+      username: 'Ava',
+      countryCode: 'US',
+      countryName: 'United States',
+      amount: 80,
+      method: 'paypal',
+      timestamp: '2026-04-09T08:15:00.000Z',
+    },
+    {
+      type: 'earning',
+      username: 'Liam',
+      countryCode: 'GB',
+      countryName: 'United Kingdom',
+      amount: 50,
+      provider: 'Offerwall',
+      timestamp: '2026-04-09T08:42:00.000Z',
+    },
+    {
+      type: 'payout',
+      username: 'Noah',
+      countryCode: 'DE',
+      countryName: 'Germany',
+      amount: 120,
+      method: 'bitcoin',
+      timestamp: '2026-04-09T09:08:00.000Z',
+    },
+    {
+      type: 'earning',
+      username: 'Emma',
+      countryCode: 'CA',
+      countryName: 'Canada',
+      amount: 65,
+      provider: 'Survey',
+      timestamp: '2026-04-09T09:24:00.000Z',
+    },
+    {
+      type: 'payout',
+      username: 'Mason',
+      countryCode: 'AU',
+      countryName: 'Australia',
+      amount: 95,
+      method: 'solana',
+      timestamp: '2026-04-09T09:41:00.000Z',
+    },
+    {
+      type: 'earning',
+      username: 'Sophia',
+      countryCode: 'IN',
+      countryName: 'India',
+      amount: 45,
+      provider: 'Games',
+      timestamp: '2026-04-09T10:03:00.000Z',
+    },
+    {
+      type: 'payout',
+      username: 'Ethan',
+      countryCode: 'BR',
+      countryName: 'Brazil',
+      amount: 70,
+      method: 'visa',
+      timestamp: '2026-04-09T10:17:00.000Z',
+    },
+    {
+      type: 'earning',
+      username: 'Olivia',
+      countryCode: 'FR',
+      countryName: 'France',
+      amount: 58,
+      provider: 'Tasks',
+      timestamp: '2026-04-09T10:34:00.000Z',
+    },
+  ],
+  stats: {
+    totalPayout24hCents: 12_500,
+    completedPayouts24hCount: 42,
+    totalRewardsEarnedCents: 68_900,
+    averageMoneyEarnedCents: 235,
+    tasksCompletedCount: 1_428,
+  },
+};
+
+const normalizeRecentActivityResponse = (
+  data: RecentActivityResponse | null
+): LandingViewModel => {
+  const activities = Array.isArray(data?.activities)
+    ? data.activities.filter(
+        (activity): activity is LandingActivity =>
+          typeof activity?.username === 'string' &&
+          typeof activity?.amount === 'number'
+      )
+    : [];
+
+  return {
+    activities,
+    stats: {
+      totalPayout24hCents:
+        typeof data?.stats?.totalPayout24hCents === 'number'
+          ? data.stats.totalPayout24hCents
+          : null,
+      completedPayouts24hCount:
+        typeof data?.stats?.completedPayouts24hCount === 'number'
+          ? data.stats.completedPayouts24hCount
+          : null,
+      totalRewardsEarnedCents:
+        typeof data?.stats?.totalRewardsEarnedCents === 'number'
+          ? data.stats.totalRewardsEarnedCents
+          : null,
+      averageMoneyEarnedCents:
+        typeof data?.stats?.averageMoneyEarnedCents === 'number'
+          ? data.stats.averageMoneyEarnedCents
+          : null,
+      tasksCompletedCount:
+        typeof data?.stats?.tasksCompletedCount === 'number'
+          ? data.stats.tasksCompletedCount
+          : null,
+    },
+  };
+};
+
+const hasUsableBackendContent = (payload: LandingViewModel): boolean => {
+  if (payload.activities.length > 0) {
+    return true;
+  }
+
+  return [
+    payload.stats.totalPayout24hCents,
+    payload.stats.completedPayouts24hCount,
+    payload.stats.totalRewardsEarnedCents,
+    payload.stats.averageMoneyEarnedCents,
+    payload.stats.tasksCompletedCount,
+  ].some((value) => typeof value === 'number' && value > 0);
+};
+
+const formatCurrencyFromCents = (value: number | null | undefined): string =>
+  typeof value === 'number'
+    ? `$${(value / 100).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : '—';
+
+const formatCountryLabel = (activity: LandingActivity): string => {
+  const explicitCountry = activity.countryName?.trim();
+  if (explicitCountry) {
+    return explicitCountry;
+  }
+
+  const code = activity.countryCode?.trim().toUpperCase();
+  if (!code) {
+    return 'Country unavailable';
+  }
+
+  try {
+    const displayName = new Intl.DisplayNames(['en'], { type: 'region' }).of(
+      code
+    );
+    return displayName || code;
+  } catch {
+    return code;
+  }
+};
+
+const formatActivitySummary = (activity: LandingActivity): string => {
+  if (activity.type === 'payout') {
+    const payoutMethod = activity.method?.replace('_', ' ') || 'wallet payout';
+    return `Completed a ${payoutMethod} withdrawal`;
+  }
+
+  if (activity.type === 'earning') {
+    const source = activity.provider || activity.offerName || 'offerwall task';
+    return `Earned rewards from ${source}`;
+  }
+
+  return 'Received a referral reward payout';
+};
+
+const formatActivityDate = (value: string | undefined): string => {
+  if (!value) {
+    return 'Recently';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Recently';
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const getGeneratedAvatarBackground = (seed: string): string => {
+  const safeSeed = seed || 'user';
+  const hash = safeSeed
+    .split('')
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const primaryHue = hash % 360;
+  const secondaryHue = (primaryHue + 44) % 360;
+
+  return `linear-gradient(135deg, hsl(${primaryHue} 68% 46%) 0%, hsl(${secondaryHue} 72% 38%) 100%)`;
+};
+
+const resolveLandingApiBaseUrl = (): string => {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/+$/, '');
+  }
+
+  return process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5000'
+    : 'https://earnlabbackend.vercel.app';
+};
+
+const PARTNER_LOGOS = [
   {
-    img: '/img15.png',
-    name: 'Leslie Alexander',
-    country: 'United Kingdom',
-    flag: '🇬🇧',
-    text: "I was skeptical at first, but after completing just a few surveys I was able to cash out directly to my PayPal. Fast, simple, and legit — I'm hooked!",
-    stars: 5,
+    id: 'monlix',
+    name: 'Monlix',
+    src: 'https://monlix.com/images/logo-light.svg',
+    className: 'h-7 sm:h-9',
   },
   {
-    img: '/img16.png',
-    name: 'Bessie Cooper',
-    country: 'United States',
-    flag: '🇺🇸',
-    text: "I honestly didn't expect much at first, but LabWards surprised me. The tasks are simple, payouts are fast, and everything works exactly as promised.",
-    stars: 5,
+    id: 'mylead',
+    name: 'MyLead',
+    src: 'https://mylead.global/images/svg/logo_ml.svg',
+    className: 'h-7 sm:h-9',
   },
   {
-    img: '/img17.png',
-    name: 'Brooklyn Simmons',
-    country: 'France',
-    flag: '🇫🇷',
-    text: "What I like most about LabWards is how straightforward it is. No confusing steps, no hidden tricks. I complete surveys or offers in my free time and the earnings add up fast.",
-    stars: 4,
+    id: 'gemiad',
+    name: 'GemiAd',
+    src: 'https://gemiad.com/logos/Logo%201.svg',
+    className: 'h-7 sm:h-9',
   },
   {
-    img: '/img15.png',
-    name: 'Sarah Johnson',
-    country: 'Canada',
-    flag: '🇨🇦',
-    text: "I've tried many reward platforms before but LabWards is by far the best. The interface is clean, tasks are easy, and I got paid within hours of my first withdrawal.",
-    stars: 5,
+    id: 'evadav',
+    name: 'Evadav',
+    src: 'https://evadav.com/img/logo.svg',
+    className: 'h-7 sm:h-9',
+  },
+];
+
+const REWARD_LOGOS = [
+  { id: 'visa', name: 'Visa', src: '/assets/visa.png' },
+  {
+    id: 'bitcoin',
+    name: 'Bitcoin',
+    src: '/assets/bit.png',
+  },
+  { id: 'apple', name: 'Apple', src: '/assets/apple.png' },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    src: '/assets/paypal.png',
   },
   {
-    img: '/img16.png',
-    name: 'Marcus Williams',
-    country: 'Germany',
-    flag: '🇩🇪',
-    text: "The crypto withdrawal options are fantastic. I can cash out to Bitcoin or Solana and the fees are minimal. Great platform for earning in your spare time!",
-    stars: 5,
+    id: 'worldcoin',
+    name: 'Worldcoin',
+    src: '/assets/worldcoin.png',
   },
   {
-    img: '/img17.png',
-    name: 'Emily Chen',
-    country: 'Australia',
-    flag: '🇦🇺',
-    text: "LabWards makes it so easy to earn extra income. I do surveys during my commute and play games in the evening. Already earned over $200 this month!",
-    stars: 5,
+    id: 'amazon',
+    name: 'Amazon',
+    src: '/assets/amazon.png',
+  },
+  { id: 'solana', name: 'Solana', src: '/assets/sol.png' },
+  {
+    id: 'playstation',
+    name: 'PlayStation',
+    src: '/assets/play.png',
+  },
+  {
+    id: 'spotify',
+    name: 'Spotify',
+    src: '/assets/spot.png',
+  },
+  {
+    id: 'polygon',
+    name: 'Polygon',
+    src: '/assets/pol.png',
   },
 ];
 
 const LANDINGPAGEComponent = () => {
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
-  const [testimonialSlide, setTestimonialSlide] = useState(0);
-  const testimonialRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [recentActivities, setRecentActivities] = useState<LandingActivity[]>([]);
+  const [totalPayout24hCents, setTotalPayout24hCents] = useState<number | null>(null);
+  const [completedPayouts24hCount, setCompletedPayouts24hCount] = useState<number | null>(null);
+  const [totalRewardsEarnedCents, setTotalRewardsEarnedCents] = useState<number | null>(null);
+  const [averageMoneyEarnedCents, setAverageMoneyEarnedCents] = useState<number | null>(null);
+  const [tasksCompletedCount, setTasksCompletedCount] = useState<number | null>(null);
 
-  // Detect mobile for testimonial slider
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    let active = true;
+
+    const applyLandingPayload = (payload: LandingViewModel) => {
+      if (!active) {
+        return;
+      }
+
+      setTotalPayout24hCents(payload.stats.totalPayout24hCents);
+      setCompletedPayouts24hCount(payload.stats.completedPayouts24hCount);
+      setTotalRewardsEarnedCents(payload.stats.totalRewardsEarnedCents);
+      setAverageMoneyEarnedCents(payload.stats.averageMoneyEarnedCents);
+      setTasksCompletedCount(payload.stats.tasksCompletedCount);
+      setRecentActivities(payload.activities);
+    };
+
+    const fetchPayoutSummary = async () => {
+      const primaryApi = resolveLandingApiBaseUrl();
+      const apiCandidates = [primaryApi, 'https://earnlabbackend.vercel.app'].filter(
+        (api, index, self) => self.indexOf(api) === index
+      );
+
+      const deadline = Date.now() + LANDING_BACKEND_CHECK_TIMEOUT_MS;
+      let backendPayload: RecentActivityResponse | null = null;
+
+      for (const api of apiCandidates) {
+        const remainingMs = deadline - Date.now();
+
+        if (remainingMs <= 0) {
+          break;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), remainingMs);
+
+        try {
+          const response = await fetch(
+            `${api}/api/v1/offerwalls/recent-activity?limit=60`,
+            {
+              cache: 'no-store',
+              signal: controller.signal,
+            }
+          );
+
+          if (!response.ok) {
+            continue;
+          }
+
+          backendPayload = (await response.json()) as RecentActivityResponse;
+          break;
+        } catch {
+          continue;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      const normalizedBackendPayload = normalizeRecentActivityResponse(backendPayload);
+      applyLandingPayload(
+        hasUsableBackendContent(normalizedBackendPayload)
+          ? normalizedBackendPayload
+          : MOCK_LANDING_VIEW_MODEL
+      );
+    };
+
+    fetchPayoutSummary();
+    const interval = window.setInterval(fetchPayoutSummary, 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
   }, []);
 
-  const maxSlide = isMobile
-    ? testimonials.length - 1
-    : Math.ceil(testimonials.length / 3) - 1;
+  const launchUserCount = 100;
 
-  // Auto-slide testimonials
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTestimonialSlide((prev) => (prev >= maxSlide ? 0 : prev + 1));
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [maxSlide]);
+  const payoutActivities = recentActivities.slice(0, 8);
+
+  const totalPayout24hText =
+    typeof totalPayout24hCents === 'number'
+      ? formatCurrencyFromCents(totalPayout24hCents)
+      : 'Live data unavailable';
+  const totalRewardsEarnedText = formatCurrencyFromCents(totalRewardsEarnedCents);
+  const averageMoneyEarnedText = formatCurrencyFromCents(averageMoneyEarnedCents);
+  const tasksCompletedText =
+    typeof tasksCompletedCount === 'number'
+      ? tasksCompletedCount.toLocaleString('en-US')
+      : '—';
+  const launchUserCountText = launchUserCount.toLocaleString('en-US');
+
+  const splitIndex = Math.max(1, Math.ceil(payoutActivities.length / 2));
+  const payoutRowOneActivities = payoutActivities.slice(0, splitIndex);
+  const payoutRowTwoActivities =
+    payoutActivities.slice(splitIndex).length > 0
+      ? payoutActivities.slice(splitIndex)
+      : payoutRowOneActivities;
+
+  const activitiesForTestimonials = (() => {
+    const result: LandingActivity[] = [];
+    const seenCountries = new Set<string>();
+
+    for (const activity of recentActivities) {
+      const countryKey =
+        activity.countryCode?.toUpperCase() || activity.countryName || '';
+      if (!countryKey || seenCountries.has(countryKey)) {
+        continue;
+      }
+      seenCountries.add(countryKey);
+      result.push(activity);
+
+      if (result.length >= 6) {
+        break;
+      }
+    }
+
+    if (result.length < 6) {
+      for (const activity of recentActivities) {
+        const alreadyIncluded = result.some(
+          (item) =>
+            item.username === activity.username &&
+            item.timestamp === activity.timestamp
+        );
+
+        if (!alreadyIncluded) {
+          result.push(activity);
+        }
+
+        if (result.length >= 6) {
+          break;
+        }
+      }
+    }
+
+    return result;
+  })();
+
+  const getPayoutItemMeta = (activity: LandingActivity) => {
+    if (activity.type === 'payout') {
+      return {
+        icon: <GlobeIcon />,
+        label: `${activity.username} withdrew`,
+        name: activity.method?.replace('_', ' ') || 'Wallet payout',
+      };
+    }
+
+    if (activity.type === 'earning') {
+      return {
+        icon: <ClipboardIcon />,
+        label: `${activity.username} earned`,
+        name: activity.provider || activity.offerName || 'Offerwall',
+      };
+    }
+
+    return {
+      icon: <SolanaCircleIcon />,
+      label: `${activity.username} referred`,
+      name: 'Referral reward',
+    };
+  };
 
   return (
     <div className="w-full min-h-screen bg-[#0D0F1E] text-white font-['DM_Sans',sans-serif] overflow-x-hidden pb-16 sm:pb-0">
@@ -448,181 +867,77 @@ const LANDINGPAGEComponent = () => {
                 </svg>
               </div>
               <h3 className="text-[#0AC07D] text-3xl font-bold">
-                $1,046,468.34
+                {totalPayout24hText}
               </h3>
               <p className="text-[#8C8FA8] text-xs text-center">
-                Total payouts made in the last 24h
+                Total payouts made in the last 24 hours
               </p>
             </div>
 
             {/* Mobile: 2x2 grid */}
             <div className="sm:hidden flex flex-col gap-3">
-              <PayoutItem
-                icon={<GlobeIcon />}
-                label="User withdrew"
-                name="Worldcoin"
-                amount="$0.8"
-              />
-              <PayoutItem
-                icon={
-                  <img
-                    src="/img8.png"
-                    alt=""
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-md object-cover"
-                  />
-                }
-                label="User earned"
-                name="Tapjoy"
-                amount="$0.8"
-              />
-              <PayoutItem
-                icon={
-                  <img
-                    src="/img8.png"
-                    alt=""
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-md object-cover"
-                  />
-                }
-                label="User earned"
-                name="Tapjoy"
-                amount="$0.8"
-              />
-              <PayoutItem
-                icon={<GlobeIcon />}
-                label="User withdrew"
-                name="Worldcoin"
-                amount="$0.8"
-              />
+              {payoutActivities.length === 0 ? (
+                <div className="rounded-xl border border-[#26293E] bg-[#181A2C] px-4 py-5 text-center text-[#8C8FA8] text-sm">
+                  Live payout events will appear here as soon as they are recorded.
+                </div>
+              ) : (
+                payoutActivities.slice(0, 4).map((activity, index) => {
+                  const meta = getPayoutItemMeta(activity);
+                  return (
+                    <PayoutItem
+                      key={`mobile-payout-${activity.username}-${activity.timestamp}-${index}`}
+                      icon={meta.icon}
+                      label={meta.label}
+                      name={meta.name}
+                      amount={formatCurrencyFromCents(activity.amount)}
+                    />
+                  );
+                })
+              )}
             </div>
 
             {/* Desktop: Ticker rows */}
             <div className="hidden sm:flex flex-1 flex-col gap-4 overflow-hidden">
-              <div className="flex gap-4 animate-slideRight">
-                <PayoutItem
-                  icon={<GlobeIcon />}
-                  label="User withdrew"
-                  name="Worldcoin"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={
-                    <img
-                      src="/img8.png"
-                      alt=""
-                      className="w-12 h-12 rounded-md object-cover"
-                    />
-                  }
-                  label="User earned"
-                  name="Tapjoy"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={<ClipboardIcon />}
-                  label="User earned"
-                  name="Offer walls"
-                  amount="$0.5"
-                />
-                <PayoutItem
-                  icon={<SolanaCircleIcon />}
-                  label="User withdrew"
-                  name="Solana"
-                  amount="$0.2"
-                />
-                {/* Duplicate for seamless loop */}
-                <PayoutItem
-                  icon={<GlobeIcon />}
-                  label="User withdrew"
-                  name="Worldcoin"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={
-                    <img
-                      src="/img8.png"
-                      alt=""
-                      className="w-12 h-12 rounded-md object-cover"
-                    />
-                  }
-                  label="User earned"
-                  name="Tapjoy"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={<ClipboardIcon />}
-                  label="User earned"
-                  name="Offer walls"
-                  amount="$0.5"
-                />
-                <PayoutItem
-                  icon={<SolanaCircleIcon />}
-                  label="User withdrew"
-                  name="Solana"
-                  amount="$0.2"
-                />
-              </div>
-              <div className="flex gap-4 animate-slideLeft">
-                <PayoutItem
-                  icon={<ClipboardIcon />}
-                  label="User earned"
-                  name="Offer walls"
-                  amount="$0.5"
-                />
-                <PayoutItem
-                  icon={<SolanaCircleIcon />}
-                  label="User withdrew"
-                  name="Solana"
-                  amount="$0.2"
-                />
-                <PayoutItem
-                  icon={
-                    <img
-                      src="/img8.png"
-                      alt=""
-                      className="w-12 h-12 rounded-md object-cover"
-                    />
-                  }
-                  label="User earned"
-                  name="Tapjoy"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={<GlobeIcon />}
-                  label="User withdrew"
-                  name="Worldcoin"
-                  amount="$0.8"
-                />
-                {/* Duplicate for seamless loop */}
-                <PayoutItem
-                  icon={<ClipboardIcon />}
-                  label="User earned"
-                  name="Offer walls"
-                  amount="$0.5"
-                />
-                <PayoutItem
-                  icon={<SolanaCircleIcon />}
-                  label="User withdrew"
-                  name="Solana"
-                  amount="$0.2"
-                />
-                <PayoutItem
-                  icon={
-                    <img
-                      src="/img8.png"
-                      alt=""
-                      className="w-12 h-12 rounded-md object-cover"
-                    />
-                  }
-                  label="User earned"
-                  name="Tapjoy"
-                  amount="$0.8"
-                />
-                <PayoutItem
-                  icon={<GlobeIcon />}
-                  label="User withdrew"
-                  name="Worldcoin"
-                  amount="$0.8"
-                />
-              </div>
+              {payoutActivities.length === 0 ? (
+                <div className="h-full rounded-xl border border-[#26293E] bg-[#181A2C] px-6 py-8 flex items-center justify-center text-[#8C8FA8] text-sm">
+                  No payout activity has been published yet.
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-4 animate-slideRight">
+                    {[...payoutRowOneActivities, ...payoutRowOneActivities].map(
+                      (activity, index) => {
+                        const meta = getPayoutItemMeta(activity);
+                        return (
+                          <PayoutItem
+                            key={`desktop-payout-row-1-${activity.username}-${activity.timestamp}-${index}`}
+                            icon={meta.icon}
+                            label={meta.label}
+                            name={meta.name}
+                            amount={formatCurrencyFromCents(activity.amount)}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                  <div className="flex gap-4 animate-slideLeft">
+                    {[...payoutRowTwoActivities, ...payoutRowTwoActivities].map(
+                      (activity, index) => {
+                        const meta = getPayoutItemMeta(activity);
+                        return (
+                          <PayoutItem
+                            key={`desktop-payout-row-2-${activity.username}-${activity.timestamp}-${index}`}
+                            icon={meta.icon}
+                            label={meta.label}
+                            name={meta.name}
+                            amount={formatCurrencyFromCents(activity.amount)}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -630,46 +945,19 @@ const LANDINGPAGEComponent = () => {
 
       {/* ═══════ PARTNER LOGOS ═══════ */}
       <section className="max-w-[1100px] mx-auto px-4 py-10 sm:py-16">
-        <div className="flex items-center justify-center gap-4 sm:gap-10 md:gap-16 flex-nowrap overflow-x-auto scrollbar-hide">
-          {/* Monlix */}
-          <div className="flex items-center gap-2 shrink-0">
-            <svg width="40" height="34" viewBox="0 0 40 34" fill="none">
-              <path d="M20 2L2 14l18 18 18-18L20 2z" stroke="#3E4262" strokeWidth="2.5" fill="none"/>
-              <path d="M20 10l-8 6h16l-8-6z" fill="#3E4262"/>
-              <path d="M12 16l8 8 8-8" stroke="#3E4262" strokeWidth="1.5" fill="none"/>
-            </svg>
-            <span className="text-[#3E4262] text-xl sm:text-3xl font-bold tracking-wide whitespace-nowrap">Monlix</span>
-          </div>
-          {/* MyLead */}
-          <div className="flex items-center gap-2 shrink-0">
-            <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
-              <circle cx="14" cy="8" r="5" fill="#3E4262"/>
-              <path d="M14 15v14" stroke="#3E4262" strokeWidth="3" strokeLinecap="round"/>
-              <path d="M10 20h8" stroke="#3E4262" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="14" cy="31" r="2.5" fill="#3E4262"/>
-            </svg>
-            <span className="text-[#3E4262] text-xl sm:text-3xl font-bold tracking-wide whitespace-nowrap">MyLead</span>
-          </div>
-          {/* GemiAd */}
-          <div className="flex items-center gap-2 shrink-0">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="8" cy="8" r="4.5" fill="#3E4262"/>
-              <circle cx="24" cy="8" r="4.5" fill="#3E4262"/>
-              <circle cx="8" cy="24" r="4.5" fill="#3E4262"/>
-              <circle cx="24" cy="24" r="4.5" fill="#3E4262"/>
-              <circle cx="16" cy="16" r="4.5" fill="#3E4262"/>
-            </svg>
-            <span className="text-[#3E4262] text-xl sm:text-3xl font-bold tracking-wide whitespace-nowrap">GemiAd</span>
-          </div>
-          {/* Fourth partner icon (scrolling lines + circle) */}
-          <div className="flex items-center shrink-0">
-            <svg width="48" height="36" viewBox="0 0 48 36" fill="none">
-              <path d="M4 8h32" stroke="#3E4262" strokeWidth="3" strokeLinecap="round"/>
-              <path d="M4 16h28" stroke="#3E4262" strokeWidth="3" strokeLinecap="round"/>
-              <path d="M4 24h24" stroke="#3E4262" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="40" cy="8" r="6" stroke="#2DAD97" strokeWidth="2" fill="none"/>
-              <path d="M40 5v6M37 8h6" stroke="#2DAD97" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+        <div className="relative overflow-hidden">
+          <div className="flex w-max items-center gap-10 sm:gap-14 animate-partner-scroll-right will-change-transform">
+            {[...PARTNER_LOGOS, ...PARTNER_LOGOS, ...PARTNER_LOGOS].map((partner, index) => (
+              <div key={`${partner.id}-${index}`} className="shrink-0 flex items-center justify-center">
+                <img
+                  src={partner.src}
+                  alt={`${partner.name} logo`}
+                  className={`w-auto object-contain ${partner.className}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -726,52 +1014,24 @@ const LANDINGPAGEComponent = () => {
             What people are saying{' '}
             <span className="text-[#18C2A3]">about us</span>
           </h2>
-          <div className="overflow-hidden" ref={testimonialRef}>
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: isMobile
-                  ? `translateX(-${testimonialSlide * 100}%)`
-                  : `translateX(-${testimonialSlide * (100 / Math.ceil(testimonials.length / 3))}%)`,
-              }}
-            >
-              {/* On mobile: 1 per slide, sm+: 3 per slide — handled via CSS */}
-              {testimonials.map((t, i) => (
-                <div key={i} className="min-w-full sm:min-w-[33.333%] shrink-0 px-2">
-                  <TestimonialCard {...t} />
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Carousel controls */}
-          <div className="flex items-center justify-center gap-3 mt-8">
-            <button
-              onClick={() => setTestimonialSlide((p) => (p <= 0 ? maxSlide : p - 1))}
-              className="w-11 h-11 bg-[#26293E] border border-[#3A3E57] rounded-md flex items-center justify-center hover:bg-[#30334A] transition-colors"
-            >
-              <svg width="15" height="13" viewBox="0 0 15 13" fill="none">
-                <path d="M14 6.5H1M1 6.5L6.5 1M1 6.5L6.5 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <div className="flex gap-1">
-              {Array.from({ length: maxSlide + 1 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {activitiesForTestimonials.length > 0 && (
+              activitiesForTestimonials.slice(0, 8).map((activity, index) => (
                 <div
-                  key={i}
-                  onClick={() => setTestimonialSlide(i)}
-                  className={`h-1 rounded-full cursor-pointer transition-all duration-300 ${
-                    i === testimonialSlide ? 'w-5 bg-[#2DAD97]' : 'w-3.5 bg-[#30334A]'
-                  }`}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => setTestimonialSlide((p) => (p >= maxSlide ? 0 : p + 1))}
-              className="w-11 h-11 bg-[#26293E] border border-[#3A3E57] rounded-md flex items-center justify-center hover:bg-[#30334A] transition-colors"
-            >
-              <svg width="15" height="13" viewBox="0 0 15 13" fill="none">
-                <path d="M1 6.5H14M14 6.5L8.5 1M14 6.5L8.5 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
+                  key={`testimonial-activity-${activity.username}-${activity.timestamp}-${index}`}
+                  className="h-full"
+                >
+                  <TestimonialCard
+                    avatarUrl={activity.avatarUrl || null}
+                    name={activity.username || 'User'}
+                    country={formatCountryLabel(activity)}
+                    text={formatActivitySummary(activity)}
+                    amount={formatCurrencyFromCents(activity.amount)}
+                    activityDate={formatActivityDate(activity.timestamp)}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -792,8 +1052,8 @@ const LANDINGPAGEComponent = () => {
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                     </svg>
                   }
-                  value="€5M"
-                  label="Total rewards Earned"
+                  value={totalRewardsEarnedText}
+                  label="Total rewards earned"
                 />
               </div>
               <div className="py-6 sm:py-0">
@@ -804,7 +1064,7 @@ const LANDINGPAGEComponent = () => {
                       <path d="M12 6v6l4 2" stroke="white" strokeWidth="2" strokeLinecap="round" />
                     </svg>
                   }
-                  value="€23.5"
+                  value={averageMoneyEarnedText}
                   label="Average money earned"
                 />
               </div>
@@ -815,7 +1075,7 @@ const LANDINGPAGEComponent = () => {
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
                   }
-                  value="23,057"
+                  value={launchUserCountText}
                   label="Total users"
                 />
               </div>
@@ -826,7 +1086,7 @@ const LANDINGPAGEComponent = () => {
                       <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
                     </svg>
                   }
-                  value="16,000"
+                  value={tasksCompletedText}
                   label="Tasks completed"
                 />
               </div>
@@ -870,91 +1130,21 @@ const LANDINGPAGEComponent = () => {
           One Platform,{' '}
           <span className="text-[#18C2A3]">multiple Rewards</span>
         </h2>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 max-w-[860px] mx-auto">
-          {/* Row 1 */}
-          {/* VISA */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="58" height="20" viewBox="0 0 54 18" fill="none">
-              <path d="M20.7 0.6L13.5 17.4H8.9L5.4 3.8C5.2 3 4.9 2.6 4.3 2.3C3.3 1.8 1.7 1.3 0.3 1L0.4 0.6H7.8C8.7 0.6 9.5 1.2 9.7 2.2L11.4 11.4L15.9 0.6H20.7ZM37 11.8C37 7.3 30.7 7.1 30.7 5.1C30.7 4.5 31.3 3.8 32.5 3.7C33.8 3.5 35.6 3.8 37 4.5L37.7 1.2C36.3 0.7 34.7 0.3 32.7 0.3C28.2 0.3 25 2.8 25 6.3C25 8.9 27.3 10.3 29 11.2C30.8 12.1 31.4 12.7 31.4 13.5C31.4 14.7 30 15.2 28.7 15.2C27 15.2 25.2 14.7 23.8 14L23.1 17.4C24.7 18.1 27 18.4 29.2 18.4C34 18.4 37 16 37 11.8ZM47.3 17.4H51.3L47.8 0.6H44.1C43.3 0.6 42.6 1.1 42.3 1.8L35.7 17.4H40.5L41.4 14.8H47.2L47.3 17.4ZM42.7 11.2L45.2 4.4L46.6 11.2H42.7ZM23 0.6L19.2 17.4H14.6L18.4 0.6H23Z" fill="white"/>
-            </svg>
-          </RewardBox>
-          {/* Bitcoin */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="21" stroke="#F7931A" strokeWidth="2.5" fill="none"/>
-              <path d="M30.5 21.2c.5-3.2-2-4.9-5.3-6l1.1-4.4-2.6-.7-1.1 4.3c-.7-.2-1.4-.3-2.1-.5l1.1-4.3-2.6-.7-1.1 4.4c-.6-.1-1.1-.3-1.6-.4l-3.6-.9-.7 2.8s2 .5 1.9.5c1.1.3 1.3 1 1.2 1.5l-1.2 5c.1 0 .2 0 .3.1h-.3l-1.7 6.9c-.1.3-.4.8-1.1.6 0 0-1.9-.5-1.9-.5l-1.3 3 3.4.8c.6.2 1.3.3 1.9.5l-1.1 4.4 2.6.7 1.1-4.4c.7.2 1.4.4 2.1.5l-1.1 4.4 2.6.7 1.1-4.4c4.5.9 7.9.5 9.3-3.6 1.1-3.3-.1-5.2-2.4-6.4 1.7-.4 3-1.6 3.4-4zm-6 8.5c-.8 3.2-6.2 1.5-7.9 1l1.4-5.7c1.8.4 7.4 1.3 6.5 4.7zm.8-8.5c-.7 2.9-5.2 1.4-6.6 1l1.3-5.1c1.5.4 6.2 1 5.3 4.1z" fill="#F7931A"/>
-            </svg>
-          </RewardBox>
-          {/* Apple */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="40" height="48" viewBox="0 0 42 52" fill="white">
-              <path d="M34.8 43.2c-1.9 2.8-3.9 5.5-6.9 5.6-3 .1-4-1.8-7.4-1.8-3.4 0-4.5 1.7-7.3 1.9-2.9.1-5.2-3-7.1-5.8C2 35.6-.6 26.4 3.5 20.2c2.1-3 5.7-5 9.7-5 2.9 0 5.7 2 7.4 2 1.8 0 5.2-2.4 8.8-2.1 1.5.1 5.7.6 8.4 4.4-.2.1-5 2.9-5 8.7 0 6.9 6.1 9.3 6.2 9.3 0 .2-1 3.3-3.4 6.5l.2.2zM25.8 0c-3.5.1-7.5 2.3-9.9 5.3-2.1 2.6-3.9 6.4-3.4 10.1 3.8.3 7.8-2 10.2-5.1 2.2-2.7 3.8-6.4 3.1-10.3z"/>
-            </svg>
-          </RewardBox>
-          {/* Asterisk / Star burst */}
-          <RewardBox className="hidden sm:flex w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-              <line x1="22" y1="2" x2="22" y2="42" stroke="#18C2A3" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="2" y1="22" x2="42" y2="22" stroke="#18C2A3" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="7.8" y1="7.8" x2="36.2" y2="36.2" stroke="#18C2A3" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="36.2" y1="7.8" x2="7.8" y2="36.2" stroke="#18C2A3" strokeWidth="3.5" strokeLinecap="round"/>
-              <circle cx="22" cy="2" r="3.5" fill="#18C2A3"/>
-              <circle cx="22" cy="42" r="3.5" fill="#18C2A3"/>
-              <circle cx="2" cy="22" r="3.5" fill="#18C2A3"/>
-              <circle cx="42" cy="22" r="3.5" fill="#18C2A3"/>
-              <circle cx="7.8" cy="7.8" r="3.5" fill="#18C2A3"/>
-              <circle cx="36.2" cy="36.2" r="3.5" fill="#18C2A3"/>
-              <circle cx="36.2" cy="7.8" r="3.5" fill="#18C2A3"/>
-              <circle cx="7.8" cy="36.2" r="3.5" fill="#18C2A3"/>
-            </svg>
-          </RewardBox>
-          {/* Dollar / Cash App */}
-          <RewardBox className="hidden sm:flex w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <rect width="40" height="40" rx="10" fill="#3B3D55"/>
-              <path d="M20 8v2m0 20v2m-5.5-16.5c0-2.5 2.5-3.5 5.5-3.5s5.5 1 5.5 3.5-2.5 3-5.5 3.5-5.5 1.5-5.5 4 2.5 3.5 5.5 3.5 5.5-1 5.5-3.5" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-          </RewardBox>
-
-          {/* Row 2 - hidden on mobile, visible on sm+ */}
-          {/* Bitcoin (duplicate position - already shown above, this is for desktop row continuity) */}
-          {/* Steam */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="44" height="44" viewBox="0 0 256 256" fill="white">
-              <path d="M128 16C74.2 16 28.2 55.3 18.6 106.8l58.9 24.3c5.3-3.6 11.7-5.8 18.5-5.8 1 0 1.9 0 2.9.1l27.7-40.2v-.6c0-22.1 18-40 40.1-40s40.1 18 40.1 40-18 40-40.1 40c-.5 0-1 0-1.4 0l-39.5 28.2c0 .7.1 1.5.1 2.2 0 16.6-13.5 30.1-30.1 30.1-14.9 0-27.3-10.8-29.7-25.1L25.2 156C38.5 208.6 86.5 248 128 248c66.3 0 120-53.7 120-120S194.3 16 128 16zm-38.8 175.5l-12.4-5.1c2.3 4.8 6.2 8.8 11.2 11.2 10.8 5.1 23.7.5 28.7-10.3 2.4-5.2 2.5-10.9.1-16.2-2.4-5.2-6.8-9.1-12-11.5-5.2-2.4-10.6-2.3-15.5-.5l12.8 5.3c8 3.3 11.7 12.4 8.4 20.3-3.3 7.9-12.4 11.7-20.3 8.4l-1-.6zm92.4-94.2c0-14.7-12-26.7-26.7-26.7s-26.7 12-26.7 26.7 12 26.7 26.7 26.7 26.7-12 26.7-26.7zm-46.7 0c0-11 9-20 20-20s20 9 20 20-9 20-20 20-20-9-20-20z"/>
-            </svg>
-          </RewardBox>
-          {/* Solana */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="40" height="32" viewBox="0 0 398 312" fill="white">
-              <path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z"/>
-              <path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z"/>
-              <path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z"/>
-            </svg>
-          </RewardBox>
-          {/* Google Play */}
-          <RewardBox className="w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="40" height="44" viewBox="0 0 512 512" fill="none">
-              <path d="M48 16.3v479.4L288 256 48 16.3z" fill="white" opacity="0.9"/>
-              <path d="M48 16.3L330.7 178l-42.7 78L48 16.3z" fill="white" opacity="0.7"/>
-              <path d="M48 495.7l240-239.7 42.7 78L48 495.7z" fill="white" opacity="0.7"/>
-              <path d="M330.7 178l42.7 78 90.6-44L330.7 178z" fill="white" opacity="0.5"/>
-              <path d="M330.7 334l42.7-78 90.6 44-133.3 34z" fill="white" opacity="0.5"/>
-            </svg>
-          </RewardBox>
-          {/* Nike */}
-          <RewardBox className="hidden sm:flex w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="48" height="20" viewBox="0 0 100 36" fill="white">
-              <path d="M4.5 29.5C10 21.5 21 13 33.5 9c8.5-2.7 14 .5 15 4-4 1-14 6-24 14.5L4.5 29.5zM48.5 13c2 3.5-.5 9-8.5 16L96 6 48.5 13z"/>
-            </svg>
-          </RewardBox>
-          {/* Octagon / Polygon */}
-          <RewardBox className="hidden sm:flex w-full aspect-[1.2/1] sm:aspect-square p-4">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <path d="M13 2h14l11 11v14l-11 11H13L2 27V13L13 2z" stroke="white" strokeWidth="2.5" fill="none"/>
-              <path d="M16 10h8l6 6v8l-6 6h-8l-6-6v-8l6-6z" stroke="white" strokeWidth="2" fill="none"/>
-            </svg>
-          </RewardBox>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 w-full mx-auto place-items-center">
+          {REWARD_LOGOS.map((logo) => (
+            <div
+              key={logo.id}
+              className="w-full min-h-[72px] sm:min-h-[96px] flex items-center justify-center"
+            >
+              <img
+                src={logo.src}
+                alt={`${logo.name} logo`}
+                className="w-auto max-w-[92%] h-10 sm:h-14 md:h-16 object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -982,195 +1172,7 @@ const LANDINGPAGEComponent = () => {
         </div>
       </section>
 
-      {/* ═══════ FOOTER ═══════ */}
-      <footer className="bg-[#0D0F1E] border-t border-[#1C1E32] pt-10 sm:pt-16 pb-20 sm:pb-8">
-        <div className="max-w-[1312px] mx-auto px-4">
-
-          {/* ── MOBILE FOOTER ── */}
-          <div className="sm:hidden flex flex-col items-center">
-            {/* Logo */}
-            <img src="/landing-image-003.png" alt="Lab Wards" className="h-9 mb-5" />
-            {/* Trustpilot */}
-            <div className="flex items-center gap-1 mb-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className={`w-6 h-6 ${i < 4 ? 'bg-[#00B67A]' : 'bg-[#00B67A]/60'} flex items-center justify-center`}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="white">
-                    <path d="M7 1l1.7 3.5 3.8.6-2.7 2.7.6 3.8L7 9.8l-3.4 1.8.6-3.8L1.5 5.1l3.8-.6L7 1z" />
-                  </svg>
-                </div>
-              ))}
-            </div>
-            <p className="text-[#B3B6C7] text-xs sm:text-sm mb-8 whitespace-nowrap overflow-hidden text-ellipsis">
-              <span className="font-semibold">TrustScore 4.5</span> | 200 reviews
-            </p>
-
-            {/* Two columns: Platform + User Center */}
-            <div className="w-full grid grid-cols-2 gap-8 mb-8 px-4">
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-4">Platform</h4>
-                <ul className="space-y-3 pl-3">
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Earn
-                  </a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="8" r="6"/><path d="M9 18h6M12 14v4"/></svg> Leaderboards
-                  </a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V5c0-1.7 1.3-3 3-3M12 8V5c0-1.7-1.3-3-3-3"/></svg> Rewards
-                  </a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-4">User Center</h4>
-                <ul className="space-y-3 pl-3">
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account
-                  </a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Transactions
-                  </a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg> FAQ
-                  </a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg> Support
-                  </a></li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Terms */}
-            <div className="text-center mb-8">
-              <h4 className="text-[#18C2A3] font-semibold text-lg mb-4">Terms</h4>
-              <ul className="space-y-3">
-                <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white inline-flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> Services Terms
-                </a></li>
-                <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white inline-flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Privacy
-                </a></li>
-                <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white inline-flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0AC07D" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> Cookie policy
-                </a></li>
-              </ul>
-            </div>
-
-            {/* Bottom */}
-            <div className="border-t border-[#1C1E32] pt-6 w-full flex flex-col items-center gap-4">
-              <p className="text-[#B3B6C7] text-sm">©2026 Lab Wards, All Rights Reserved</p>
-              <div className="flex gap-3">
-                <div className="w-10 h-10 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center cursor-pointer">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </div>
-                <div className="w-10 h-10 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center cursor-pointer">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
-                </div>
-                <div className="w-10 h-10 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center cursor-pointer">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                  English
-                </button>
-                <button className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                  Light
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* ── DESKTOP FOOTER ── */}
-          <div className="hidden sm:block">
-            <div className="flex flex-wrap gap-12 mb-12">
-              {/* Brand */}
-              <div className="flex-1 min-w-[260px]">
-                <img src="/landing-image-003.png" alt="Lab Wards" className="h-9 mb-4" />
-                {/* Trustpilot */}
-                <div className="flex items-center gap-1 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className={`w-6 h-6 ${i < 4 ? 'bg-[#00B67A]' : 'bg-[#00B67A]/60'} flex items-center justify-center`}>
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="white">
-                        <path d="M7 1l1.7 3.5 3.8.6-2.7 2.7.6 3.8L7 9.8l-3.4 1.8.6-3.8L1.5 5.1l3.8-.6L7 1z" />
-                      </svg>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[#B3B6C7] text-sm mb-4">
-                  <span className="font-semibold">TrustScore 4.5</span> | 200 reviews
-                </p>
-                <p className="text-[#B3B6C7] text-sm max-w-[320px] leading-relaxed">
-                  Sign up today and grab your instant bonus. Every task completed puts money in your pocket.
-                </p>
-              </div>
-
-              {/* Support */}
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-4">Support</h4>
-                <ul className="space-y-3">
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Contact Us</a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white">FAQ</a></li>
-                </ul>
-              </div>
-
-              {/* Features */}
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-4">Features</h4>
-                <ul className="space-y-3">
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Games</a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Rewards</a></li>
-                  <li><a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Tasks</a></li>
-                </ul>
-              </div>
-
-              {/* Connect */}
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-4">Connect With Us</h4>
-                <div className="flex gap-3 mb-6">
-                  {[
-                    <svg key="star" width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
-                    <svg key="circle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>,
-                    <svg key="discord" width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>,
-                  ].map((icon, i) => (
-                    <div key={i} className="w-11 h-11 bg-[#26293E] border border-[#3A3E57] rounded-lg flex items-center justify-center cursor-pointer">
-                      {icon}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    English
-                  </button>
-                  <button className="px-4 py-2 bg-[#26293E] border border-[#3A3E57] rounded-lg text-[#B3B6C7] text-xs flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    Light
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom bar */}
-            <div className="border-t border-[#1C1E32] pt-6 flex flex-wrap justify-between items-center">
-              <p className="text-[#B3B6C7] text-sm">©2026 Lab Wards, All Rights Reserved</p>
-              <div className="flex gap-5">
-                <a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Terms of Use</a>
-                <a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Privacy Policy</a>
-                <a href="#" className="text-[#B3B6C7] text-sm hover:text-white">Cookie Policy</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Big LAB WARDS text at bottom */}
-        <div className="mt-12 text-center overflow-hidden">
-          <h1 className="text-[48px] sm:text-[80px] md:text-[120px] font-extrabold tracking-wide text-[#16192E] leading-none">
-            LAB WARDS
-          </h1>
-        </div>
-      </footer>
+      {/* Shared footer is rendered globally from src/app/layout.tsx */}
 
       {/* ═══════ MOBILE BOTTOM NAV ═══════ */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-[#111324] border-t border-[#1C1E32] flex items-center justify-around py-2 z-50">

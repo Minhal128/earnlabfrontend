@@ -204,9 +204,9 @@ export default function SignInModal({
             </button>
 
             <div className="w-full max-w-[430px] mx-auto pt-6 md:pt-2 flex-1 flex flex-col">
-              <h2 className="text-white text-[34px] font-bold leading-tight mb-6">Sign in</h2>
+              <h2 className="text-white text-[46px] font-bold leading-[1] mb-6">Sign in</h2>
 
-              {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+              {error && <div className="text-red-400 text-sm mb-4">{error}</div>}
 
               <label className="text-white text-[14px] font-medium mb-2">Email Address</label>
               <input
@@ -286,20 +286,13 @@ export default function SignInModal({
                 {loading ? "Signing in..." : "Sign in"}
               </button>
 
-              <div className="flex items-center justify-center gap-1 text-[15px] leading-6 text-[#6B6E8A] mt-5 mb-6">
-                <span>Don't have an account yet?</span>
-                <button
-                  onClick={() => {
-                    onClose();
-                    onSignUp();
-                  }}
-                  className="text-white font-semibold hover:text-[#0BBFA0] transition-colors"
-                >
-                  Sign up
-                </button>
+              <div className="flex items-center gap-3 my-5">
+                <div className="h-px flex-1 bg-[#1E2238]" />
+                <span className="text-[#7D8099] text-[30px] leading-none">Or</span>
+                <div className="h-px flex-1 bg-[#1E2238]" />
               </div>
 
-              <div className="flex flex-col gap-3 mt-auto">
+              <div className="flex flex-col gap-3">
                 <button
                   type="button"
                   className="w-full h-[48px] bg-[#151828] border border-[#1E2238] rounded-[10px] flex items-center justify-center gap-3 hover:border-[#0BBFA055] hover:bg-[#1A1E32] transition-all"
@@ -329,15 +322,40 @@ export default function SignInModal({
                 </button>
               </div>
 
-              <button
-                onClick={() => {
-                  onClose();
-                  onForgotPassword?.();
-                }}
-                className="self-start mt-4 text-[13px] text-[#18C3A7] hover:text-[#3CE6CC] transition-colors"
-              >
-                Forgot password?
-              </button>
+              <div className="flex items-center justify-center gap-1 text-[16px] leading-6 text-[#6B6E8A] mt-6">
+                <span>Don’t have an account yet?</span>
+                <button
+                  onClick={() => {
+                    onClose();
+                    onSignUp();
+                  }}
+                  className="text-white font-semibold hover:text-[#0BBFA0] transition-colors"
+                >
+                  Sign up
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 mt-5 md:mt-6">
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <svg key={i} width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                      <rect width="24" height="24" rx="3" fill="#00B67A" />
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white" />
+                    </svg>
+                  ))}
+                  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect width="24" height="24" rx="3" fill="#303346" />
+                    <clipPath id="signin-half-clip">
+                      <rect x="0" y="0" width="12" height="24" />
+                    </clipPath>
+                    <rect width="24" height="24" rx="3" fill="#00B67A" clipPath="url(#signin-half-clip)" />
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white" />
+                  </svg>
+                </div>
+                <p className="text-[#B3B6C7] text-[13px] font-semibold">
+                  <span className="text-white">TrustScore 4.5</span> | 200 reviews
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -102,10 +102,10 @@ const HOMEPAGEComponent = () => {
 
           <div className="relative z-10 p-5 sm:p-8 md:p-10 text-white">
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight">
-              Welcome back{welcomeName ? `, ${welcomeName}` : ""}
+              Welcome Back{welcomeName ? `, ${welcomeName}` : ""}
             </h1>
             <p className="text-[#D1D5DB] mt-2 text-sm sm:text-base max-w-[620px]">
-              Track your progress, check your latest activity, and continue earning from games, tasks, and offer walls.
+              Track your progress, check your latest activity, and continue earning from premium tasks and offerwalls.
             </p>
           </div>
         </section>
@@ -117,7 +117,11 @@ const HOMEPAGEComponent = () => {
           <StatCard label="Tasks Completed" value={`${tasksCompleted}`} hint="Completed tasks" />
         </section>
 
-        <FeaturedTask />
+        <FeaturedTask
+          title="Offers available"
+          subtitle="Premium tasks managed separately in admin"
+          surface="home"
+        />
         <OfferWalls />
       </main>
     </div>

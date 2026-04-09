@@ -41,11 +41,8 @@ export default function SignUpModal({
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
 
-  const [agree, setAgree] = useState(false);
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [affiliateCode, setAffiliateCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -201,18 +198,18 @@ export default function SignUpModal({
             </button>
 
             <div className="w-full max-w-[430px] mx-auto pt-6 md:pt-2 flex-1 flex flex-col">
-              <h2 className="text-white text-[34px] font-bold leading-tight mb-6">Sign up</h2>
+              <h2 className="text-white text-[46px] font-bold leading-[1] mb-5">Sign up</h2>
 
-              {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+              <div className="flex items-center gap-3 bg-[#151728] border border-[#1C2033] rounded-[8px] px-3 py-2 mb-4">
+                <div className="flex items-center shrink-0">
+                  <img src="/img22.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728]" />
+                  <img src="/img23.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728] -ml-2.5" />
+                  <img src="/img24.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728] -ml-2.5" />
+                </div>
+                <p className="text-[#9BA0B8] text-[13px] font-medium leading-tight">Thousands just earned — don’t miss your first payout 🚀</p>
+              </div>
 
-              <label className="text-white text-[14px] font-medium mb-2">Username</label>
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                type="text"
-                placeholder="Choose a username"
-                className="w-full h-[48px] px-4 rounded-[10px] bg-[#151828] border border-[#1E2238] text-white placeholder-[#5A5E79] outline-none focus:border-[#0BBFA0] mb-4"
-              />
+              {error && <div className="text-red-400 text-sm mb-4">{error}</div>}
 
               <label className="text-white text-[14px] font-medium mb-2">Email Address</label>
               <input
@@ -229,7 +226,7 @@ export default function SignUpModal({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
+                  placeholder="Password"
                   className="w-full h-[48px] px-4 pr-11 rounded-[10px] bg-[#151828] border border-[#1E2238] text-white placeholder-[#5A5E79] outline-none focus:border-[#0BBFA0]"
                 />
                 <button
@@ -242,48 +239,28 @@ export default function SignUpModal({
                 </button>
               </div>
 
-              <label className="text-white text-[14px] font-medium mb-2">Affiliate Code</label>
-              <input
-                value={affiliateCode}
-                onChange={(e) => setAffiliateCode(e.target.value)}
-                type="text"
-                placeholder="Affiliate code (optional)"
-                className="w-full h-[48px] px-4 rounded-[10px] bg-[#151828] border border-[#1E2238] text-white placeholder-[#5A5E79] outline-none focus:border-[#0BBFA0] mb-4"
-              />
-
-              <div className="flex items-start gap-2 mt-1 mb-5">
-                <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-1 accent-[#18C3A7] w-4 h-4 cursor-pointer"
-                />
-                <p className="text-xs text-[#8C8FA8] leading-relaxed">
-                  By creating this account, you agree to the{" "}
-                  <span className="text-[#18C3A7] cursor-pointer">Terms of Service</span>{" "}
-                  and <span className="text-[#18C3A7] cursor-pointer">Policy</span>.
-                </p>
-              </div>
-
               <button
-                disabled={!agree || loading}
+                disabled={loading}
                 onClick={async () => {
                   setError(null);
-                  if (!agree) return;
-                  if (!username || !email || !password) {
-                    setError("Please fill username, email and password.");
+                  if (!email || !password) {
+                    setError("Please fill email and password.");
                     return;
                   }
+
+                  const baseUsername = email.split("@")[0] || "user";
+                  const generatedUsername =
+                    baseUsername.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 20) || `user${Date.now().toString().slice(-6)}`;
+
                   setLoading(true);
                   try {
                     const res = await fetch(`${apiBase}/api/v1/auth/register`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        username,
+                        username: generatedUsername,
                         email,
                         password,
-                        affiliateCode,
                         agreedToTerms: true,
                       }),
                     });
@@ -297,29 +274,38 @@ export default function SignUpModal({
                     if (data.token) {
                       if (typeof window !== "undefined") {
                         localStorage.setItem("token", data.token);
+                        if (data.user) {
+                          localStorage.setItem("user", JSON.stringify(data.user));
+                        }
                       }
+                      try {
+                        const evt = new CustomEvent("app-auth-changed", {
+                          detail: { token: data.token, user: data.user },
+                        });
+                        window.dispatchEvent(evt);
+                      } catch {}
                     }
-                    setLoading(false);
+
                     onClose();
                     router.push("/home");
                   } catch (e: any) {
                     setError(e?.message || "Network error");
+                  } finally {
                     setLoading(false);
                   }
                 }}
-                className={`w-full h-[50px] rounded-[10px] font-semibold text-white shadow-[0px_8px_24px_rgba(9,159,134,0.35)] transition-all active:scale-[0.99] ${agree ? "bg-[linear-gradient(135deg,#0BBFA0_0%,#079E85_100%)] hover:opacity-90" : "bg-[#3a3d54]"} ${loading ? "opacity-70 cursor-wait" : "cursor-pointer"}`}
+                className="w-full h-[50px] rounded-[10px] font-semibold text-white shadow-[0px_8px_24px_rgba(9,159,134,0.35)] transition-all active:scale-[0.99] bg-[linear-gradient(135deg,#0BBFA0_0%,#079E85_100%)] hover:opacity-90 disabled:opacity-70 disabled:cursor-wait"
               >
-                {loading ? "Creating..." : "Sign up"}
+                {loading ? "Creating account..." : "Sign up"}
               </button>
 
-              <p className="text-center text-[15px] text-[#6B6E8A] mt-6 mb-6">
-                Already have an account?{" "}
-                <button onClick={onSignIn} className="text-white font-bold hover:text-[#0BBFA0] transition-colors">
-                  Sign in
-                </button>
-              </p>
+              <div className="flex items-center gap-3 my-5">
+                <div className="h-px flex-1 bg-[#1E2238]" />
+                <span className="text-[#7D8099] text-[30px] leading-none">Or</span>
+                <div className="h-px flex-1 bg-[#1E2238]" />
+              </div>
 
-              <div className="flex flex-col gap-3 mt-auto">
+              <div className="flex flex-col gap-3">
                 <button
                   type="button"
                   className="w-full h-[48px] bg-[#151828] border border-[#1E2238] rounded-[10px] flex items-center justify-center gap-3 hover:border-[#0BBFA055] hover:bg-[#1A1E32] transition-all"
@@ -348,10 +334,39 @@ export default function SignUpModal({
                   <span className="text-[#9093AC] text-[14px] font-medium">{oauthLoading === "facebook" ? "Redirecting..." : "Sign up via Facebook"}</span>
                 </button>
               </div>
+
+              <p className="text-center text-[16px] text-[#6B6E8A] mt-6">
+                Already have an account yet?{" "}
+                <button onClick={onSignIn} className="text-white font-bold hover:text-[#0BBFA0] transition-colors">
+                  Sign in
+                </button>
+              </p>
+
+              <div className="flex flex-col items-center gap-2 mt-5 md:mt-6">
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <svg key={i} width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                      <rect width="24" height="24" rx="3" fill="#00B67A" />
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white" />
+                    </svg>
+                  ))}
+                  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect width="24" height="24" rx="3" fill="#303346" />
+                    <clipPath id="signup-half-clip">
+                      <rect x="0" y="0" width="12" height="24" />
+                    </clipPath>
+                    <rect width="24" height="24" rx="3" fill="#00B67A" clipPath="url(#signup-half-clip)" />
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white" />
+                  </svg>
+                </div>
+                <p className="text-[#B3B6C7] text-[13px] font-semibold">
+                  <span className="text-white">TrustScore 4.5</span> | 200 reviews
+                </p>
+              </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

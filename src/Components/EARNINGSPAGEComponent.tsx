@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useMemo, useState } from "react";
 
 // ─── Ticker animation injected once ─────────────────────────────────────────
 const TICKER_CSS = `
@@ -74,12 +76,6 @@ const IcoApple = () => (
       d="M10.23 1.68L11.03 0.24a.28.28 0 0 0-.49-.28L9.94 1.54A7.75 7.75 0 0 0 7.75 1.08 7.75 7.75 0 0 0 5.56 1.54L4.75-.04a.28.28 0 0 0-.49.28l.8 1.44A6.5 6.5 0 0 0 1 7.5h13.49a6.5 6.5 0 0 0-4.26-5.82ZM5.09 5.75a.86.86 0 1 1 0-1.72.86.86 0 0 1 0 1.72Zm5.32 0a.86.86 0 1 1 0-1.72.86.86 0 0 1 0 1.72ZM.9 8.57v5.14a1.14 1.14 0 0 0 2.27 0V8.57H.9Zm12.9 0a1.14 1.14 0 0 1 1.14 1.14v3.85a1.14 1.14 0 0 1-2.27 0V8.57h1.13ZM2.69 13.47v3.53a1.14 1.14 0 0 0 2.27 0v-3.53H2.69Zm3.77 0v3.53a1.14 1.14 0 0 0 2.27 0v-3.53H6.46Zm5.35 0v3.53a1.14 1.14 0 0 0-2.27 0v-3.53h2.27ZM1 8.57h13.49v4.9H1V8.57Z"
       fill="#B3B6C7"
     />
-  </svg>
-);
-
-const IcoStar = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <path d="M7 1L8.8 5.2L13.5 5.7L10 8.9L11 13.5L7 11.1L3 13.5L4 8.9L0.5 5.7L5.2 5.2L7 1Z" fill="#0AC07D" />
   </svg>
 );
 
@@ -190,6 +186,31 @@ const LOGO_MAP: Record<string, React.FC> = {
   nortik: NortikLogo,
 };
 
+type EarnFilterKey =
+  | "all"
+  | "fast-completion"
+  | "sign-up-trial"
+  | "save-money"
+  | "casino"
+  | "puzzle"
+  | "sweepstake";
+
+interface FeaturedGame {
+  image: string;
+  title: string;
+  price: string;
+  highlighted: boolean;
+  categories: Exclude<EarnFilterKey, "all">[];
+}
+
+interface Provider {
+  id: string;
+  type: string;
+  displayName: string;
+  progress: number;
+  categories: Exclude<EarnFilterKey, "all">[];
+}
+
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const TICKER_ITEMS = [
@@ -210,22 +231,94 @@ const TICKER_ITEMS = [
   { special: "solana",                  action: "User withdrew", name: "Solana",      amount: "$0.2" },
 ];
 
-const FEATURED_GAMES = [
-  { image: "/game-tile-tap-master.png", title: "Tile Tap Master",    price: "$0.8", highlighted: true  },
-  { image: "/game-goblins-woods.png",   title: "Goblins Woods",      price: "$0.8", highlighted: true  },
-  { image: "/game-slot.png",            title: "Slot",               price: "$0.8", highlighted: false },
-  { image: "/game-angry-bird.png",      title: "Angry Bird",         price: "$0.8", highlighted: false },
-  { image: "/game-screw-factory.png",   title: "Screw Out Factory",  price: "$0.8", highlighted: false },
-  { image: "/game-big-giant.png",       title: "Big Giant",          price: "$0.8", highlighted: false },
+const FEATURED_GAMES: FeaturedGame[] = [
+  {
+    image: "/game-tile-tap-master.png",
+    title: "Tile Tap Master",
+    price: "$0.8",
+    highlighted: true,
+    categories: ["fast-completion", "puzzle"],
+  },
+  {
+    image: "/game-goblins-woods.png",
+    title: "Goblins Woods",
+    price: "$0.8",
+    highlighted: true,
+    categories: ["puzzle", "sweepstake"],
+  },
+  {
+    image: "/game-slot.png",
+    title: "Slot",
+    price: "$0.8",
+    highlighted: false,
+    categories: ["casino", "fast-completion"],
+  },
+  {
+    image: "/game-angry-bird.png",
+    title: "Angry Bird",
+    price: "$0.8",
+    highlighted: false,
+    categories: ["puzzle"],
+  },
+  {
+    image: "/game-screw-factory.png",
+    title: "Screw Out Factory",
+    price: "$0.8",
+    highlighted: false,
+    categories: ["save-money", "puzzle"],
+  },
+  {
+    image: "/game-big-giant.png",
+    title: "Big Giant",
+    price: "$0.8",
+    highlighted: false,
+    categories: ["sweepstake", "casino"],
+  },
 ];
 
-const PROVIDERS = [
-  { id: "m1", type: "monlix", progress: 44 },
-  { id: "ml", type: "mylead", progress: 38 },
-  { id: "g1", type: "gemiad", progress: 58 },
-  { id: "n1", type: "nortik", progress: 62 },
-  { id: "m2", type: "monlix", progress: 44 },
-  { id: "g2", type: "gemiad", progress: 58 },
+const PROVIDERS: Provider[] = [
+  {
+    id: "m1",
+    type: "monlix",
+    displayName: "Monlix",
+    progress: 44,
+    categories: ["sign-up-trial", "save-money"],
+  },
+  {
+    id: "ml",
+    type: "mylead",
+    displayName: "MyLead",
+    progress: 38,
+    categories: ["sign-up-trial", "fast-completion"],
+  },
+  {
+    id: "g1",
+    type: "gemiad",
+    displayName: "GemiAd",
+    progress: 58,
+    categories: ["save-money", "sweepstake"],
+  },
+  {
+    id: "n1",
+    type: "nortik",
+    displayName: "Nortik",
+    progress: 62,
+    categories: ["casino", "sweepstake"],
+  },
+  {
+    id: "m2",
+    type: "monlix",
+    displayName: "Monlix",
+    progress: 44,
+    categories: ["sign-up-trial", "save-money"],
+  },
+  {
+    id: "g2",
+    type: "gemiad",
+    displayName: "GemiAd",
+    progress: 58,
+    categories: ["save-money", "fast-completion"],
+  },
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -273,12 +366,18 @@ const TickerCard: React.FC<TickerItemData> = ({ image, special, action, name, am
 };
 
 const FilterTabItem: React.FC<{
+  filter: EarnFilterKey;
   label: string;
-  count: string;
+  count: number;
   active?: boolean;
   icon: React.ReactNode;
-}> = ({ label, count, active = false, icon }) => (
-  <div className="relative flex flex-col items-center gap-[2px] flex-shrink-0">
+  onClick: (filter: EarnFilterKey) => void;
+}> = ({ filter, label, count, active = false, icon, onClick }) => (
+  <button
+    type="button"
+    onClick={() => onClick(filter)}
+    className="relative flex flex-col items-center gap-[2px] flex-shrink-0 bg-transparent border-0 p-0 cursor-pointer"
+  >
     <div className="flex flex-col items-center gap-[2px]">
       <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
       <p className={`text-[13px] font-medium leading-5 text-center ${active ? "text-white" : "text-[#8C8FA8]"}`}>
@@ -288,7 +387,7 @@ const FilterTabItem: React.FC<{
     <div className="absolute -top-0.5 -right-3 w-4 h-4 bg-[rgba(126,129,147,0.2)] rounded-[5px] flex items-center justify-center">
       <span className="text-[9px] font-medium text-white">{count}</span>
     </div>
-  </div>
+  </button>
 );
 
 const GameCard: React.FC<{
@@ -427,46 +526,107 @@ const ActivityTicker: React.FC = () => (
   </div>
 );
 
-const FilterBar: React.FC = () => (
+const FilterBar: React.FC<{
+  activeFilter: EarnFilterKey;
+  filterCounts: Record<EarnFilterKey, number>;
+  onFilterChange: (filter: EarnFilterKey) => void;
+  searchTerm: string;
+  onSearchTermChange: (value: string) => void;
+}> = ({ activeFilter, filterCounts, onFilterChange, searchTerm, onSearchTermChange }) => (
   <div className="mt-4 h-[77px] flex items-center justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] px-4">
     <div className="flex items-center gap-7">
-      <FilterTabItem label="View all"        count="1K" active icon={<IcoGrid />} />
-      <FilterTabItem label="Fast completion" count="0"  icon={<IcoLightning />} />
-      <FilterTabItem label="Sign up trial"   count="0"  icon={
+      <FilterTabItem
+        filter="all"
+        label="View all"
+        count={filterCounts.all}
+        active={activeFilter === "all"}
+        icon={<IcoGrid />}
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="fast-completion"
+        label="Fast completion"
+        count={filterCounts["fast-completion"]}
+        active={activeFilter === "fast-completion"}
+        icon={<IcoLightning />}
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="sign-up-trial"
+        label="Sign up trial"
+        count={filterCounts["sign-up-trial"]}
+        active={activeFilter === "sign-up-trial"}
+        icon={
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="9" cy="6" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
           <path d="M1 17C1 13.13 4.58 10 9 10C13.42 10 17 13.13 17 17" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
         </svg>
-      } />
-      <FilterTabItem label="Save money" count="0" icon={
+      }
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="save-money"
+        label="Save money"
+        count={filterCounts["save-money"]}
+        active={activeFilter === "save-money"}
+        icon={
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M16 8V5A2 2 0 0 0 14 3H2A2 2 0 0 0 0 5V15A2 2 0 0 0 2 17H6" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
           <rect x="8" y="9" width="12" height="9" rx="2" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
           <circle cx="14" cy="13.5" r="1.5" fill="#8C8FA8" />
         </svg>
-      } />
-      <FilterTabItem label="Casino" count="0" icon={
+      }
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="casino"
+        label="Casino"
+        count={filterCounts.casino}
+        active={activeFilter === "casino"}
+        icon={
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <circle cx="11" cy="11" r="9" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
           <circle cx="11" cy="11" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
           <path d="M11 2V11M11 11L17.5 6M11 11L17.5 16" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-      } />
-      <FilterTabItem label="Puzzle" count="0" icon={
+      }
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="puzzle"
+        label="Puzzle"
+        count={filterCounts.puzzle}
+        active={activeFilter === "puzzle"}
+        icon={
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M20 11.5C20 13.26 18.7 14.72 17 14.96V18C17 19.1 16.1 20 15 20H11.2V19.7C11.2 18.21 10 17 8.5 17C7 17 5.8 18.21 5.8 19.7V20H2C.89 20 0 19.1 0 18V14.2H.3C1.79 14.2 3 13 3 11.5C3 10 1.79 8.8.3 8.8H0V5C0 3.89.89 3 2 3H5.04C5.28 1.3 6.74 0 8.5 0C10.26 0 11.72 1.3 11.96 3H15C16.1 3 17 3.89 17 5V8.04C18.7 8.28 20 9.74 20 11.5ZM15 13H16.5C17.33 13 18 12.33 18 11.5C18 10.67 17.33 10 16.5 10H15V5H10V3.5C10 2.67 9.33 2 8.5 2C7.67 2 7 2.67 7 3.5V5H2V7.12C3.76 7.8 5 9.5 5 11.5C5 13.5 3.75 15.2 2 15.88V18H4.12C4.46 17.12 5.06 16.36 5.85 15.82C6.63 15.29 7.55 15 8.5 15C10.5 15 12.2 16.25 12.88 18H15V13Z" fill="#8C8FA8" />
         </svg>
-      } />
-      <FilterTabItem label="Sweepstake" count="0" icon={
+      }
+        onClick={onFilterChange}
+      />
+      <FilterTabItem
+        filter="sweepstake"
+        label="Sweepstake"
+        count={filterCounts.sweepstake}
+        active={activeFilter === "sweepstake"}
+        icon={
         <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
           <path d="M12.8 4L14 5.2L7.2 12L6 10.8L12.8 4ZM2 0H18C19.1 0 20 .89 20 2V6C18.9 6 18 6.9 18 8C18 9.1 18.9 10 20 10V14C20 15.1 19.1 16 18 16H2C.89 16 0 15.1 0 14V10C1.1 10 2 9.1 2 8C2 6.9 1.1 6 0 6V2C0 .9.89 0 2 0ZM7.5 4C6.67 4 6 4.67 6 5.5C6 6.33 6.67 7 7.5 7C8.33 7 9 6.33 9 5.5C9 4.67 8.33 4 7.5 4ZM12.5 9C11.67 9 11 9.67 11 10.5C11 11.33 11.67 12 12.5 12C13.33 12 14 11.33 14 10.5C14 9.67 13.33 9 12.5 9Z" fill="#8C8FA8" />
         </svg>
-      } />
+      }
+        onClick={onFilterChange}
+      />
     </div>
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px]" style={{ width: "361px" }}>
         <IcoSearch />
-        <p className="text-[#6B6E8A] text-[14px] font-medium m-0">Search</p>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(event) => onSearchTermChange(event.target.value)}
+          placeholder="Search game or provider"
+          className="w-full bg-transparent text-[#B3B6C7] text-[14px] font-medium placeholder:text-[#6B6E8A] outline-none"
+        />
       </div>
       <div className="flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] cursor-pointer" style={{ width: "117px" }}>
         <IcoSort />
@@ -519,129 +679,122 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
-const FeaturedSection: React.FC = () => (
+const FeaturedSection: React.FC<{ games: FeaturedGame[] }> = ({ games }) => (
   <div className="mt-8 flex flex-col gap-3">
     <SectionHeader title="Featured" />
-    <div className="flex gap-3">
-      {FEATURED_GAMES.map((game) => (
-        <GameCard key={game.title} {...game} />
-      ))}
-    </div>
+    {games.length === 0 ? (
+      <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
+        No featured results for the selected filter.
+      </div>
+    ) : (
+      <div className="flex gap-3">
+        {games.map((game) => (
+          <GameCard
+            key={game.title}
+            image={game.image}
+            title={game.title}
+            price={game.price}
+            highlighted={game.highlighted}
+          />
+        ))}
+      </div>
+    )}
   </div>
 );
 
-const ProviderSection: React.FC<{ title: string }> = ({ title }) => (
+const ProviderSection: React.FC<{ title: string; providers: Provider[] }> = ({ title, providers }) => (
   <div className="mt-10 flex flex-col gap-3">
     <SectionHeader title={title} />
-    <div className="flex gap-3">
-      {PROVIDERS.map((p) => (
-        <ProviderCard key={p.id} type={p.type} progress={p.progress} />
-      ))}
-    </div>
+    {providers.length === 0 ? (
+      <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
+        No providers found for the selected filter.
+      </div>
+    ) : (
+      <div className="flex gap-3">
+        {providers.map((p) => (
+          <ProviderCard key={p.id} type={p.type} progress={p.progress} />
+        ))}
+      </div>
+    )}
   </div>
-);
-
-const Footer: React.FC = () => (
-  <footer className="mt-16 bg-[#0E1020] border-t border-[#1E2133]">
-    <div className="max-w-[1440px] mx-auto px-16 py-10">
-      <div className="flex justify-between items-start gap-10">
-        <div className="flex flex-col gap-4 max-w-[280px]">
-          <img src="/logo-labwards.png" alt="Lab Wards" className="h-10 w-auto object-contain self-start" />
-          <div className="flex items-center gap-2">
-            <div className="flex gap-[2px]">
-              {[...Array(5)].map((_, i) => <IcoStar key={i} />)}
-            </div>
-            <span className="text-[#0AC07D] font-bold text-[14px]">TrustScore 4.5</span>
-          </div>
-          <p className="text-[#6B6E8A] text-[13px] leading-5 m-0">
-            Trusted GPT earning platform. Complete tasks &amp; surveys to earn real rewards.
-          </p>
-        </div>
-        <div className="flex gap-16">
-          <div className="flex flex-col gap-3">
-            <h4 className="text-white font-bold text-[14px] m-0">Support</h4>
-            {["Help Center", "Contact Us", "FAQ", "Status"].map((l) => (
-              <a key={l} href="#" className="text-[#6B6E8A] text-[13px] hover:text-white transition-colors no-underline">{l}</a>
-            ))}
-          </div>
-          <div className="flex flex-col gap-3">
-            <h4 className="text-white font-bold text-[14px] m-0">Features</h4>
-            {["Offer Walls", "Surveys", "Games", "Rewards", "Leaderboard"].map((l) => (
-              <a key={l} href="#" className="text-[#6B6E8A] text-[13px] hover:text-white transition-colors no-underline">{l}</a>
-            ))}
-          </div>
-          <div className="flex flex-col gap-3">
-            <h4 className="text-white font-bold text-[14px] m-0">Connect</h4>
-            {["Discord", "Twitter / X", "Telegram", "Reddit"].map((l) => (
-              <a key={l} href="#" className="text-[#6B6E8A] text-[13px] hover:text-white transition-colors no-underline">{l}</a>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-4 items-end">
-          <div className="flex items-center gap-3">
-            {["X", "TT", "TG"].map((s) => (
-              <button
-                key={s}
-                className="w-9 h-9 rounded-[8px] bg-[#1E2133] border border-[#262F3E] text-[#B3B6C7] text-[12px] font-bold hover:border-[#4DD6C1] transition-colors"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1 bg-[#1E2133] border border-[#262F3E] px-3 py-[6px] rounded-[7px] text-[#B3B6C7] text-[13px]">
-              English
-            </button>
-            <button className="flex items-center gap-1 bg-[#1E2133] border border-[#262F3E] px-3 py-[6px] rounded-[7px] text-[#B3B6C7] text-[13px]">
-              Light
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="mt-8 pt-6 border-t border-[#1E2133] flex items-center justify-between">
-        <p className="text-[#6B6E8A] text-[12px] m-0">
-          &copy; 2024 Lab Wards. All rights reserved.
-        </p>
-        <div className="flex items-center gap-6">
-          {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((l) => (
-            <a key={l} href="#" className="text-[#6B6E8A] text-[12px] hover:text-white transition-colors no-underline">{l}</a>
-          ))}
-        </div>
-      </div>
-    </div>
-  </footer>
 );
 
 // ─── Main page component ──────────────────────────────────────────────────────
 
-const EARNINGSPAGEComponent: React.FC = () => (
-  <div className="bg-[#0B0D1F] min-h-screen font-sans text-white">
-    <style>{TICKER_CSS}</style>
-    <Navbar />
-    <main className="pt-[84px]">
-      <div className="max-w-[1440px] mx-auto">
-        <ActivityTicker />
-        <div className="px-16 pb-10">
-          <FilterBar />
-          <FeaturedSection />
-          <ProviderSection title="Offer walls" />
-          <ProviderSection title="Survey" />
+const EARNINGSPAGEComponent: React.FC = () => {
+  const [activeFilter, setActiveFilter] = useState<EarnFilterKey>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filterCounts = useMemo<Record<EarnFilterKey, number>>(() => {
+    const counts: Record<EarnFilterKey, number> = {
+      all: FEATURED_GAMES.length + PROVIDERS.length,
+      "fast-completion": 0,
+      "sign-up-trial": 0,
+      "save-money": 0,
+      casino: 0,
+      puzzle: 0,
+      sweepstake: 0,
+    };
+
+    FEATURED_GAMES.forEach((game) => {
+      game.categories.forEach((category) => {
+        counts[category] += 1;
+      });
+    });
+
+    PROVIDERS.forEach((provider) => {
+      provider.categories.forEach((category) => {
+        counts[category] += 1;
+      });
+    });
+
+    return counts;
+  }, []);
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredGames = useMemo(() => {
+    return FEATURED_GAMES.filter((game) => {
+      const passesFilter = activeFilter === "all" || game.categories.includes(activeFilter);
+      const passesSearch =
+        normalizedSearch.length === 0 || game.title.toLowerCase().includes(normalizedSearch);
+      return passesFilter && passesSearch;
+    });
+  }, [activeFilter, normalizedSearch]);
+
+  const filteredProviders = useMemo(() => {
+    return PROVIDERS.filter((provider) => {
+      const passesFilter = activeFilter === "all" || provider.categories.includes(activeFilter);
+      const passesSearch =
+        normalizedSearch.length === 0 ||
+        provider.displayName.toLowerCase().includes(normalizedSearch);
+      return passesFilter && passesSearch;
+    });
+  }, [activeFilter, normalizedSearch]);
+
+  return (
+    <div className="bg-[#0B0D1F] min-h-screen font-sans text-white">
+      <style>{TICKER_CSS}</style>
+      <Navbar />
+      <main className="pt-[84px]">
+        <div className="max-w-[1440px] mx-auto">
+          <ActivityTicker />
+          <div className="px-16 pb-10">
+            <FilterBar
+              activeFilter={activeFilter}
+              filterCounts={filterCounts}
+              onFilterChange={setActiveFilter}
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+            />
+            <FeaturedSection games={filteredGames} />
+            <ProviderSection title="Offer walls" providers={filteredProviders} />
+            <ProviderSection title="Survey" providers={filteredProviders} />
+          </div>
         </div>
-      </div>
-    </main>
-    <Footer />
-    <div className="flex items-center justify-center py-12 overflow-hidden">
-      <h1
-        className="text-[120px] font-black select-none pointer-events-none tracking-[0.2em] m-0"
-        style={{
-          color: "transparent",
-          WebkitTextStroke: "1px rgba(30,33,51,0.6)",
-        }}
-      >
-        LAB WARDS
-      </h1>
+      </main>
     </div>
-  </div>
-);
+  );
+};
 
 export default EARNINGSPAGEComponent;

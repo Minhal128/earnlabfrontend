@@ -20,19 +20,37 @@ const IcoThumbDown = () => (
   </svg>
 );
 
+const IcoStar = ({ active }: { active: boolean }) => (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill={active ? "#F7C84B" : "#3B3F58"}>
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+);
+
 
 interface ProviderCardProps {
     name?: string;
     logoUrl?: string;
     progress?: number;
     bonus?: string;
+    rating?: number;
+    reviews?: number;
     onClick?: () => void;
 }
 
 const formatName = (name?: string) => 
     name?.replace(/EarnLab/gi, "Labwards") ?? "Offerwall";
 
-const NewProviderCard: React.FC<ProviderCardProps> = ({ name, logoUrl, progress = 55, bonus, onClick }) => {
+const NewProviderCard: React.FC<ProviderCardProps> = ({
+    name,
+    logoUrl,
+    progress = 55,
+    bonus,
+    rating = 4.2,
+    reviews = 120,
+    onClick,
+}) => {
+    const activeStars = Math.max(1, Math.min(5, Math.round(rating)));
+
     return (
         <div
             onClick={onClick}
@@ -87,13 +105,17 @@ const NewProviderCard: React.FC<ProviderCardProps> = ({ name, logoUrl, progress 
                         <div className="w-[70%] h-[5px] rounded-full bg-[#1E2133]" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <div className="flex items-center gap-[3px]">
-                        <IcoThumbUp />
-                        <span className="text-[11px] text-[#8C8FA8]">{Math.floor(progress / 2)}</span>
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                                <IcoStar key={idx} active={idx < activeStars} />
+                            ))}
                         </div>
-                        <div className="flex items-center gap-[3px]">
-                        <IcoThumbDown />
+                        <div className="flex items-center gap-1">
+                            <IcoThumbUp />
+                            <span className="text-[11px] text-[#8C8FA8]">{rating.toFixed(1)}</span>
+                            <IcoThumbDown />
+                            <span className="text-[10px] text-[#6B6E8A]">({reviews})</span>
                         </div>
                     </div>
                     </div>
