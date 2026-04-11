@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import OffersSurveysRewardsDisclaimer from "@/Components/Shared/OffersSurveysRewardsDisclaimer";
 
 // ─── Ticker animation injected once ─────────────────────────────────────────
 const TICKER_CSS = `
@@ -208,7 +210,44 @@ interface Provider {
   type: string;
   displayName: string;
   progress: number;
+  logoUrl?: string;
+  launchUrl?: string;
+  sourceKind?: "survey" | "offerwall";
   categories: Exclude<EarnFilterKey, "all">[];
+}
+
+interface OfferwallApiItem {
+  _id?: string;
+  id?: string;
+  name?: string;
+  displayName?: string;
+  type?: string;
+  category?: string;
+  logoUrl?: string;
+  callbackUrl?: string;
+  isActive?: boolean;
+  status?: string;
+  metadata?: {
+    logoUrl?: string;
+    rating?: number;
+    launchUrl?: string;
+    offerUrl?: string;
+  };
+}
+
+function deriveProviderCategories(input: string): Exclude<EarnFilterKey, "all">[] {
+  const text = input.toLowerCase();
+  const derived: Exclude<EarnFilterKey, "all">[] = [];
+
+  if (/survey/.test(text)) derived.push("sweepstake");
+  if (/casino|slot|game/.test(text)) derived.push("casino");
+  if (/sign\s*up|signup|trial|offer|ad/.test(text)) derived.push("sign-up-trial");
+  if (/save|deal|cashback|coupon/.test(text)) derived.push("save-money");
+  if (/quick|fast/.test(text)) derived.push("fast-completion");
+  if (/puzzle/.test(text)) derived.push("puzzle");
+
+  if (derived.length === 0) derived.push("fast-completion");
+  return Array.from(new Set(derived));
 }
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -429,16 +468,34 @@ const GameCard: React.FC<{
   </div>
 );
 
-const ProviderCard: React.FC<{ type: string; progress: number }> = ({ type, progress }) => {
+const ProviderCard: React.FC<{
+  type: string;
+  displayName: string;
+  progress: number;
+  logoUrl?: string;
+  onClick?: () => void;
+}> = ({ type, displayName, progress, logoUrl, onClick }) => {
   const Logo = LOGO_MAP[type] ?? MonlixLogo;
 
   return (
-    <div
-      className="relative flex-1 rounded-[10px] bg-[#151728] flex flex-col overflow-hidden"
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative flex-1 rounded-[10px] bg-[#151728] flex flex-col overflow-hidden text-left transition-transform hover:scale-[1.01] cursor-pointer"
       style={{ border: "1px solid #1E2133", minWidth: "0" }}
+      aria-label={`Open ${displayName} offers`}
     >
       <div className="h-[135px] w-full flex items-center justify-center bg-[#0F111E] relative">
-        <Logo />
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt={`${displayName} logo`}
+            className="max-w-[150px] max-h-[80px] object-contain px-2"
+          />
+        ) : (
+          <Logo />
+        )}
         <div className="absolute top-[10px] right-[10px] w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
           <IcoApple />
         </div>
@@ -475,7 +532,7 @@ const ProviderCard: React.FC<{ type: string; progress: number }> = ({ type, prog
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -647,7 +704,7 @@ const FilterBar: React.FC<{
   </div>
 );
 
-const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
+const SectionHeader: React.FC<{ title: string; onViewAll?: () => void }> = ({ title, onViewAll }) => (
   <div className="flex items-center justify-between mb-3">
     <div className="flex items-center gap-4">
       <h2 className="text-white font-bold text-[28px] tracking-[0.56px] leading-[34px] m-0">{title}</h2>
@@ -670,7 +727,11 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
         <IcoChevronUpGray />
       </div>
       <button
+        type="button"
+        onClick={onViewAll}
+        disabled={!onViewAll}
         className="px-3 py-[8px] rounded-[8px] text-white font-bold text-[14px] leading-4"
+        aria-label={`View all ${title}`}
         style={{ background: "linear-gradient(135deg,#0AC07D,#14A290)", boxShadow: "0 7px 19px rgba(20,169,144,0.3)" }}
       >
         View All
@@ -679,9 +740,9 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
-const FeaturedSection: React.FC<{ games: FeaturedGame[] }> = ({ games }) => (
+const FeaturedSection: React.FC<{ games: FeaturedGame[]; onViewAll?: () => void }> = ({ games, onViewAll }) => (
   <div className="mt-8 flex flex-col gap-3">
-    <SectionHeader title="Featured" />
+    <SectionHeader title="Featured offers" onViewAll={onViewAll} />
     {games.length === 0 ? (
       <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
         No featured results for the selected filter.
@@ -702,9 +763,14 @@ const FeaturedSection: React.FC<{ games: FeaturedGame[] }> = ({ games }) => (
   </div>
 );
 
-const ProviderSection: React.FC<{ title: string; providers: Provider[] }> = ({ title, providers }) => (
+const ProviderSection: React.FC<{
+  title: string;
+  providers: Provider[];
+  onViewAll?: () => void;
+  onProviderClick?: (provider: Provider) => void;
+}> = ({ title, providers, onViewAll, onProviderClick }) => (
   <div className="mt-10 flex flex-col gap-3">
-    <SectionHeader title={title} />
+    <SectionHeader title={title} onViewAll={onViewAll} />
     {providers.length === 0 ? (
       <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
         No providers found for the selected filter.
@@ -712,7 +778,14 @@ const ProviderSection: React.FC<{ title: string; providers: Provider[] }> = ({ t
     ) : (
       <div className="flex gap-3">
         {providers.map((p) => (
-          <ProviderCard key={p.id} type={p.type} progress={p.progress} />
+          <ProviderCard
+            key={p.id}
+            type={p.type}
+            displayName={p.displayName}
+            progress={p.progress}
+            logoUrl={p.logoUrl}
+            onClick={() => onProviderClick?.(p)}
+          />
         ))}
       </div>
     )}
@@ -722,12 +795,71 @@ const ProviderSection: React.FC<{ title: string; providers: Provider[] }> = ({ t
 // ─── Main page component ──────────────────────────────────────────────────────
 
 const EARNINGSPAGEComponent: React.FC = () => {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<EarnFilterKey>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [providers, setProviders] = useState<Provider[]>(PROVIDERS);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchOfferwallProviders = async () => {
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${api}/api/v1/offerwalls`, { cache: "no-store" });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const rawOfferwalls: OfferwallApiItem[] = Array.isArray(data?.offerwalls)
+          ? data.offerwalls
+          : Array.isArray(data?.data)
+            ? data.data
+            : [];
+
+        const activeOfferwalls = rawOfferwalls.filter(
+          (ow) => ow.isActive !== false && ow.status !== "inactive" && ow.status !== "paused",
+        );
+
+        const source = activeOfferwalls.length > 0 ? activeOfferwalls : rawOfferwalls;
+        if (source.length === 0) return;
+
+        const mappedProviders: Provider[] = source.map((ow, idx) => {
+          const displayName = (ow.displayName || ow.name || `Offerwall ${idx + 1}`).trim();
+          const kindHint = `${ow.category || ow.type || ""} ${displayName}`;
+          const rating = Number(ow.metadata?.rating || 0);
+          const progress = Number.isFinite(rating) && rating > 0
+            ? Math.min(100, Math.max(20, rating * 20))
+            : 55;
+
+          return {
+            id: ow._id || ow.id || `${displayName}-${idx}`,
+            type: (ow.type || displayName).toLowerCase().replace(/\s+/g, ""),
+            displayName,
+            progress,
+            logoUrl: ow.metadata?.logoUrl || ow.logoUrl,
+            launchUrl: ow.callbackUrl || ow.metadata?.launchUrl || ow.metadata?.offerUrl,
+            sourceKind: /survey/i.test(kindHint) ? "survey" : "offerwall",
+            categories: deriveProviderCategories(kindHint),
+          };
+        });
+
+        if (mounted && mappedProviders.length > 0) {
+          setProviders(mappedProviders);
+        }
+      } catch {
+        // Keep local fallback providers when API request fails
+      }
+    };
+
+    fetchOfferwallProviders();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filterCounts = useMemo<Record<EarnFilterKey, number>>(() => {
     const counts: Record<EarnFilterKey, number> = {
-      all: FEATURED_GAMES.length + PROVIDERS.length,
+      all: FEATURED_GAMES.length + providers.length,
       "fast-completion": 0,
       "sign-up-trial": 0,
       "save-money": 0,
@@ -742,14 +874,14 @@ const EARNINGSPAGEComponent: React.FC = () => {
       });
     });
 
-    PROVIDERS.forEach((provider) => {
+    providers.forEach((provider) => {
       provider.categories.forEach((category) => {
         counts[category] += 1;
       });
     });
 
     return counts;
-  }, []);
+  }, [providers]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -763,14 +895,49 @@ const EARNINGSPAGEComponent: React.FC = () => {
   }, [activeFilter, normalizedSearch]);
 
   const filteredProviders = useMemo(() => {
-    return PROVIDERS.filter((provider) => {
+    return providers.filter((provider) => {
       const passesFilter = activeFilter === "all" || provider.categories.includes(activeFilter);
       const passesSearch =
         normalizedSearch.length === 0 ||
         provider.displayName.toLowerCase().includes(normalizedSearch);
       return passesFilter && passesSearch;
     });
-  }, [activeFilter, normalizedSearch]);
+  }, [activeFilter, normalizedSearch, providers]);
+
+  const filteredOfferwallProviders = useMemo(
+    () => filteredProviders.filter((provider) => provider.sourceKind !== "survey"),
+    [filteredProviders],
+  );
+
+  const filteredSurveyProviders = useMemo(
+    () => filteredProviders.filter((provider) => provider.sourceKind === "survey"),
+    [filteredProviders],
+  );
+
+  const handleProviderClick = (provider: Provider) => {
+    if (provider.launchUrl && /^https?:\/\//i.test(provider.launchUrl)) {
+      window.open(provider.launchUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    const offerwall = encodeURIComponent(provider.displayName || provider.type || "offerwall");
+    window.location.href = `/tasks?offerwall=${offerwall}`;
+  };
+
+  const resetFilters = () => {
+    setActiveFilter("all");
+    setSearchTerm("");
+  };
+
+  const openAllTasks = () => {
+    resetFilters();
+    router.push("/tasks");
+  };
+
+  const openAllSurveys = () => {
+    resetFilters();
+    router.push("/surveys");
+  };
 
   return (
     <div className="bg-[#0B0D1F] min-h-screen font-sans text-white">
@@ -787,9 +954,20 @@ const EARNINGSPAGEComponent: React.FC = () => {
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
             />
-            <FeaturedSection games={filteredGames} />
-            <ProviderSection title="Offer walls" providers={filteredProviders} />
-            <ProviderSection title="Survey" providers={filteredProviders} />
+            <FeaturedSection games={filteredGames} onViewAll={openAllTasks} />
+            <ProviderSection
+              title="Offer walls"
+              providers={filteredOfferwallProviders}
+              onViewAll={openAllTasks}
+              onProviderClick={handleProviderClick}
+            />
+            <ProviderSection
+              title="Survey"
+              providers={filteredSurveyProviders}
+              onViewAll={openAllSurveys}
+              onProviderClick={handleProviderClick}
+            />
+            <OffersSurveysRewardsDisclaimer className="mt-10" />
           </div>
         </div>
       </main>

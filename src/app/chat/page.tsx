@@ -39,6 +39,17 @@ interface StoredUser {
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+const getChatTailKey = (items: ChatMessage[]): string => {
+  if (items.length === 0) return "";
+  const last = items[items.length - 1];
+  return `${last._id || last.id || ""}|${String(last.timestamp || "")}|${last.text || ""}`;
+};
+
+const isContainerNearBottom = (container: HTMLDivElement, threshold = 72): boolean => {
+  const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+  return distanceFromBottom <= threshold;
+};
+
 const defaultRooms: ChatRoom[] = [
   { id: "general", name: "General" },
   { id: "support", name: "Support" },
@@ -148,7 +159,9 @@ export default function ChatPage() {
   const [showSupport, setShowSupport] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastMessageTailKeyRef = useRef("");
   const { socket } = useSocket();
 
   const getToken = () =>
@@ -168,11 +181,37 @@ export default function ChatPage() {
     }
   }, []);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior,
+    });
+    shouldStickToBottomRef.current = true;
   };
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    shouldStickToBottomRef.current = isContainerNearBottom(container);
+  };
+
+  useEffect(() => {
+    const nextTailKey = getChatTailKey(messages);
+    const hasTailChanged = nextTailKey !== lastMessageTailKeyRef.current;
+    const isInitialLoad = lastMessageTailKeyRef.current === "" && messages.length > 0;
+
+    if (isInitialLoad) {
+      scrollToBottom("auto");
+    } else if (hasTailChanged && shouldStickToBottomRef.current) {
+      scrollToBottom("smooth");
+    }
+
+    lastMessageTailKeyRef.current = nextTailKey;
+  }, [messages]);
 
   const fetchMessages = useCallback(async () => {
     setLoading(true);
@@ -180,7 +219,19 @@ export default function ChatPage() {
       const res = await fetch(`${apiBase}/api/v1/chat/messages?room=${selectedRoom.id}`);
       if (res.ok) {
         const data = await res.json();
-        if (data && Array.isArray(data.messages)) setMessages(data.messages);
+        if (data && Array.isArray(data.messages)) {
+          setMessages((prev) => {
+            const incoming = data.messages as ChatMessage[];
+            if (
+              prev.length === incoming.length
+              && getChatTailKey(prev) === getChatTailKey(incoming)
+            ) {
+              return prev;
+            }
+
+            return incoming;
+          });
+        }
       }
     } catch (err) {
       console.error("Failed to fetch chat messages", err);
@@ -258,6 +309,7 @@ export default function ChatPage() {
       router.push("/sign-in");
       return;
     }
+    shouldStickToBottomRef.current = true;
     setSending(true);
     try {
       const res = await fetch(`${apiBase}/api/v1/chat/messages`, {
@@ -367,7 +419,13 @@ export default function ChatPage() {
                 {defaultRooms.map((room) => (
                   <button
                     key={room.id}
-                    onClick={() => { setSelectedRoom(room); setShowRoomDropdown(false); setMessages([]); }}
+                    onClick={() => {
+                      setSelectedRoom(room);
+                      setShowRoomDropdown(false);
+                      setMessages([]);
+                      shouldStickToBottomRef.current = true;
+                      lastMessageTailKeyRef.current = "";
+                    }}
                     className={`flex items-center gap-2 px-2 py-1.5 w-full text-left hover:bg-[#1E2133] rounded-[5px] transition-colors ${
                       selectedRoom.id === room.id ? "bg-[#1E2133]" : ""
                     }`}
@@ -410,7 +468,11 @@ export default function ChatPage() {
       </div>
 
       {/* ── Messages area ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-[21px]">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
+        className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-[21px]"
+      >
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center flex-1 h-full">
             <p className="text-sm text-[#8C8FA8]">Loading messages...</p>
@@ -480,7 +542,6 @@ export default function ChatPage() {
             );
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* ── Input area ── */}

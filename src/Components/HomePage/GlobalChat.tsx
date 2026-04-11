@@ -40,6 +40,17 @@ const defaultRooms: ChatRoom[] = [
   { id: "help", name: "Help" },
 ];
 
+const getChatTailKey = (items: ChatMessage[]): string => {
+  if (items.length === 0) return "";
+  const last = items[items.length - 1];
+  return `${last._id || last.id || ""}|${String(last.timestamp || "")}|${last.text || ""}`;
+};
+
+const isContainerNearBottom = (container: HTMLDivElement, threshold = 72): boolean => {
+  const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+  return distanceFromBottom <= threshold;
+};
+
 const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -51,18 +62,41 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastMessageTailKeyRef = useRef("");
   const { socket } = useSocket();
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    container.scrollTo({ top: container.scrollHeight, behavior });
+    shouldStickToBottomRef.current = true;
+  };
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    shouldStickToBottomRef.current = isContainerNearBottom(container);
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const nextTailKey = getChatTailKey(messages);
+    const hasTailChanged = nextTailKey !== lastMessageTailKeyRef.current;
+    const isInitialLoad = lastMessageTailKeyRef.current === "" && messages.length > 0;
+
+    if (isInitialLoad) {
+      scrollToBottom("auto");
+    } else if (hasTailChanged && shouldStickToBottomRef.current) {
+      scrollToBottom("smooth");
+    }
+
+    lastMessageTailKeyRef.current = nextTailKey;
   }, [messages]);
 
   // Fetch messages for the selected room
@@ -73,7 +107,17 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.messages)) {
-          setMessages(data.messages);
+          setMessages((prev) => {
+            const incoming = data.messages as ChatMessage[];
+            if (
+              prev.length === incoming.length
+              && getChatTailKey(prev) === getChatTailKey(incoming)
+            ) {
+              return prev;
+            }
+
+            return incoming;
+          });
         }
       }
     } catch (err) {
@@ -150,6 +194,7 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    shouldStickToBottomRef.current = true;
     setSending(true);
     try {
       const res = await fetch(`${apiBase}/api/v1/chat/messages`, {
@@ -262,6 +307,8 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                         setSelectedRoom(room);
                         setShowRoomDropdown(false);
                         setMessages([]);
+                        shouldStickToBottomRef.current = true;
+                        lastMessageTailKeyRef.current = "";
                       }}
                       className={`flex items-center gap-2 px-3 py-2 w-full hover:bg-[#252840] transition-colors first:rounded-t-lg last:rounded-b-lg ${
                         selectedRoom.id === room.id ? "bg-[#252840]" : ""
@@ -277,7 +324,11 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 space-y-3 sm:space-y-4">
+          <div
+            ref={messagesContainerRef}
+            onScroll={handleMessagesScroll}
+            className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 space-y-3 sm:space-y-4"
+          >
             {loading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-xs sm:text-sm text-gray-400">Loading messages...</div>
@@ -346,7 +397,6 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
                 </div>
               ))
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input Area */}

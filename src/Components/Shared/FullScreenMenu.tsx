@@ -72,6 +72,14 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
       bgColor: "bg-blue-500/10",
     },
     {
+      id: "profiles",
+      label: "Profiles",
+      icon: <Users className="w-6 h-6" />,
+      path: "/profile",
+      color: "text-teal-400",
+      bgColor: "bg-teal-500/10",
+    },
+    {
       id: "wallet",
       label: "Wallet",
       icon: <Wallet className="w-6 h-6" />,

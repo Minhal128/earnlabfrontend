@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setProfile } from "@/store/userSlice";
 import TopBar from "@/Components/Topbar";
+import PageNavigation from "@/Components/Shared/PageNavigation";
 import TickerBar from "./Shared/TickerBar";
 import OfferWalls from "@/Components/HomePage/OfferWalls";
 import FeaturedTask from "@/Components/HomePage/FeaturedTask";
@@ -93,6 +94,7 @@ const HOMEPAGEComponent = () => {
   return (
     <div className="min-h-screen bg-[#0D0F1E]">
       <TopBar />
+      <PageNavigation />
       <TickerBar />
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-5 sm:py-8">

@@ -1,5 +1,5 @@
 "use client";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, Menu, Users, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -25,6 +25,7 @@ const TopBar: React.FC = () => {
   const [balance, setBalance] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarImageBroken, setAvatarImageBroken] = useState(false);
   const storeProfile = useSelector((s: RootState) => s.user.profile);
   const storeToken = useSelector((s: RootState) => s.user.token);
   const dispatch = useDispatch();
@@ -60,6 +61,10 @@ const TopBar: React.FC = () => {
   useEffect(() => {
     if (typeof window !== "undefined") (window as any).refreshProfile = refreshProfile;
   }, [refreshProfile]);
+
+  useEffect(() => {
+    setAvatarImageBroken(false);
+  }, [avatarUrl]);
 
   const handleSignOut = async () => {
     try {
@@ -189,6 +194,7 @@ const TopBar: React.FC = () => {
                   { href: "/leaderboard", label: "Leaderboard" },
                   { href: "/referrals", label: "Referrals" },
                   { href: "/chat", label: "Chat" },
+                  { href: "/profile", label: "Profiles" },
                   { href: "/support", label: "Support" },
                   { href: "/settings", label: "Settings" },
                 ].map((item) => (
@@ -276,10 +282,17 @@ const TopBar: React.FC = () => {
                 overflow: "hidden",
               }}
             >
-              {avatarUrl
-                ? <img src={avatarUrl} alt={username || "User"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : "B"
-              }
+              {avatarUrl && !avatarImageBroken ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarUrl}
+                  alt={username || "User"}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={() => setAvatarImageBroken(true)}
+                />
+              ) : (
+                <span>{initial}</span>
+              )}
             </button>
           </div>
 
@@ -293,6 +306,10 @@ const TopBar: React.FC = () => {
               <nav className="flex flex-col gap-1 px-3 pb-3 text-sm">
                 <Link href="/account" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
                   <IoMdPerson size={16} /> Account
+                </Link>
+                <div style={{ height: 1, background: "#1E2133" }} />
+                <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
+                  <Users size={16} /> Profiles
                 </Link>
                 <div style={{ height: 1, background: "#1E2133" }} />
                 <Link href="/referrals" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">

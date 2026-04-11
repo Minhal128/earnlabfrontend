@@ -36,6 +36,17 @@ interface SupportChatProps {
   onClose: () => void;
 }
 
+const getSupportTailKey = (items: Message[]): string => {
+  if (items.length === 0) return "";
+  const last = items[items.length - 1];
+  return `${last._id || ""}|${last.room || ""}|${String(last.createdAt || "")}|${last.text || ""}`;
+};
+
+const isContainerNearBottom = (container: HTMLDivElement, threshold = 72): boolean => {
+  const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+  return distanceFromBottom <= threshold;
+};
+
 function HeadsetIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -115,13 +126,40 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const { socket } = useSocket();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastMessageTailKeyRef = useRef("");
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    container.scrollTo({ top: container.scrollHeight, behavior });
+    shouldStickToBottomRef.current = true;
+  };
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    shouldStickToBottomRef.current = isContainerNearBottom(container);
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const nextTailKey = getSupportTailKey(messages);
+    const hasTailChanged = nextTailKey !== lastMessageTailKeyRef.current;
+    const isInitialLoad = lastMessageTailKeyRef.current === "" && messages.length > 0;
+
+    if (isInitialLoad) {
+      scrollToBottom("auto");
+    } else if (hasTailChanged && shouldStickToBottomRef.current) {
+      scrollToBottom("smooth");
+    }
+
+    lastMessageTailKeyRef.current = nextTailKey;
   }, [messages]);
 
   const fetchRooms = useCallback(async () => {
@@ -210,6 +248,7 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
       if (newRoomId && !rooms.some((r) => String(r._id) === newRoomId)) {
         setRooms((prev) => [{ _id: newRoomId, subject: "Support", status: "open", lastMessageAt: newMsg.createdAt || null }, ...prev]);
       }
+      shouldStickToBottomRef.current = true;
       setMessages((prev) => [...prev, newMsg]);
       if (!activeRoomId && newRoomId) setActiveRoomId(newRoomId);
       setInput("");
@@ -299,7 +338,11 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <div
+          ref={messagesContainerRef}
+          onScroll={handleMessagesScroll}
+          className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4"
+        >
           {/* Static welcome message from LabWards */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -374,7 +417,6 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
               </div>
             );
           })}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}

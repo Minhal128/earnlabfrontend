@@ -2,10 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Trophy, Medal, Crown, Users, Clock, TrendingUp } from "lucide-react";
-import { toast } from "react-toastify";
-import UserProfileModal from "../Shared/UserProfileModal";
+import LeaderboardUserProgressModal from "../Shared/LeaderboardUserProgressModal";
 import dotsBg from "../../../public/assets/drop.png";
 
 interface LeaderboardUser {
@@ -17,9 +15,16 @@ interface LeaderboardUser {
     profilePrivacy?: 'public' | 'private';
 }
 
+interface LeaderboardEntry {
+    rank: number;
+    userId: string;
+    name: string;
+    points: number;
+    reward: number;
+    avatarUrl?: string;
+}
+
 const LeaderBoard = () => {
-    const router = useRouter();
-    
     const targetDate = useMemo(() => {
         const date = new Date();
         date.setDate(date.getDate() + 10);
@@ -51,8 +56,7 @@ const LeaderBoard = () => {
 
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [selectedLeaderboardEntry, setSelectedLeaderboardEntry] = useState<LeaderboardEntry | null>(null);
     const [currentUserUuid, setCurrentUserUuid] = useState<string | null>(null);
 
     // Fetch leaderboard data - Top 25
@@ -102,31 +106,31 @@ const LeaderBoard = () => {
     }, []);
 
     // Handle user click
-    const handleUserClick = (userId: string) => {
-        setSelectedUserId(userId);
-        setShowProfileModal(true);
+    const handleUserClick = (entry: LeaderboardEntry) => {
+        if (!entry.userId) return;
+        setSelectedLeaderboardEntry(entry);
     };
 
     // Prepare top 3 winners (always in order: 1st, 2nd, 3rd)
-    const topWinners = leaderboardData.slice(0, 3).map((user, idx) => {
+    const topWinners: LeaderboardEntry[] = leaderboardData.slice(0, 3).map((user, idx) => {
         const rewards = [500, 250, 150];
         return {
             rank: idx + 1,
-            uuid: user.uuid,
+            userId: user.uuid,
             name: user.displayName || user.username,
             points: user.balanceCents ?? 0,
             reward: rewards[idx],
-            img: user.avatarUrl || "/assets/avatar.png",
+            avatarUrl: user.avatarUrl || "/assets/avatar.png",
         };
     });
 
-    const otherPlayers = leaderboardData.slice(3).map((user, idx) => ({
+    const otherPlayers: LeaderboardEntry[] = leaderboardData.slice(3).map((user, idx) => ({
         rank: idx + 4,
-        uuid: user.uuid,
+        userId: user.uuid,
         name: user.displayName || user.username,
         points: user.balanceCents ?? 0,
         reward: Math.max(50, 200 - (idx * 20)),
-        img: user.avatarUrl || "/assets/avatar.png",
+        avatarUrl: user.avatarUrl || "/assets/avatar.png",
     }));
 
     // Get rank colors
@@ -245,13 +249,15 @@ const LeaderBoard = () => {
                         <div className="space-y-2 sm:space-y-3">
                             {topWinners.map((winner) => {
                                 const styles = getRankStyles(winner.rank);
-                                const isCurrentUser = winner.uuid === currentUserUuid;
+                                const isCurrentUser = winner.userId === currentUserUuid;
                                 
                                 return (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={winner.rank}
-                                        onClick={() => handleUserClick(winner.uuid)}
-                                        className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] ${styles.bg} border ${styles.border} ${isCurrentUser ? 'ring-2 ring-emerald-500/50' : ''}`}
+                                        onClick={() => handleUserClick(winner)}
+                                        className={`w-full text-left flex items-center gap-3 p-3 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] ${styles.bg} border ${styles.border} ${isCurrentUser ? 'ring-2 ring-emerald-500/50' : ''}`}
+                                        aria-label={`Open ${winner.name} leaderboard progress`}
                                     >
                                         {/* Rank Badge */}
                                         <div className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full ${styles.badge} flex items-center justify-center text-lg sm:text-xl shadow-lg`}>
@@ -261,7 +267,7 @@ const LeaderBoard = () => {
                                         {/* Avatar */}
                                         <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-white/20">
                                             <Image
-                                                src={winner.img}
+                                                src={winner.avatarUrl || "/assets/avatar.png"}
                                                 alt={winner.name}
                                                 width={48}
                                                 height={48}
@@ -276,7 +282,7 @@ const LeaderBoard = () => {
                                                 {isCurrentUser && <span className="ml-1 text-[10px] text-emerald-400">(You)</span>}
                                             </p>
                                             <p className="text-[10px] sm:text-xs text-[#9CA3AF]">
-                                                {winner.points.toLocaleString()} points
+                                                #{winner.rank} • {winner.points.toLocaleString()} points
                                             </p>
                                         </div>
                                         
@@ -286,7 +292,7 @@ const LeaderBoard = () => {
                                                 ${winner.reward}
                                             </span>
                                         </div>
-                                    </div>
+                                    </button>
                                 );
                             })}
                         </div>
@@ -303,17 +309,19 @@ const LeaderBoard = () => {
                         
                         <div className="space-y-1.5 sm:space-y-2">
                             {otherPlayers.map((player) => {
-                                const isCurrentUser = player.uuid === currentUserUuid;
+                                const isCurrentUser = player.userId === currentUserUuid;
                                 
                                 return (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={player.rank}
-                                        onClick={() => handleUserClick(player.uuid)}
-                                        className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-[#252840] ${
+                                        onClick={() => handleUserClick(player)}
+                                        className={`w-full text-left flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-[#252840] ${
                                             isCurrentUser 
                                                 ? 'bg-emerald-500/10 border border-emerald-500/30' 
                                                 : 'bg-[#1A1D2E]/60 border border-[#2A2D3E]/50'
                                         }`}
+                                        aria-label={`Open ${player.name} leaderboard progress`}
                                     >
                                         {/* Rank */}
                                         <div className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-xs sm:text-sm font-bold ${
@@ -325,7 +333,7 @@ const LeaderBoard = () => {
                                         {/* Avatar */}
                                         <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-[#2A2D3E]">
                                             <Image
-                                                src={player.img}
+                                                src={player.avatarUrl || "/assets/avatar.png"}
                                                 alt={player.name}
                                                 width={36}
                                                 height={36}
@@ -349,7 +357,7 @@ const LeaderBoard = () => {
                                                 ${player.reward}
                                             </span>
                                         </div>
-                                    </div>
+                                    </button>
                                 );
                             })}
                         </div>
@@ -357,17 +365,11 @@ const LeaderBoard = () => {
                 )}
             </div>
 
-            {/* User Profile Modal */}
-            {selectedUserId && (
-                <UserProfileModal
-                    userId={selectedUserId}
-                    isOpen={showProfileModal}
-                    onClose={() => {
-                        setShowProfileModal(false);
-                        setSelectedUserId(null);
-                    }}
-                />
-            )}
+            <LeaderboardUserProgressModal
+                isOpen={Boolean(selectedLeaderboardEntry)}
+                selectedUser={selectedLeaderboardEntry}
+                onClose={() => setSelectedLeaderboardEntry(null)}
+            />
         </div>
     );
 };

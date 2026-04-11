@@ -140,6 +140,7 @@ const BottomNavigation: React.FC = () => {
           <div className="flex flex-col p-2 max-h-[60vh] overflow-y-auto">
             {[
               { label: "Account", path: "/account", icon: <User className="w-[18px] h-[18px]" /> },
+              { label: "Profiles", path: "/profile", icon: <Users className="w-[18px] h-[18px]" /> },
               { label: "Rewards", path: "/rewards", icon: <DollarSign className="w-[18px] h-[18px]" /> },
               { label: "Leaderboard", path: "/leaderboard", icon: <Users className="w-[18px] h-[18px]" /> },
               { label: "Referrals", path: "/referrals", icon: <Users className="w-[18px] h-[18px]" /> },

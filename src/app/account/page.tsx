@@ -1,5 +1,5 @@
-import OwnProfilePage from "@/Components/Profile/OwnProfilePage";
+import AccountClonePage from "@/Components/Profile/AccountClonePage";
 
 export default function AccountPage() {
-  return <OwnProfilePage />;
+  return <AccountClonePage />;
 }
