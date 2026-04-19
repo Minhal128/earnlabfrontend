@@ -1,5 +1,5 @@
 "use client";
-import { Bell, Menu, Users, X } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import {
 } from "@/store/userSlice";
 import { useSocket } from "@/contexts/SocketProvider";
 import LogoImg from "../../public/assets/logo.png";
+import { openLiveChatPanel } from "@/utils/liveChat";
 
 const TopBar: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -190,23 +191,40 @@ const TopBar: React.FC = () => {
             <div className="absolute right-0 mt-2 w-56 rounded-[10px] shadow-xl z-50 overflow-hidden" style={{ background: "#151728", border: "1px solid #1E2133" }}>
               <div className="py-2">
                 {[
-                  { href: "/rewards", label: "Rewards" },
-                  { href: "/leaderboard", label: "Leaderboard" },
-                  { href: "/referrals", label: "Referrals" },
-                  { href: "/chat", label: "Chat" },
-                  { href: "/profile", label: "Profiles" },
-                  { href: "/support", label: "Support" },
-                  { href: "/settings", label: "Settings" },
-                ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setDesktopMenuOpen(false)}
-                    className="block px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                  { id: "rewards", href: "/rewards", label: "Rewards" },
+                  { id: "leaderboard", href: "/leaderboard", label: "Leaderboard" },
+                  { id: "referrals", href: "/referrals", label: "Referrals" },
+                  { id: "live-chat", label: "Live Chat", onClick: () => openLiveChatPanel() },
+                  { id: "support", href: "/support", label: "Support" },
+                  { id: "settings", href: "/settings", label: "Settings" },
+                ].map((item) => {
+                  if (item.onClick) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setDesktopMenuOpen(false);
+                          item.onClick();
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href!}
+                      onClick={() => setDesktopMenuOpen(false)}
+                      className="block px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -306,10 +324,6 @@ const TopBar: React.FC = () => {
               <nav className="flex flex-col gap-1 px-3 pb-3 text-sm">
                 <Link href="/account" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
                   <IoMdPerson size={16} /> Account
-                </Link>
-                <div style={{ height: 1, background: "#1E2133" }} />
-                <Link href="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
-                  <Users size={16} /> Profiles
                 </Link>
                 <div style={{ height: 1, background: "#1E2133" }} />
                 <Link href="/referrals" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">

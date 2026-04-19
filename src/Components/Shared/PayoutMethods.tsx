@@ -118,7 +118,7 @@ const PayoutMethods: React.FC<PayoutMethodsProps> = ({ isLoggedIn = false }) => 
                           alt={method.name}
                           width={24}
                           height={24}
-                          className="w-6 h-6 object-contain"
+                          className={`w-6 h-6 object-contain ${method.name === 'Worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`}
                         />
                       ) : IconComponent ? (
                         <IconComponent size={24} color="white" />

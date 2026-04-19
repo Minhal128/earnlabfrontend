@@ -435,32 +435,7 @@ const resolveLandingApiBaseUrl = (): string => {
     : 'https://earnlabbackend.vercel.app';
 };
 
-const PARTNER_LOGOS = [
-  {
-    id: 'monlix',
-    name: 'Monlix',
-    src: 'https://monlix.com/images/logo-light.svg',
-    className: 'h-7 sm:h-9',
-  },
-  {
-    id: 'mylead',
-    name: 'MyLead',
-    src: 'https://mylead.global/images/svg/logo_ml.svg',
-    className: 'h-7 sm:h-9',
-  },
-  {
-    id: 'gemiad',
-    name: 'GemiAd',
-    src: 'https://gemiad.com/logos/Logo%201.svg',
-    className: 'h-7 sm:h-9',
-  },
-  {
-    id: 'evadav',
-    name: 'Evadav',
-    src: 'https://evadav.com/img/logo.svg',
-    className: 'h-7 sm:h-9',
-  },
-];
+
 
 const REWARD_LOGOS = [
   { id: 'visa', name: 'Visa', src: '/assets/visa.png' },
@@ -943,24 +918,7 @@ const LANDINGPAGEComponent = () => {
         </div>
       </section>
 
-      {/* ═══════ PARTNER LOGOS ═══════ */}
-      <section className="max-w-[1100px] mx-auto px-4 py-10 sm:py-16">
-        <div className="relative overflow-hidden">
-          <div className="flex w-max items-center gap-10 sm:gap-14 animate-partner-scroll-right will-change-transform">
-            {[...PARTNER_LOGOS, ...PARTNER_LOGOS, ...PARTNER_LOGOS].map((partner, index) => (
-              <div key={`${partner.id}-${index}`} className="shrink-0 flex items-center justify-center">
-                <img
-                  src={partner.src}
-                  alt={`${partner.name} logo`}
-                  className={`w-auto object-contain ${partner.className}`}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ═══════ EARN BY COMPLETING TASKS ═══════ */}
       <section className="max-w-[1312px] mx-auto px-4 py-10 sm:py-16">
@@ -1139,7 +1097,7 @@ const LANDINGPAGEComponent = () => {
               <img
                 src={logo.src}
                 alt={`${logo.name} logo`}
-                className="w-auto max-w-[92%] h-10 sm:h-14 md:h-16 object-contain"
+                className={`w-auto max-w-[92%] h-10 sm:h-14 md:h-16 object-contain ${logo.id === 'worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`}
                 loading="lazy"
                 decoding="async"
               />

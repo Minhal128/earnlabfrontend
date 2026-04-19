@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { Trophy, Medal, Crown, Users, Clock, TrendingUp } from "lucide-react";
-import LeaderboardUserProgressModal from "../Shared/LeaderboardUserProgressModal";
 import dotsBg from "../../../public/assets/drop.png";
+import UserProfileModal from "@/Components/UserProfileModal";
 
 interface LeaderboardUser {
     uuid: string;
@@ -56,8 +56,9 @@ const LeaderBoard = () => {
 
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedLeaderboardEntry, setSelectedLeaderboardEntry] = useState<LeaderboardEntry | null>(null);
     const [currentUserUuid, setCurrentUserUuid] = useState<string | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [showUserProfile, setShowUserProfile] = useState(false);
 
     // Fetch leaderboard data - Top 25
     useEffect(() => {
@@ -108,7 +109,8 @@ const LeaderBoard = () => {
     // Handle user click
     const handleUserClick = (entry: LeaderboardEntry) => {
         if (!entry.userId) return;
-        setSelectedLeaderboardEntry(entry);
+        setSelectedUserId(entry.userId);
+        setShowUserProfile(true);
     };
 
     // Prepare top 3 winners (always in order: 1st, 2nd, 3rd)
@@ -363,13 +365,16 @@ const LeaderBoard = () => {
                         </div>
                     </div>
                 )}
-            </div>
 
-            <LeaderboardUserProgressModal
-                isOpen={Boolean(selectedLeaderboardEntry)}
-                selectedUser={selectedLeaderboardEntry}
-                onClose={() => setSelectedLeaderboardEntry(null)}
-            />
+                <UserProfileModal
+                    userId={selectedUserId}
+                    isOpen={showUserProfile}
+                    onClose={() => {
+                        setShowUserProfile(false);
+                        setSelectedUserId(null);
+                    }}
+                />
+            </div>
         </div>
     );
 };

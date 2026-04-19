@@ -8,13 +8,14 @@ import {
   Trophy, 
   Wallet, 
   MessageCircle, 
+  Headset,
   LogOut,
   Settings,
   Gift,
-  Users,
   HelpCircle,
   Share2
 } from "lucide-react";
+import { openLiveChatPanel } from "@/utils/liveChat";
 
 interface MenuTile {
   id: string;
@@ -72,14 +73,6 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
       bgColor: "bg-blue-500/10",
     },
     {
-      id: "profiles",
-      label: "Profiles",
-      icon: <Users className="w-6 h-6" />,
-      path: "/profile",
-      color: "text-teal-400",
-      bgColor: "bg-teal-500/10",
-    },
-    {
       id: "wallet",
       label: "Wallet",
       icon: <Wallet className="w-6 h-6" />,
@@ -105,9 +98,12 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({ isOpen, onClose }) => {
     },
     {
       id: "chat",
-      label: "Chat",
-      icon: <Users className="w-6 h-6" />,
-      path: "/chat",
+      label: "Live Chat",
+      icon: <Headset className="w-6 h-6" />,
+      action: () => {
+        openLiveChatPanel();
+        onClose();
+      },
       color: "text-pink-400",
       bgColor: "bg-pink-500/10",
     },

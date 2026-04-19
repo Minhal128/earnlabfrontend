@@ -5,8 +5,8 @@ import { X, Send, ChevronDown, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import ReactCountryFlag from "react-country-flag";
 import { useSocket } from "@/contexts/SocketProvider";
-import UserProfileModal from "../UserProfileModal";
 import { toast } from "@/utils/toast";
+import UserProfileModal from "@/Components/UserProfileModal";
 
 interface ChatMessage {
   _id?: string;
@@ -60,7 +60,7 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom>(defaultRooms[0]);
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
@@ -233,7 +233,7 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
   const handleUserClick = (userId?: string) => {
     if (userId) {
       setSelectedUserId(userId);
-      setShowProfileModal(true);
+      setShowUserProfile(true);
     }
   };
 
@@ -426,12 +426,11 @@ const GlobalChat: React.FC<GlobalChatProps> = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {/* User Profile Modal */}
       <UserProfileModal
         userId={selectedUserId}
-        isOpen={showProfileModal}
+        isOpen={showUserProfile}
         onClose={() => {
-          setShowProfileModal(false);
+          setShowUserProfile(false);
           setSelectedUserId(null);
         }}
       />

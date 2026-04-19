@@ -331,6 +331,7 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                         alt={selectedMethod.name}
                                         width={20}
                                         height={20}
+                                        className={selectedMethod.name === 'Worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}
                                     />
                                     <span>{selectedMethod.name}</span>
                                 </div>
@@ -532,7 +533,13 @@ const WalletDropdown: React.FC<Props> = ({ onClose }) => {
                                 onClick={() => setSelectedMethod({ name: "Worldcoin", icon: World })}
                                 className="flex-1 flex items-center gap-3 bg-[#26293E] border border-gray-700 rounded-md px-3 py-3 cursor-pointer hover:border-emerald-500/50 transition-colors"
                             >
-                                <Image src={World} alt="Worldcoin" width={22} height={22} />
+                                <Image 
+                                    src={World} 
+                                    alt="Worldcoin" 
+                                    width={22} 
+                                    height={22} 
+                                    className="invert brightness-200 mix-blend-screen"
+                                />
                                 <span className="text-sm">Worldcoin</span>
                             </div>
                         </div>

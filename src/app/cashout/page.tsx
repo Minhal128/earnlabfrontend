@@ -11,8 +11,11 @@ import { toast } from "@/utils/toast";
 interface CashoutCard {
   id: string;
   name: string;
+  brandName: string;
   subtitle?: string;
   logoSrc: string;
+  gradientClassName: string;
+  badge?: string;
   category: "crypto" | "cash" | "giftcard";
   method?: "paypal" | "bank_transfer";
   cryptoType?: string;
@@ -26,25 +29,130 @@ interface CashoutMethodModalProps {
 }
 
 const POPULAR: CashoutCard[] = [
-  { id: "btc", name: "Bitcoin", subtitle: "0.50€ transaction fee", logoSrc: "/assets/bit.png", category: "crypto", cryptoType: "btc" },
-  { id: "doge", name: "Dogecoin", subtitle: "0.50€ transaction fee", logoSrc: "/assets/dolar.png", category: "crypto", cryptoType: "doge" },
-  { id: "sol", name: "Solana", subtitle: "0.50€ transaction fee", logoSrc: "/assets/sol.png", category: "crypto", cryptoType: "sol" },
-  { id: "eth", name: "Ethereum", subtitle: "0.50€ transaction fee", logoSrc: "/assets/eth.png", category: "crypto", cryptoType: "eth" },
-  { id: "ltc", name: "Litecoin", subtitle: "0.50€ transaction fee", logoSrc: "/assets/lit.png", category: "crypto", cryptoType: "ltc" },
+  {
+    id: "btc",
+    name: "Bitcoin",
+    brandName: "bitcoin",
+    subtitle: "0.50€ transaction fee",
+    logoSrc: "/assets/bit.png",
+    gradientClassName: "from-[#2C14A6] to-[#3F21C4]",
+    category: "crypto",
+    cryptoType: "btc",
+  },
+  {
+    id: "doge",
+    name: "Dogecoin",
+    brandName: "Dogecoin",
+    subtitle: "0.50€ transaction fee",
+    logoSrc: "/assets/dolar.png",
+    gradientClassName: "from-[#B87B0B] to-[#D99A1C]",
+    category: "crypto",
+    cryptoType: "doge",
+  },
+  {
+    id: "sol",
+    name: "Solana",
+    brandName: "SOLANA",
+    subtitle: "0.50€ transaction fee",
+    logoSrc: "/assets/sol.png",
+    gradientClassName: "from-[#B61D1D] to-[#D12D2D]",
+    category: "crypto",
+    cryptoType: "sol",
+  },
+  {
+    id: "eth",
+    name: "Ethereum",
+    brandName: "Ethereum",
+    subtitle: "0.50€ transaction fee",
+    logoSrc: "/assets/eth.png",
+    gradientClassName: "from-[#3B9627] to-[#52B338]",
+    category: "crypto",
+    cryptoType: "eth",
+  },
+  {
+    id: "ltc",
+    name: "Litecoin",
+    brandName: "Litecoin",
+    subtitle: "0.50€ transaction fee",
+    logoSrc: "/assets/lit.png",
+    gradientClassName: "from-[#0A8C63] to-[#10A479]",
+    category: "crypto",
+    cryptoType: "ltc",
+  },
 ];
 
 const WITHDRAW_CASH: CashoutCard[] = [
-  { id: "paypal", name: "PayPal", logoSrc: "/assets/paypal.png", category: "cash", method: "paypal" },
-  { id: "worldcoin", name: "Worldcoin", logoSrc: "/assets/worldcoin.png", category: "crypto", cryptoType: "worldcoin" },
-  { id: "visa", name: "Visa", logoSrc: "/assets/visa.png", category: "cash", method: "bank_transfer" },
+  {
+    id: "paypal",
+    name: "Paypal",
+    brandName: "PayPal",
+    logoSrc: "/assets/paypal.png",
+    gradientClassName: "from-[#20214B] to-[#2B2E6A]",
+    category: "cash",
+    method: "paypal",
+  },
+  {
+    id: "worldcoin",
+    name: "Worldcoin",
+    brandName: "Worldcoin",
+    logoSrc: "/assets/worldcoin.png",
+    gradientClassName: "from-[#1F2048] to-[#2B2E63]",
+    badge: "30% OFF",
+    category: "crypto",
+    cryptoType: "worldcoin",
+  },
+  {
+    id: "visa",
+    name: "Visa",
+    brandName: "Visa",
+    logoSrc: "/assets/visa.png",
+    gradientClassName: "from-[#1F2048] to-[#2B2E63]",
+    category: "cash",
+    method: "bank_transfer",
+  },
 ];
 
 const GIFTCARDS: CashoutCard[] = [
-  { id: "amazon", name: "Amazon", logoSrc: "/assets/amazon.png", category: "giftcard" },
-  { id: "itunes", name: "App Stores", logoSrc: "/assets/apple.png", category: "giftcard" },
-  { id: "spotify", name: "Spotify", logoSrc: "/assets/spot.png", category: "giftcard" },
-  { id: "playstation", name: "PlayStation", logoSrc: "/assets/play.png", category: "giftcard" },
-  { id: "steam", name: "Steam", logoSrc: "/assets/cb.png", category: "giftcard" },
+  {
+    id: "amazon",
+    name: "Amazon",
+    brandName: "Amazon",
+    logoSrc: "/assets/amazon.png",
+    gradientClassName: "from-[#2C14A6] to-[#3F21C4]",
+    category: "giftcard",
+  },
+  {
+    id: "itunes",
+    name: "App stores",
+    brandName: "iTunes",
+    logoSrc: "/assets/apple.png",
+    gradientClassName: "from-[#B87B0B] to-[#D99A1C]",
+    category: "giftcard",
+  },
+  {
+    id: "spotify",
+    name: "Spotify",
+    brandName: "Spotify",
+    logoSrc: "/assets/spot.png",
+    gradientClassName: "from-[#B61D1D] to-[#D12D2D]",
+    category: "giftcard",
+  },
+  {
+    id: "playstation",
+    name: "Playstations",
+    brandName: "Playstation",
+    logoSrc: "/assets/play.png",
+    gradientClassName: "from-[#3B9627] to-[#52B338]",
+    category: "giftcard",
+  },
+  {
+    id: "steam",
+    name: "Steam",
+    brandName: "Steam",
+    logoSrc: "/assets/cb.png",
+    gradientClassName: "from-[#0A8C63] to-[#10A479]",
+    category: "giftcard",
+  },
 ];
 
 function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodModalProps) {
@@ -171,7 +279,13 @@ function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodM
 
         <div className="rounded-xl bg-[#1E2133] border border-[#2A2D3E] p-4 mb-4 flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg bg-white/5 border border-[#2A2D3E] flex items-center justify-center overflow-hidden">
-            <Image src={card.logoSrc} alt={card.name} width={36} height={36} className="object-contain" />
+            <Image 
+              src={card.logoSrc} 
+              alt={card.name} 
+              width={36} 
+              height={36} 
+              className={`object-contain ${card.id === 'worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`} 
+            />
           </div>
           <div>
             <p className="text-white font-semibold">{card.name}</p>
@@ -237,25 +351,54 @@ function Section({
 }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-white font-bold text-2xl sm:text-3xl">{title}</h2>
+      <h2 className="text-white font-bold text-2xl sm:text-[40px] leading-tight">{title}</h2>
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         {cards.map((card) => (
           <button
             key={card.id}
             onClick={() => onCardClick(card)}
-            className="group rounded-2xl border border-[#26293E] bg-[#151728] hover:border-emerald-500/60 transition-all p-3 sm:p-4 text-left"
+            className="group relative overflow-hidden rounded-[14px] border border-white/10 h-[178px] sm:h-[190px] p-3 sm:p-4 text-left transition-transform hover:scale-[1.015]"
           >
-            <div className="w-full h-[120px] sm:h-[140px] rounded-xl bg-[#1E2133] flex items-center justify-center overflow-hidden mb-3">
-              <Image
-                src={card.logoSrc}
-                alt={card.name}
-                width={120}
-                height={120}
-                className="max-h-[95px] w-auto object-contain group-hover:scale-105 transition-transform"
-              />
+            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradientClassName}`} />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-30"
+              style={{
+                backgroundImage:
+                  "radial-gradient(rgba(255,255,255,0.35) 0.7px, transparent 0.7px)",
+                backgroundSize: "4px 4px",
+              }}
+            />
+
+            {card.badge && (
+              <span className="absolute right-3 top-3 z-10 rounded-full bg-[#FDBA0F] px-2 py-0.5 text-[10px] font-bold text-[#111827]">
+                {card.badge}
+              </span>
+            )}
+
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-white/20 backdrop-blur-[1px] flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={card.logoSrc}
+                    alt={card.name}
+                    width={24}
+                    height={24}
+                    className={`h-full w-full object-contain ${card.id === 'worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`}
+                  />
+                </div>
+                <p className="text-white text-[15px] sm:text-[17px] font-semibold tracking-tight truncate">
+                  {card.brandName}
+                </p>
+              </div>
+
+              <div className="text-center pb-0.5">
+                <p className="text-white font-medium text-sm sm:text-base leading-tight">{card.name}</p>
+                {card.subtitle && <p className="text-white/70 text-[11px] mt-1">{card.subtitle}</p>}
+              </div>
             </div>
-            <p className="text-white font-semibold text-sm sm:text-base truncate">{card.name}</p>
-            {card.subtitle && <p className="text-[#8C8FA8] text-xs mt-1">{card.subtitle}</p>}
+
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-[14px]" />
           </button>
         ))}
       </div>
@@ -306,7 +449,7 @@ export default function CashoutPage() {
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-8 sm:py-10 flex flex-col gap-10">
         <Section title="Popular" cards={POPULAR} onCardClick={handleCardClick} />
         <Section title="Withdraw cash" cards={WITHDRAW_CASH} onCardClick={handleCardClick} />
-        <Section title="Giftcards" cards={GIFTCARDS} onCardClick={handleCardClick} />
+        <Section title="Giftcard" cards={GIFTCARDS} onCardClick={handleCardClick} />
       </main>
 
       <CashoutMethodModal

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import TopBar from "@/Components/Topbar";
 import OffersSurveysRewardsDisclaimer from "@/Components/Shared/OffersSurveysRewardsDisclaimer";
@@ -42,6 +42,17 @@ type SurveyQuestion = {
     numericOnly?: boolean;
 };
 
+type SurveyCompletionResponse = {
+    success?: boolean;
+    status?: string;
+    completed?: boolean;
+    message?: string;
+    data?: {
+        completed?: boolean;
+        [key: string]: unknown;
+    };
+};
+
 const SURVEY_QUESTIONS: SurveyQuestion[] = [
     {
         id: "householdIncome",
@@ -66,6 +77,26 @@ const isLikelySurveyProvider = (input: string): boolean => {
     return /survey|poll|questionnaire|cpx|bitlab|theorem|pollfish|inbrain|research/i.test(input);
 };
 
+const SURVEY_COMPLETION_ENDPOINTS = [
+    "/api/v1/surveys/complete",
+    "/api/v1/survey/complete",
+    "/api/v1/surveys/submit",
+];
+
+const SURVEY_REDIRECT_DELAY_MS = 1400;
+
+const isCompletionSuccess = (payload: SurveyCompletionResponse): boolean => {
+    const normalizedStatus = String(payload.status || "").toLowerCase();
+    return (
+        payload.success === true ||
+        payload.completed === true ||
+        payload.data?.completed === true ||
+        normalizedStatus === "success" ||
+        normalizedStatus === "ok" ||
+        normalizedStatus === "completed"
+    );
+};
+
 export default function SurveysPage() {
     const router = useRouter();
 
@@ -75,6 +106,10 @@ export default function SurveysPage() {
     const [stepIndex, setStepIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
+    const [redirectingToOfferwalls, setRedirectingToOfferwalls] = useState(false);
+    const [completionMessage, setCompletionMessage] = useState("");
+
+    const redirectTimeoutRef = useRef<number | null>(null);
 
     const currentQuestion = SURVEY_QUESTIONS[stepIndex];
     const currentAnswer = answers[currentQuestion.id] || "";
@@ -172,6 +207,14 @@ export default function SurveysPage() {
         };
     }, []);
 
+    useEffect(() => {
+        return () => {
+            if (redirectTimeoutRef.current) {
+                window.clearTimeout(redirectTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const selectedProvider = providers.find((provider) => provider.id === activeProviderId) || null;
 
     const setCurrentAnswer = (value: string) => {
@@ -184,6 +227,62 @@ export default function SurveysPage() {
 
     const goPrev = () => {
         setStepIndex((prev) => Math.max(0, prev - 1));
+    };
+
+    const submitSurveyCompletion = async (provider: SurveyProvider): Promise<SurveyCompletionResponse> => {
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        };
+
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
+        const payload = {
+            providerId: provider.id,
+            providerName: provider.name,
+            answers,
+            questionCount: SURVEY_QUESTIONS.length,
+            completedAt: new Date().toISOString(),
+        };
+
+        let endpointFound = false;
+        let fallbackErrorMessage = "Survey completion could not be verified.";
+
+        for (const endpoint of SURVEY_COMPLETION_ENDPOINTS) {
+            const response = await fetch(`${api}${endpoint}`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(payload),
+            });
+
+            if (response.status === 404 || response.status === 405) {
+                continue;
+            }
+
+            endpointFound = true;
+
+            const data: SurveyCompletionResponse = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data.message || `Survey submission failed (status ${response.status}).`);
+            }
+
+            if (!isCompletionSuccess(data)) {
+                throw new Error(data.message || "Survey completion response was invalid.");
+            }
+
+            return data;
+        }
+
+        if (!endpointFound) {
+            fallbackErrorMessage = "Survey completion endpoint is unavailable. Please contact support.";
+        }
+
+        throw new Error(fallbackErrorMessage);
     };
 
     const goNext = async () => {
@@ -204,18 +303,38 @@ export default function SurveysPage() {
         }
 
         setSubmitting(true);
-        try {
-            if (selectedProvider.launchUrl && /^https?:\/\//i.test(selectedProvider.launchUrl)) {
-                window.open(selectedProvider.launchUrl, "_blank", "noopener,noreferrer");
-                return;
-            }
+        setRedirectingToOfferwalls(false);
+        setCompletionMessage("");
 
-            const providerQuery = encodeURIComponent(selectedProvider.name);
-            router.push(`/tasks?offerwall=${providerQuery}`);
+        try {
+            const completionResult = await submitSurveyCompletion(selectedProvider);
+            const successMessage = completionResult.message || "Survey completed successfully. Redirecting to offerwalls...";
+
+            setCompletionMessage(successMessage);
+            setRedirectingToOfferwalls(true);
+            toast.success(successMessage);
+
+            const params = new URLSearchParams({
+                source: "survey",
+                surveyCompleted: "true",
+                offerwall: selectedProvider.name,
+                offerwallId: selectedProvider.id,
+            });
+
+            redirectTimeoutRef.current = window.setTimeout(() => {
+                router.replace(`/tasks?${params.toString()}`);
+            }, SURVEY_REDIRECT_DELAY_MS);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Failed to complete survey. Please try again.";
+            toast.error(message);
+            setCompletionMessage("");
+            setRedirectingToOfferwalls(false);
         } finally {
             setSubmitting(false);
         }
     };
+
+    const controlsBusy = submitting || redirectingToOfferwalls;
 
     return (
         <div className="bg-[#0D0F1E] min-h-screen text-white">
@@ -265,7 +384,7 @@ export default function SurveysPage() {
                             <button
                                 type="button"
                                 onClick={goPrev}
-                                disabled={stepIndex === 0 || submitting}
+                                disabled={stepIndex === 0 || controlsBusy}
                                 className="inline-flex items-center gap-1 rounded-md border border-[#2A2D3E] bg-[#1A1D2E] px-4 py-2 text-sm font-medium text-[#B3B6C7] hover:text-white hover:border-[#3A3E57] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" />
@@ -275,13 +394,18 @@ export default function SurveysPage() {
                             <button
                                 type="button"
                                 onClick={goNext}
-                                disabled={submitting}
+                                disabled={controlsBusy}
                                 className="inline-flex items-center gap-1 rounded-md px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
                             >
                                 {submitting ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Opening
+                                        Submitting
+                                    </>
+                                ) : redirectingToOfferwalls ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Redirecting
                                     </>
                                 ) : (
                                     <>
@@ -291,6 +415,15 @@ export default function SurveysPage() {
                                 )}
                             </button>
                         </div>
+
+                        {redirectingToOfferwalls && (
+                            <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-300">
+                                <span className="inline-flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    {completionMessage || "Survey completed successfully. Redirecting to offerwalls..."}
+                                </span>
+                            </div>
+                        )}
 
                         <div className="mt-8 pt-6 border-t border-[#1E2133]">
                             <p className="text-[#8C8FA8] text-xs sm:text-sm mb-3 text-center">Survey provider</p>

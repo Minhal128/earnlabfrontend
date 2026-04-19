@@ -39,7 +39,13 @@ function TickerItem({
   return (
     <div className="flex items-center gap-2 sm:gap-3 bg-[#1A1D2E] rounded-md sm:rounded-lg px-2 sm:px-[14px] py-1.5 sm:py-2 min-w-max border border-[#2A2D3E]">
       <div className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] rounded bg-[#0E1121] border border-[#2A2D3E] flex items-center justify-center overflow-hidden">
-        <Image src={logoSrc} alt={value} width={24} height={24} className="w-full h-full object-contain" />
+        <Image 
+          src={logoSrc} 
+          alt={value} 
+          width={24} 
+          height={24} 
+          className={`w-full h-full object-contain ${logoSrc.includes('worldcoin') ? 'invert brightness-200 mix-blend-screen' : ''}`} 
+        />
       </div>
       <div className="flex flex-col">
         <span className="text-[9px] sm:text-[11px] font-medium text-[#8C8FA8] leading-[10px] sm:leading-[12px]">

@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { DollarSign, CheckSquare, FileText, Menu, X, Wallet, Users, User, LogOut } from "lucide-react";
+import { DollarSign, CheckSquare, FileText, Menu, X, Wallet, Users, User, LogOut, MessageCircle, Trophy, Share2, MessageSquare, HelpCircle, Settings } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { clearUser } from "@/store/userSlice";
+import { openLiveChatPanel } from "@/utils/liveChat";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string;
+  onClick?: () => void;
   isAction?: boolean;
 }
 
@@ -116,10 +118,13 @@ const BottomNavigation: React.FC = () => {
       return;
     }
     setIsMenuOpen(false);
-    router.push(item.path);
+    if (item.path) {
+      router.push(item.path);
+    }
   };
 
-  const isActive = (path: string) => {
+  const isActive = (path?: string) => {
+    if (!path) return false;
     if (path === "#") return false;
     return pathname === path || pathname.startsWith(path + '/');
   };
@@ -139,21 +144,28 @@ const BottomNavigation: React.FC = () => {
           </div>
           <div className="flex flex-col p-2 max-h-[60vh] overflow-y-auto">
             {[
-              { label: "Account", path: "/account", icon: <User className="w-[18px] h-[18px]" /> },
-              { label: "Profiles", path: "/profile", icon: <Users className="w-[18px] h-[18px]" /> },
-              { label: "Rewards", path: "/rewards", icon: <DollarSign className="w-[18px] h-[18px]" /> },
-              { label: "Leaderboard", path: "/leaderboard", icon: <Users className="w-[18px] h-[18px]" /> },
-              { label: "Referrals", path: "/referrals", icon: <Users className="w-[18px] h-[18px]" /> },
-              { label: "Chat", path: "/chat", icon: <FileText className="w-[18px] h-[18px]" /> },
-              { label: "Support", path: "/support", icon: <FileText className="w-[18px] h-[18px]" /> },
-              { label: "Settings", path: "/settings", icon: <FileText className="w-[18px] h-[18px]" /> },
-              { label: "Cashout", path: "/cashout", icon: <Wallet className="w-[18px] h-[18px]" /> },
+              { id: "account", label: "Account", path: "/account", icon: <User className="w-[18px] h-[18px]" /> },
+              { id: "profiles", label: "Profiles", path: "/profile", icon: <Users className="w-[18px] h-[18px]" /> },
+              { id: "rewards", label: "Rewards", path: "/rewards", icon: <DollarSign className="w-[18px] h-[18px]" /> },
+              { id: "leaderboard", label: "Leaderboard", path: "/leaderboard", icon: <Trophy className="w-[18px] h-[18px]" /> },
+              { id: "referrals", label: "Referrals", path: "/referrals", icon: <Share2 className="w-[18px] h-[18px]" /> },
+              { id: "live-chat", label: "Chat", icon: <MessageSquare className="w-[18px] h-[18px]" />, onClick: () => openLiveChatPanel() },
+              { id: "support", label: "Support", path: "/support", icon: <HelpCircle className="w-[18px] h-[18px]" /> },
+              { id: "settings", label: "Settings", path: "/settings", icon: <Settings className="w-[18px] h-[18px]" /> },
+              { id: "cashout", label: "Cashout", path: "/cashout", icon: <Wallet className="w-[18px] h-[18px]" /> },
             ].map((item) => (
               <button
-                key={item.path}
+                key={item.id}
                 onClick={() => {
                   setIsMenuOpen(false);
-                  router.push(item.path);
+                  if (item.onClick) {
+                    item.onClick();
+                    return;
+                  }
+
+                  if (item.path) {
+                    router.push(item.path);
+                  }
                 }}
                 className="flex items-center gap-3 px-4 py-3.5 text-[#B3B6C7] hover:bg-[#1E2133] hover:text-white rounded-lg transition-colors font-medium"
               >

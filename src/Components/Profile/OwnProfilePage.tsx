@@ -178,9 +178,14 @@ const defaultProgression: ProgressionData = {
   nextLevel: "Amateur",
 };
 
-const OwnProfilePage: React.FC = () => {
+interface OwnProfilePageProps {
+  userId?: string | null;
+}
+
+const OwnProfilePage: React.FC<OwnProfilePageProps> = ({ userId = null }) => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isPrivateProfile, setIsPrivateProfile] = useState(false);
   const [stats, setStats] = useState<ProfileStats>({
     offersCompleted: 0,
     totalEarningsCents: 0,
@@ -195,55 +200,147 @@ const OwnProfilePage: React.FC = () => {
   const getToken = () => typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const fetchProfile = useCallback(async () => {
-    const token = getToken();
-    if (!token) { setLoading(false); return; }
     setLoading(true);
+    setIsPrivateProfile(false);
+
     try {
+      const token = getToken();
+
+      const toUserProfile = (raw: any): UserProfile => ({
+        uuid: raw?._id || raw?.uuid || raw?.id || "",
+        username: raw?.username || "",
+        displayName: raw?.displayName || raw?.username || "",
+        avatarUrl: raw?.avatarUrl || undefined,
+        emoji: raw?.emoji || undefined,
+        countryCode: raw?.countryCode || undefined,
+        balanceCents: Number(raw?.balanceCents || 0),
+        createdAt: raw?.createdAt || raw?.joinedAt || new Date().toISOString(),
+      });
+
+      const toStats = (rawStats: any, fallbackBalanceCents = 0): ProfileStats => ({
+        offersCompleted: Number(rawStats?.offersCompleted || rawStats?.tasksCompleted || 0),
+        totalEarningsCents: Number(rawStats?.totalEarningsCents || fallbackBalanceCents || 0),
+        last30DaysCents: Number(rawStats?.last30DaysCents || rawStats?.last30DaysEarningsCents || 0),
+        referralCount: Number(rawStats?.referralCount || rawStats?.successfulReferrals || 0),
+      });
+
+      if (userId) {
+        const encodedUserId = encodeURIComponent(userId);
+        const candidateEndpoints = [
+          `${apiBase}/api/v1/users/${encodedUserId}`,
+          `${apiBase}/api/v1/games/user/${encodedUserId}`,
+        ];
+
+        let selectedPayload: any = null;
+
+        for (const endpoint of candidateEndpoints) {
+          const headers: Record<string, string> = {};
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
+          }
+
+          const response = await fetch(endpoint, {
+            headers,
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            continue;
+          }
+
+          selectedPayload = await response.json().catch(() => null);
+          if (selectedPayload) {
+            break;
+          }
+        }
+
+        if (!selectedPayload) {
+          setProfile(null);
+          setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+          setProgression(defaultProgression);
+          setBadges([]);
+          setRecentOffers([]);
+          return;
+        }
+
+        const payload = selectedPayload?.data || selectedPayload;
+        if (payload?.isPrivate) {
+          setIsPrivateProfile(true);
+          setProfile(null);
+          setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+          setProgression(defaultProgression);
+          setBadges([]);
+          setRecentOffers([]);
+          return;
+        }
+
+        const selectedRawProfile = payload?.profile || payload?.user || payload;
+        const normalizedProfile = toUserProfile(selectedRawProfile);
+        setProfile(normalizedProfile);
+
+        setStats(toStats(payload?.stats, normalizedProfile.balanceCents));
+        setProgression(payload?.progression || defaultProgression);
+        setBadges(Array.isArray(payload?.badges) ? payload.badges : []);
+        setRecentOffers(Array.isArray(payload?.recentOffers) ? payload.recentOffers : []);
+        return;
+      }
+
+      if (!token) {
+        setProfile(null);
+        setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+        setProgression(defaultProgression);
+        setBadges([]);
+        setRecentOffers([]);
+        return;
+      }
+
       const res = await fetch(`${apiBase}/api/v1/user/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (res.ok) {
         const data = await res.json();
         const p = data.user || data.profile || data;
-        setProfile({
-          uuid: p._id || p.uuid || "",
-          username: p.username || "",
-          displayName: p.displayName || p.username || "",
-          avatarUrl: p.avatarUrl || undefined,
-          emoji: p.emoji || undefined,
-          countryCode: p.countryCode || undefined,
-          balanceCents: p.balanceCents || 0,
-          createdAt: p.createdAt || new Date().toISOString(),
-        });
-        if (data.stats) {
-          setStats({
-            offersCompleted: data.stats.offersCompleted || data.stats.tasksCompleted || 0,
-            totalEarningsCents: data.stats.totalEarningsCents || p.balanceCents || 0,
-            last30DaysCents: data.stats.last30DaysCents || data.stats.last30DaysEarningsCents || 0,
-            referralCount: data.stats.referralCount || data.stats.successfulReferrals || 0,
-          });
-        }
+        const normalizedProfile = toUserProfile(p);
+        setProfile(normalizedProfile);
+        setStats(toStats(data.stats, normalizedProfile.balanceCents));
         setProgression(data.progression || defaultProgression);
         setBadges(Array.isArray(data.badges) ? data.badges : []);
       }
 
-      // Also fetch recent offers
       const uid = (() => {
-        try { const r = localStorage.getItem("user"); return r ? (JSON.parse(r)._id || JSON.parse(r).id || null) : null; } catch { return null; }
+        try {
+          const raw = localStorage.getItem("user");
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return parsed?._id || parsed?.id || null;
+        } catch {
+          return null;
+        }
       })();
+
       if (uid) {
         const offersRes = await fetch(`${apiBase}/api/v1/games/user/${uid}`);
         if (offersRes.ok) {
           const offersData = await offersRes.json();
-          if (offersData.recentOffers) setRecentOffers(offersData.recentOffers);
-          if (offersData.stats && !stats.offersCompleted) {
-            setStats(offersData.stats);
+          setRecentOffers(Array.isArray(offersData?.recentOffers) ? offersData.recentOffers : []);
+          if (offersData?.stats) {
+            setStats((prev) => {
+              if (prev.offersCompleted > 0) return prev;
+              return toStats(offersData.stats, prev.totalEarningsCents);
+            });
           }
         }
       }
-    } catch {}
+    } catch {
+      setProfile(null);
+      setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+      setProgression(defaultProgression);
+      setBadges([]);
+      setRecentOffers([]);
+    }
     finally { setLoading(false); }
-  }, []);
+  }, [userId]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
@@ -457,9 +554,15 @@ const OwnProfilePage: React.FC = () => {
           </>
         )}
 
-        {!loading && !profile && (
+        {!loading && isPrivateProfile && (
           <div className="flex flex-1 items-center justify-center py-20">
-            <p className="text-[#8C8FA8]">Could not load profile. Please sign in.</p>
+            <p className="text-[#8C8FA8]">This user profile is private.</p>
+          </div>
+        )}
+
+        {!loading && !isPrivateProfile && !profile && (
+          <div className="flex flex-1 items-center justify-center py-20">
+            <p className="text-[#8C8FA8]">{userId ? "Could not load user profile." : "Could not load profile. Please sign in."}</p>
           </div>
         )}
     </div>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from '@/contexts/SocketProvider';
 import Image from "next/image";
-import UserProfileModal from "../UserProfileModal";
+import UserProfileModal from "@/Components/UserProfileModal";
 
 import PayPalImg from "../../../public/assets/paypal.png";
 import SteamImg from "../../../public/assets/cb.png";
@@ -24,14 +24,14 @@ const FeedBar: React.FC = () => {
     const [events, setEvents] = useState<FeedEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showUserProfile, setShowUserProfile] = useState(false);
 
     const { socket } = useSocket();
 
     const handleUserClick = (userId?: string) => {
         if (userId) {
             setSelectedUserId(userId);
-            setShowProfileModal(true);
+            setShowUserProfile(true);
         }
     };
 
@@ -92,58 +92,59 @@ const FeedBar: React.FC = () => {
     };
 
     return (
-        <div className="rounded-xl md:rounded-2xl bg-[#1A1D2E] border border-[#2A2D3E] p-3 sm:p-4 md:p-5">
-            <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Live Activity
-            </h3>
-            
-            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
-                <div className="flex gap-2 sm:gap-3 pb-1">
-                    {loading && (
-                        <div className="text-sm text-[#9CA3AF]">Loading activity...</div>
-                    )}
+        <>
+            <div className="rounded-xl md:rounded-2xl bg-[#1A1D2E] border border-[#2A2D3E] p-3 sm:p-4 md:p-5">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Live Activity
+                </h3>
+                
+                <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+                    <div className="flex gap-2 sm:gap-3 pb-1">
+                        {loading && (
+                            <div className="text-sm text-[#9CA3AF]">Loading activity...</div>
+                        )}
 
-                    {!loading && events.length === 0 && (
-                        <div className="text-sm text-[#9CA3AF]">No recent activity</div>
-                    )}
+                        {!loading && events.length === 0 && (
+                            <div className="text-sm text-[#9CA3AF]">No recent activity</div>
+                        )}
 
-                    {!loading && events.map((ev, idx) => (
-                        <div
-                            key={ev._id || idx}
-                            onClick={() => handleUserClick(ev.userId)}
-                            className="flex items-center cursor-pointer gap-2 bg-[#252840] hover:bg-[#2A2D3E] border border-[#2A2D3E] text-white rounded-lg px-2.5 sm:px-3 py-2 min-w-[160px] sm:min-w-[180px] flex-shrink-0 transition-colors duration-200 group"
-                        >
-                            <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-500/10">
-                                <Image
-                                    src={pickIcon(ev.type)}
-                                    alt={ev.type || "event"}
-                                    className="object-contain w-4 h-4 sm:w-5 sm:h-5"
-                                />
+                        {!loading && events.map((ev, idx) => (
+                            <div
+                                key={ev._id || idx}
+                                onClick={() => handleUserClick(ev.userId)}
+                                className="flex items-center cursor-pointer gap-2 bg-[#252840] hover:bg-[#2A2D3E] border border-[#2A2D3E] text-white rounded-lg px-2.5 sm:px-3 py-2 min-w-[160px] sm:min-w-[180px] flex-shrink-0 transition-colors duration-200 group"
+                            >
+                                <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-500/10">
+                                    <Image
+                                        src={pickIcon(ev.type)}
+                                        alt={ev.type || "event"}
+                                        className="object-contain w-4 h-4 sm:w-5 sm:h-5"
+                                    />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="font-medium text-[11px] sm:text-xs leading-tight text-white truncate">
+                                        {ev.text}
+                                    </span>
+                                    <span className="text-[9px] sm:text-[10px] text-[#9CA3AF] leading-tight">
+                                        {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString() : "now"}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="font-medium text-[11px] sm:text-xs leading-tight text-white truncate">
-                                    {ev.text}
-                                </span>
-                                <span className="text-[9px] sm:text-[10px] text-[#9CA3AF] leading-tight">
-                                    {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString() : "now"}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* User Profile Modal */}
-            <UserProfileModal 
+            <UserProfileModal
                 userId={selectedUserId}
-                isOpen={showProfileModal}
+                isOpen={showUserProfile}
                 onClose={() => {
-                    setShowProfileModal(false);
+                    setShowUserProfile(false);
                     setSelectedUserId(null);
                 }}
             />
-        </div>
+        </>
     );
 };
 

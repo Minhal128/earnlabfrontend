@@ -15,7 +15,6 @@ import {
   setProfile as setProfileAction,
   setToken as setTokenAction,
 } from "@/store/userSlice";
-import UserProfileModal from "../UserProfileModal";
 
 import ProfileImg from "../../../public/assets/profile.png";
 import Af1 from "../../../public/assets/af1.png";
@@ -172,19 +171,12 @@ const ProfileDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>({});
   const [tasks, setTasks] = useState<any[]>([]);
   const { socket } = useSocket();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Check auth on mount
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     setIsAuthenticated(!!token);
   }, []);
-
-  const handleUserClick = (userId: string) => {
-    setSelectedUserId(userId);
-    setShowProfileModal(true);
-  };
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -555,16 +547,6 @@ const ProfileDashboard: React.FC = () => {
           </div>
         </main>
       </div>
-
-      {/* User Profile Modal */}
-      <UserProfileModal 
-        userId={selectedUserId}
-        isOpen={showProfileModal}
-        onClose={() => {
-          setShowProfileModal(false);
-          setSelectedUserId(null);
-        }}
-      />
     </div>
   );
 };

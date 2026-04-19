@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import OffersSurveysRewardsDisclaimer from "@/Components/Shared/OffersSurveysRewardsDisclaimer";
+import NotificationDropdown from "@/Components/HomePage/NotificationDropdown";
+import { FaAndroid, FaApple } from "react-icons/fa";
 
 // ─── Ticker animation injected once ─────────────────────────────────────────
 const TICKER_CSS = `
@@ -20,15 +22,6 @@ const TICKER_CSS = `
 `;
 
 // ─── Inline SVG icons ────────────────────────────────────────────────────────
-
-const IcoBell = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
-      stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const IcoGrid = () => (
   <svg width="20" height="20" viewBox="0 0 20.5 20.5" fill="none">
@@ -54,32 +47,27 @@ const IcoSearch = () => (
   </svg>
 );
 
-const IcoSort = () => (
-  <svg width="6" height="12" viewBox="0 0 6 12" fill="none">
-    <path d="M3 12L0 7.5H6L3 12ZM3 0L6 4.5H0L3 0Z" fill="#8C8FA8" />
-  </svg>
-);
-
-const IcoChevronDown = () => (
-  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-    <path d="M0.5 0.5L5 7L9.5 0.5H0.5Z" fill="white" />
-  </svg>
-);
-
-const IcoChevronUpGray = () => (
-  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-    <path d="M0.5 7.5L5 1L9.5 7.5H0.5Z" fill="#8C8FA8" />
-  </svg>
-);
-
-const IcoApple = () => (
-  <svg width="11" height="14" viewBox="0 0 15.5 18.3" fill="none">
+const IcoBell = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path
-      d="M10.23 1.68L11.03 0.24a.28.28 0 0 0-.49-.28L9.94 1.54A7.75 7.75 0 0 0 7.75 1.08 7.75 7.75 0 0 0 5.56 1.54L4.75-.04a.28.28 0 0 0-.49.28l.8 1.44A6.5 6.5 0 0 0 1 7.5h13.49a6.5 6.5 0 0 0-4.26-5.82ZM5.09 5.75a.86.86 0 1 1 0-1.72.86.86 0 0 1 0 1.72Zm5.32 0a.86.86 0 1 1 0-1.72.86.86 0 0 1 0 1.72ZM.9 8.57v5.14a1.14 1.14 0 0 0 2.27 0V8.57H.9Zm12.9 0a1.14 1.14 0 0 1 1.14 1.14v3.85a1.14 1.14 0 0 1-2.27 0V8.57h1.13ZM2.69 13.47v3.53a1.14 1.14 0 0 0 2.27 0v-3.53H2.69Zm3.77 0v3.53a1.14 1.14 0 0 0 2.27 0v-3.53H6.46Zm5.35 0v3.53a1.14 1.14 0 0 0-2.27 0v-3.53h2.27ZM1 8.57h13.49v4.9H1V8.57Z"
-      fill="#B3B6C7"
+      d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
+
+const IcoCashout = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M17.5 10.5C18.8807 10.5 20 11.6193 20 13V18C20 19.3807 18.8807 20.5 17.5 20.5H6.5C5.11929 20.5 4 19.3807 4 18V13C4 11.6193 5.11929 10.5 6.5 10.5H17.5ZM17.5 3.5C18.8807 3.5 20 4.61929 20 6V8.5H4V6C4 4.61929 5.11929 3.5 6.5 3.5H17.5Z" fill="white" />
+  </svg>
+);
+
+const IcoAndroid = () => <FaAndroid size={11} color="#B3B6C7" aria-hidden="true" />;
+
+const IcoApple = () => <FaApple size={11} color="#B3B6C7" aria-hidden="true" />;
 
 const IcoThumbUp = () => (
   <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
@@ -96,6 +84,31 @@ const IcoThumbDown = () => (
       d="M4 9H6.5V12a1 1 0 0 0 1 1 1 1 0 0 0 1-1V9H11a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11 1H4A1.5 1.5 0 0 0 2.62 1.9l-2 4A1.5 1.5 0 0 0 .5 6.5V7.5A1.5 1.5 0 0 0 2 9h2Z"
       fill="#8C8FA8"
     />
+  </svg>
+);
+
+const IcoViews = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"
+      stroke="#8C8FA8"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="12" cy="12" r="3" fill="#8C8FA8" />
+  </svg>
+);
+
+const IcoChevronLeftGray = () => (
+  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+    <path d="M9.5 0.5L5 7L0.5 0.5H9.5Z" fill="#8C8FA8" />
+  </svg>
+);
+
+const IcoChevronRightGray = () => (
+  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+    <path d="M0.5 0.5L5 7L9.5 0.5H0.5Z" fill="#8C8FA8" />
   </svg>
 );
 
@@ -210,6 +223,8 @@ interface Provider {
   type: string;
   displayName: string;
   progress: number;
+  likes?: string;
+  views?: string;
   logoUrl?: string;
   launchUrl?: string;
   sourceKind?: "survey" | "offerwall";
@@ -420,7 +435,7 @@ const FilterTabItem: React.FC<{
     <div className="flex flex-col items-center gap-[2px]">
       <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
       <p className={`text-[13px] font-medium leading-5 text-center ${active ? "text-white" : "text-[#8C8FA8]"}`}>
-        {label}
+        <span className="whitespace-nowrap">{label}</span>
       </p>
     </div>
     <div className="absolute -top-0.5 -right-3 w-4 h-4 bg-[rgba(126,129,147,0.2)] rounded-[5px] flex items-center justify-center">
@@ -436,24 +451,11 @@ const GameCard: React.FC<{
   highlighted?: boolean;
 }> = ({ image, title, price, highlighted = false }) => (
   <div
-    className="relative rounded-[10px] overflow-visible flex-1 bg-[#151728] flex-shrink-0"
+    className="relative rounded-[10px] overflow-visible bg-[#151728] flex-shrink-0 min-w-[220px] sm:min-w-[240px] md:min-w-0 md:flex-1"
     style={{
       border: highlighted ? "1.5px solid #4DD6C1" : "1px solid #1E2133",
-      minWidth: "0",
     }}
   >
-    {highlighted && (
-      <div
-        className="absolute rounded-b-[3px] h-[11px]"
-        style={{
-          top: "-3px",
-          left: "12%",
-          width: "76%",
-          background: "#73DFCE",
-          zIndex: 10,
-        }}
-      />
-    )}
     <div className="w-full h-[135px] relative overflow-hidden rounded-t-[9px]">
       <img src={image} alt={title} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-black/20" />
@@ -472,17 +474,19 @@ const ProviderCard: React.FC<{
   type: string;
   displayName: string;
   progress: number;
+  likes?: string;
+  views?: string;
   logoUrl?: string;
   onClick?: () => void;
-}> = ({ type, displayName, progress, logoUrl, onClick }) => {
+}> = ({ type, displayName, progress, likes = "2.6K", views = "10K", logoUrl, onClick }) => {
   const Logo = LOGO_MAP[type] ?? MonlixLogo;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="relative flex-1 rounded-[10px] bg-[#151728] flex flex-col overflow-hidden text-left transition-transform hover:scale-[1.01] cursor-pointer"
-      style={{ border: "1px solid #1E2133", minWidth: "0" }}
+      className="relative rounded-[10px] bg-[#151728] flex flex-col overflow-hidden text-left transition-colors cursor-pointer flex-shrink-0 min-w-[220px] sm:min-w-[240px] md:min-w-0 md:flex-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4DD6C1]"
+      style={{ border: "1px solid #1E2133" }}
       aria-label={`Open ${displayName} offers`}
     >
       <div className="h-[135px] w-full flex items-center justify-center bg-[#0F111E] relative">
@@ -509,22 +513,17 @@ const ProviderCard: React.FC<{
         </div>
         <div className="flex items-center gap-2">
           <div
-            className="flex flex-col gap-[6px] bg-[#151728] border border-[#37417B] px-2 py-[6px] rounded-[8px]"
-            style={{ width: "126px" }}
+            className="w-full flex items-center justify-between bg-[#151728] border border-[#37417B] px-2 py-[6px] rounded-[8px]"
           >
-            <div className="flex items-center gap-1">
-              <div className="w-[11px] h-[10px] rounded-sm bg-[#4DD6C1] opacity-70" />
-              <div className="w-[44px] h-[5px] rounded-full bg-[#4DD6C1]" />
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-[11px] h-[10px] rounded-sm bg-[#4DD6C1] opacity-40" />
-              <div className="w-[30px] h-[5px] rounded-full bg-[#1E2133]" />
-            </div>
-          </div>
-          <div className="flex items-center gap-1 ml-auto">
-            <div className="flex items-center gap-[3px]">
-              <IcoThumbUp />
-              <span className="text-[11px] text-[#8C8FA8]">0</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-[3px]">
+                <IcoThumbUp />
+                <span className="text-[11px] text-[#B3B6C7]">{likes}</span>
+              </div>
+              <div className="flex items-center gap-[3px]">
+                <IcoViews />
+                <span className="text-[11px] text-[#B3B6C7]">{views}</span>
+              </div>
             </div>
             <div className="flex items-center gap-[3px]">
               <IcoThumbDown />
@@ -538,43 +537,91 @@ const ProviderCard: React.FC<{
 
 // ─── Section components ───────────────────────────────────────────────────────
 
-const Navbar: React.FC = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 h-[84px] bg-[#14162A] border-b border-[#1E2133]">
-    <div className="max-w-[1440px] mx-auto px-16 h-full flex items-center justify-between">
-      <div className="flex items-center">
-        <img src="/logo-labwards.png" alt="Lab Wards" className="h-11 w-auto object-contain" />
-      </div>
-      <div className="flex items-center gap-4">
-        <button className="relative p-2">
-          <IcoBell />
-          <span className="absolute top-1 right-1 w-4 h-4 bg-[#0AC07D] rounded-full text-[9px] font-bold text-white flex items-center justify-center">
-            3
-          </span>
-        </button>
-        <div className="flex items-center gap-[6px] bg-[#1E2133] border border-[#262F3E] px-3 py-2 rounded-[8px]">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="7" stroke="#8C8FA8" strokeWidth="1.5" />
-            <text x="5.5" y="11.5" fontSize="8" fontWeight="bold" fill="#8C8FA8">$</text>
-          </svg>
-          <span className="text-white font-bold text-[14px]">$120</span>
-          <span className="text-[#8C8FA8] text-[12px]">USD</span>
-        </div>
+const EarnLegacyTopControls: React.FC<{
+  notificationCount: number;
+  profileInitial: string;
+  onHomeClick: () => void;
+  onBellClick: () => void;
+  onWalletClick: () => void;
+  onCashoutClick: () => void;
+  onProfileClick: () => void;
+}> = ({
+  notificationCount,
+  profileInitial,
+  onHomeClick,
+  onBellClick,
+  onWalletClick,
+  onCashoutClick,
+  onProfileClick,
+}) => (
+  <div className="sticky top-0 z-40 bg-[#14162A] border-b border-[#1E2133]">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-16 py-2 md:py-3">
+      <div className="flex items-center justify-between gap-3">
         <button
-          className="px-5 py-2 rounded-[8px] text-white font-semibold text-[14px]"
-          style={{ background: "linear-gradient(135deg,#0AC07D,#14A290)", boxShadow: "0 7px 19px rgba(20,169,144,0.3)" }}
+          type="button"
+          onClick={onHomeClick}
+          className="flex items-center"
+          aria-label="Go to home"
         >
-          Cashout
+          <img src="/logo-labwards.png" alt="Labwards" className="h-9 sm:h-10 md:h-11 w-auto object-contain" />
         </button>
-        <button className="w-9 h-9 bg-[#0AC07D] rounded-full flex items-center justify-center font-bold text-white text-[14px]">
-          B
+
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onBellClick}
+          className="relative h-[42px] w-[42px] sm:h-[44px] sm:w-[44px] rounded-[8px] bg-[#1E2133] border border-[#30334A] flex items-center justify-center transition-opacity hover:opacity-90"
+          aria-label="Open notifications"
+        >
+          <IcoBell />
+          {notificationCount > 0 && (
+            <span className="absolute top-1 right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-[#0AC07D] text-white text-[9px] leading-[14px] font-bold text-center">
+              {notificationCount > 99 ? "99+" : notificationCount}
+            </span>
+          )}
         </button>
+
+        <button
+          type="button"
+          onClick={onWalletClick}
+          className="h-[42px] sm:h-[44px] rounded-[8px] bg-[#1E2133] border border-[#30334A] px-2 sm:px-4 flex items-center gap-1.5 sm:gap-2 transition-opacity hover:opacity-90"
+          aria-label="Open wallet"
+        >
+          <span className="text-[#B3B6C7] text-[14px] leading-none font-bold">$</span>
+          <span className="text-white font-bold text-[20px] sm:text-[22px] leading-none">120</span>
+          <span className="hidden sm:inline text-[#B3B6C7] text-[14px] leading-none">USD</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onCashoutClick}
+          className="h-[42px] sm:h-[44px] rounded-[8px] px-3 sm:px-5 flex items-center gap-2 text-white font-bold text-[15px] leading-none transition-opacity hover:opacity-90"
+          style={{
+            background: "linear-gradient(12.07deg, rgba(255, 255, 255, 0) 16.27%, rgba(255, 255, 255, 0.4) 93.68%), #099F86",
+            boxShadow: "0px 7px 19px rgba(20,169,144,0.3)",
+          }}
+          aria-label="Go to cashout"
+        >
+          <IcoCashout />
+          <span className="hidden sm:inline">Cashout</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onProfileClick}
+          className="h-[42px] sm:h-[44px] w-[50px] sm:w-[54px] rounded-[8px] bg-[#1E2133] border border-[#0AC07D] text-white font-bold text-[18px] leading-none transition-opacity hover:opacity-90"
+          aria-label="Open account"
+        >
+          {profileInitial}
+        </button>
+        </div>
       </div>
     </div>
-  </nav>
+  </div>
 );
 
 const ActivityTicker: React.FC = () => (
-  <div className="mx-16 mt-[22px] h-[72px] overflow-hidden rounded-[10px] bg-[#151728] border border-[#1E2133] flex items-center">
+  <div className="mx-4 sm:mx-6 md:mx-16 mt-4 md:mt-[22px] h-[72px] overflow-hidden rounded-[10px] bg-[#151728] border border-[#1E2133] flex items-center">
     <div className="ticker-track px-3">
       {TICKER_ITEMS.map((item, idx) => (
         <TickerCard key={idx} {...item} />
@@ -583,6 +630,49 @@ const ActivityTicker: React.FC = () => (
   </div>
 );
 
+const useHorizontalSlider = () => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const maxScrollLeft = element.scrollWidth - element.clientWidth;
+    setCanPrev(element.scrollLeft > 2);
+    setCanNext(element.scrollLeft < maxScrollLeft - 2);
+  }, []);
+
+  const scrollPrev = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    element.scrollBy({ left: -Math.max(260, element.clientWidth * 0.7), behavior: "smooth" });
+  }, []);
+
+  const scrollNext = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    element.scrollBy({ left: Math.max(260, element.clientWidth * 0.7), behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    updateScrollState();
+    element.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    return () => {
+      element.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [updateScrollState]);
+
+  return { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState };
+};
+
 const FilterBar: React.FC<{
   activeFilter: EarnFilterKey;
   filterCounts: Record<EarnFilterKey, number>;
@@ -590,8 +680,8 @@ const FilterBar: React.FC<{
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
 }> = ({ activeFilter, filterCounts, onFilterChange, searchTerm, onSearchTermChange }) => (
-  <div className="mt-4 h-[77px] flex items-center justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] px-4">
-    <div className="flex items-center gap-7">
+  <div className="mt-4 flex flex-col gap-3 md:gap-0 md:h-[77px] md:flex-row md:items-center md:justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] p-3 md:px-4">
+    <div className="flex items-center gap-5 md:gap-7 overflow-x-auto scrollbar-hide w-full pb-1 md:pb-0">
       <FilterTabItem
         filter="all"
         label="View all"
@@ -674,8 +764,8 @@ const FilterBar: React.FC<{
         onClick={onFilterChange}
       />
     </div>
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px]" style={{ width: "361px" }}>
+    <div className="flex items-center gap-2 w-full md:w-auto">
+      <div className="flex flex-1 md:flex-none items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] w-full md:w-[361px]">
         <IcoSearch />
         <input
           type="text"
@@ -685,52 +775,58 @@ const FilterBar: React.FC<{
           className="w-full bg-transparent text-[#B3B6C7] text-[14px] font-medium placeholder:text-[#6B6E8A] outline-none"
         />
       </div>
-      <div className="flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] cursor-pointer" style={{ width: "117px" }}>
-        <IcoSort />
-        <p className="text-[#6B6E8A] text-[14px] font-medium m-0 flex-1">Sort by</p>
-        <IcoChevronDown />
-      </div>
-      <div className="flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] cursor-pointer" style={{ width: "117px" }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x=".5" y=".5" width="5.5" height="5.5" stroke="#8C8FA8" />
-          <rect x="7.5" y=".5" width="5.5" height="5.5" stroke="#8C8FA8" />
-          <rect x=".5" y="7.5" width="5.5" height="5.5" stroke="#8C8FA8" />
-          <circle cx="10.67" cy="10.67" r="2.67" stroke="#8C8FA8" />
-        </svg>
-        <p className="text-[#6B6E8A] text-[14px] font-medium m-0 flex-1">Providers</p>
-        <IcoChevronDown />
-      </div>
     </div>
   </div>
 );
 
-const SectionHeader: React.FC<{ title: string; onViewAll?: () => void }> = ({ title, onViewAll }) => (
-  <div className="flex items-center justify-between mb-3">
-    <div className="flex items-center gap-4">
-      <h2 className="text-white font-bold text-[28px] tracking-[0.56px] leading-[34px] m-0">{title}</h2>
-      <div className="flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-3 py-2 rounded-[5px]">
-        <svg width="14" height="18" viewBox="0 0 15.5 18.3" fill="none">
-          <path d="M10.6 1.68L11.3.24a.24.24 0 0 0-.43-.25L10.15 1.5A6.7 6.7 0 0 0 7.75 1.08 6.7 6.7 0 0 0 5.35 1.5L4.63-.01a.24.24 0 0 0-.43.25l.7 1.44A5.6 5.6 0 0 0 1 7.5h13.5A5.6 5.6 0 0 0 10.6 1.68ZM5.1 5.75A.75.75 0 1 1 5.1 4.25.75.75 0 0 1 5.1 5.75Zm5.3 0A.75.75 0 1 1 10.4 4.25.75.75 0 0 1 10.4 5.75ZM1 8.57v5a1 1 0 0 0 2 0v-5H1Zm11.5 0a1 1 0 0 1 1 1v3.85a1 1 0 0 1-2 0V8.57h1ZM2.7 13.47v3.5a1 1 0 0 0 2 0v-3.5H2.7Zm3.77 0v3.5a1 1 0 0 0 2 0v-3.5H6.47Zm5.35 0v3.5a1 1 0 0 0-2 0v-3.5h2ZM1 8.57h13.5v4.9H1V8.57Z" fill="#B3B6C7" />
-        </svg>
-        <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-          <path d="M.44 5.95v5.84a1 1 0 0 0 2 0V5.95a1 1 0 0 0-2 0Zm10.68-1.13A5.28 5.28 0 0 0 7.75 1.08a5.28 5.28 0 0 0-3.37 3.74h6.74ZM11.56 5.95v5.84a1 1 0 0 1-2 0V5.95a1 1 0 0 1 2 0ZM3.37 13.47v3.53a1 1 0 0 0 2 0v-3.53H3.37Zm3.75 0v3.53a1 1 0 0 0 2 0v-3.53H7.12Zm3.43 0v3.53a1 1 0 0 1-2 0v-3.53h2ZM3.37 12.26H8.63V5.75H3.37v6.51Z" fill="#B3B6C7" />
-        </svg>
+const SectionHeader: React.FC<{
+  title: string;
+  onViewAll?: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  canPrev?: boolean;
+  canNext?: boolean;
+}> = ({ title, onViewAll, onPrev, onNext, canPrev = false, canNext = false }) => (
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+    <div className="flex items-center gap-2 sm:gap-4">
+      <h2 className="text-white font-bold text-[22px] sm:text-[24px] md:text-[28px] tracking-[0.56px] leading-[34px] m-0">{title}</h2>
+      <div className="hidden md:flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-3 py-2 rounded-[5px]">
+        <IcoAndroid />
+        <IcoApple />
         <svg width="17" height="10" viewBox="0 0 17 10" fill="none">
           <path d="M1 1H7.5V5H1V1ZM1 6H7.5V9H1V6ZM9 1H16V9H9V1Z" stroke="#B3B6C7" strokeWidth="1.3" fill="none" />
         </svg>
       </div>
     </div>
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-[11px] bg-[#1E2133] px-3 py-[5px] rounded-[9px]">
-        <IcoChevronUpGray />
-        <div className="w-px h-[22px] bg-[#1E2133]" />
-        <IcoChevronUpGray />
-      </div>
+    <div className="flex w-full sm:w-auto sm:justify-end items-center gap-3">
+      {(onPrev || onNext) && (
+        <div className="flex items-center gap-[8px] bg-[#1E2133] border border-[#262F3E] px-2.5 py-[5px] rounded-[9px]">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={!canPrev}
+            className="w-4 h-4 flex items-center justify-center disabled:opacity-35"
+            aria-label={`Previous ${title} slide`}
+          >
+            <IcoChevronLeftGray />
+          </button>
+          <div className="w-px h-[16px] bg-[#30334A]" />
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canNext}
+            className="w-4 h-4 flex items-center justify-center disabled:opacity-35"
+            aria-label={`Next ${title} slide`}
+          >
+            <IcoChevronRightGray />
+          </button>
+        </div>
+      )}
       <button
         type="button"
         onClick={onViewAll}
         disabled={!onViewAll}
-        className="px-3 py-[8px] rounded-[8px] text-white font-bold text-[14px] leading-4"
+        className="w-full sm:w-auto px-3 py-[8px] rounded-[8px] text-white font-bold text-[14px] leading-4"
         aria-label={`View all ${title}`}
         style={{ background: "linear-gradient(135deg,#0AC07D,#14A290)", boxShadow: "0 7px 19px rgba(20,169,144,0.3)" }}
       >
@@ -740,57 +836,89 @@ const SectionHeader: React.FC<{ title: string; onViewAll?: () => void }> = ({ ti
   </div>
 );
 
-const FeaturedSection: React.FC<{ games: FeaturedGame[]; onViewAll?: () => void }> = ({ games, onViewAll }) => (
-  <div className="mt-8 flex flex-col gap-3">
-    <SectionHeader title="Featured offers" onViewAll={onViewAll} />
-    {games.length === 0 ? (
-      <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
-        No featured results for the selected filter.
-      </div>
-    ) : (
-      <div className="flex gap-3">
-        {games.map((game) => (
-          <GameCard
-            key={game.title}
-            image={game.image}
-            title={game.title}
-            price={game.price}
-            highlighted={game.highlighted}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-);
+const FeaturedSection: React.FC<{ games: FeaturedGame[]; onViewAll?: () => void }> = ({ games, onViewAll }) => {
+  const { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState } = useHorizontalSlider();
+
+  useEffect(() => {
+    updateScrollState();
+  }, [games.length, updateScrollState]);
+
+  return (
+    <div className="mt-8 flex flex-col gap-3">
+      <SectionHeader
+        title="Featured offers"
+        onViewAll={onViewAll}
+        onPrev={scrollPrev}
+        onNext={scrollNext}
+        canPrev={canPrev}
+        canNext={canNext}
+      />
+      {games.length === 0 ? (
+        <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
+          No featured results for the selected filter.
+        </div>
+      ) : (
+        <div ref={containerRef} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          {games.map((game) => (
+            <GameCard
+              key={game.title}
+              image={game.image}
+              title={game.title}
+              price={game.price}
+              highlighted={game.highlighted}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ProviderSection: React.FC<{
   title: string;
   providers: Provider[];
   onViewAll?: () => void;
   onProviderClick?: (provider: Provider) => void;
-}> = ({ title, providers, onViewAll, onProviderClick }) => (
-  <div className="mt-10 flex flex-col gap-3">
-    <SectionHeader title={title} onViewAll={onViewAll} />
-    {providers.length === 0 ? (
-      <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
-        No providers found for the selected filter.
-      </div>
-    ) : (
-      <div className="flex gap-3">
-        {providers.map((p) => (
-          <ProviderCard
-            key={p.id}
-            type={p.type}
-            displayName={p.displayName}
-            progress={p.progress}
-            logoUrl={p.logoUrl}
-            onClick={() => onProviderClick?.(p)}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-);
+}> = ({ title, providers, onViewAll, onProviderClick }) => {
+  const { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState } = useHorizontalSlider();
+
+  useEffect(() => {
+    updateScrollState();
+  }, [providers.length, updateScrollState]);
+
+  return (
+    <div className="mt-10 flex flex-col gap-3">
+      <SectionHeader
+        title={title}
+        onViewAll={onViewAll}
+        onPrev={scrollPrev}
+        onNext={scrollNext}
+        canPrev={canPrev}
+        canNext={canNext}
+      />
+      {providers.length === 0 ? (
+        <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
+          No providers found for the selected filter.
+        </div>
+      ) : (
+        <div ref={containerRef} className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          {providers.map((p) => (
+            <ProviderCard
+              key={p.id}
+              type={p.type}
+              displayName={p.displayName}
+              progress={p.progress}
+              likes={p.likes}
+              views={p.views}
+              logoUrl={p.logoUrl}
+              onClick={() => onProviderClick?.(p)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ─── Main page component ──────────────────────────────────────────────────────
 
@@ -799,6 +927,42 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<EarnFilterKey>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [providers, setProviders] = useState<Provider[]>(PROVIDERS);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [profileInitial, setProfileInitial] = useState("B");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const userRaw = localStorage.getItem("user");
+      if (userRaw) {
+        const user = JSON.parse(userRaw) as { displayName?: string; username?: string; email?: string };
+        const initial = (user.displayName || user.username || user.email || "B").charAt(0).toUpperCase();
+        if (initial) setProfileInitial(initial);
+      }
+    } catch {
+      // Keep default initial when storage parsing fails
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${api}/api/v1/user/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.notifications)) {
+          const unreadCount = data.notifications.filter((n: { read?: boolean }) => !n.read).length;
+          setNotificationCount(unreadCount);
+        }
+      })
+      .catch(() => {
+        // Keep fallback badge count state when API fails
+      });
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -836,6 +1000,8 @@ const EARNINGSPAGEComponent: React.FC = () => {
             type: (ow.type || displayName).toLowerCase().replace(/\s+/g, ""),
             displayName,
             progress,
+            likes: "2.6K",
+            views: "10K",
             logoUrl: ow.metadata?.logoUrl || ow.logoUrl,
             launchUrl: ow.callbackUrl || ow.metadata?.launchUrl || ow.metadata?.offerUrl,
             sourceKind: /survey/i.test(kindHint) ? "survey" : "offerwall",
@@ -844,7 +1010,14 @@ const EARNINGSPAGEComponent: React.FC = () => {
         });
 
         if (mounted && mappedProviders.length > 0) {
-          setProviders(mappedProviders);
+          const stableProviderCount = PROVIDERS.length;
+          const stabilizedProviders = mappedProviders.slice(0, stableProviderCount);
+
+          if (stabilizedProviders.length < stableProviderCount) {
+            stabilizedProviders.push(...PROVIDERS.slice(stabilizedProviders.length, stableProviderCount));
+          }
+
+          setProviders(stabilizedProviders);
         }
       } catch {
         // Keep local fallback providers when API request fails
@@ -921,7 +1094,7 @@ const EARNINGSPAGEComponent: React.FC = () => {
     }
 
     const offerwall = encodeURIComponent(provider.displayName || provider.type || "offerwall");
-    window.location.href = `/tasks?offerwall=${offerwall}`;
+    router.push(`/tasks?offerwall=${offerwall}`);
   };
 
   const resetFilters = () => {
@@ -939,14 +1112,38 @@ const EARNINGSPAGEComponent: React.FC = () => {
     router.push("/surveys");
   };
 
+  const openWallet = () => {
+    router.push("/wallet");
+  };
+
+  const openCashout = () => {
+    router.push("/cashout");
+  };
+
+  const openAccount = () => {
+    router.push("/account");
+  };
+
+  const openHome = () => {
+    router.push("/home");
+  };
+
   return (
     <div className="bg-[#0B0D1F] min-h-screen font-sans text-white">
       <style>{TICKER_CSS}</style>
-      <Navbar />
-      <main className="pt-[84px]">
+      <EarnLegacyTopControls
+        notificationCount={notificationCount}
+        profileInitial={profileInitial}
+        onHomeClick={openHome}
+        onBellClick={() => setShowNotifications((prev) => !prev)}
+        onWalletClick={openWallet}
+        onCashoutClick={openCashout}
+        onProfileClick={openAccount}
+      />
+      <main>
         <div className="max-w-[1440px] mx-auto">
           <ActivityTicker />
-          <div className="px-16 pb-10">
+          <div className="px-4 sm:px-6 md:px-16 pb-10">
             <FilterBar
               activeFilter={activeFilter}
               filterCounts={filterCounts}
@@ -971,6 +1168,9 @@ const EARNINGSPAGEComponent: React.FC = () => {
           </div>
         </div>
       </main>
+      {showNotifications && (
+        <NotificationDropdown onClose={() => setShowNotifications(false)} />
+      )}
     </div>
   );
 };

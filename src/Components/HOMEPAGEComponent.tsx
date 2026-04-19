@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setProfile } from "@/store/userSlice";
@@ -35,6 +36,7 @@ const HOMEPAGEComponent = () => {
   const storeProfile = useSelector((s: RootState) => s.user.profile);
   const storeToken = useSelector((s: RootState) => s.user.token);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [streakDays, setStreakDays] = useState<number>(0);
 
@@ -42,6 +44,8 @@ const HOMEPAGEComponent = () => {
     const token =
       storeToken ||
       (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+    setIsAuthenticated(Boolean(token));
 
     if (!token) return;
 
@@ -75,7 +79,6 @@ const HOMEPAGEComponent = () => {
       });
   }, [dispatch, storeToken]);
 
-  const welcomeName = storeProfile?.displayName || storeProfile?.username;
   const balanceDollars =
     storeProfile?.balanceCents != null
       ? `$${(storeProfile.balanceCents / 100).toFixed(2)}`
@@ -98,19 +101,27 @@ const HOMEPAGEComponent = () => {
       <TickerBar />
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10 py-5 sm:py-8">
-        <section className="relative overflow-hidden rounded-2xl border border-[#26304A] min-h-[170px] sm:min-h-[220px]">
-          <img src="/assets/bg.png" alt="Dashboard background" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#19D3B1]/35 via-[#0EA5E9]/20 to-[#0D0F1E]/70" />
+        {isAuthenticated && (
+          <section className="relative h-[128px] sm:h-[145px] md:h-[156px] overflow-hidden rounded-[10px]">
+            <Image
+              src="/hero.png"
+              alt="Welcome back"
+              fill
+              priority
+              className="absolute inset-0 h-full w-full object-cover object-[center_44%]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,133,114,0.62)_0%,rgba(14,171,148,0.54)_100%)]" />
 
-          <div className="relative z-10 p-5 sm:p-8 md:p-10 text-white">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight">
-              Welcome Back{welcomeName ? `, ${welcomeName}` : ""}
-            </h1>
-            <p className="text-[#D1D5DB] mt-2 text-sm sm:text-base max-w-[620px]">
-              Track your progress, check your latest activity, and continue earning from premium tasks and offerwalls.
-            </p>
-          </div>
-        </section>
+            <div className="relative z-10 h-full px-4 flex flex-col items-center justify-center text-center text-white">
+              <h1 className="text-[28px] sm:text-[42px] md:text-[50px] font-bold leading-[1.02] tracking-[-0.02em]">
+                Welcome back
+              </h1>
+              <p className="mt-1 max-w-[560px] text-[11px] sm:text-[13px] md:text-[14px] leading-[1.3] text-[#E7FFFA]">
+                Track your progress, view recent activities and manage your rewards from your personal dashboards
+              </p>
+            </div>
+          </section>
+        )}
 
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-5">
           <StatCard label="Wallet Balance" value={balanceDollars} hint="Available now" />

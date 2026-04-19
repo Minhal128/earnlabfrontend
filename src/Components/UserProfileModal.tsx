@@ -216,54 +216,33 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
   const [activeTab, setActiveTab] = useState<"all" | "badges">("all");
 
   const getApi = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const getToken = () => typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const fetchProfile = useCallback(async () => {
+    if (!userId) {
+      setProfile(null);
+      setStats({ offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+      setRecentOffers([]);
+      setProgression(defaultProgression);
+      setBadges([]);
+      setIsPrivate(false);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const api = getApi();
-      if (userId) {
-        // Public profile for another user
-        const res = await fetch(`${api}/api/v1/games/user/${userId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.isPrivate) {
-            setIsPrivate(true);
-          } else {
-            setProfile(data.profile);
-            setStats(data.stats ?? { offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
-            setRecentOffers(data.recentOffers ?? []);
-            setProgression(data.progression ?? defaultProgression);
-            setBadges(Array.isArray(data.badges) ? data.badges : []);
-            setIsPrivate(false);
-          }
-        }
-      } else {
-        // Own profile — use authenticated endpoint
-        const token = getToken();
-        if (!token) return;
-        const res = await fetch(`${api}/api/v1/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const p = data.user || data.profile || data;
-          setProfile({
-            uuid: p._id || p.uuid || "",
-            username: p.username || "",
-            displayName: p.displayName || p.username || "",
-            avatarUrl: p.avatarUrl || undefined,
-            emoji: p.emoji || undefined,
-            countryCode: p.countryCode || undefined,
-            balanceCents: p.balanceCents || 0,
-            createdAt: p.createdAt || new Date().toISOString(),
-          });
-          setStats({
-            offersCompleted: data?.stats?.offersCompleted || data?.stats?.tasksCompleted || 0,
-            totalEarningsCents: data?.stats?.totalEarningsCents || p.balanceCents || 0,
-            last30DaysCents: data?.stats?.last30DaysCents || data?.stats?.last30DaysEarningsCents || 0,
-            referralCount: data?.stats?.referralCount || data?.stats?.successfulReferrals || 0,
-          });
+
+      // Public profile for selected user only
+      const res = await fetch(`${api}/api/v1/games/user/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isPrivate) {
+          setIsPrivate(true);
+        } else {
+          setProfile(data.profile);
+          setStats(data.stats ?? { offersCompleted: 0, totalEarningsCents: 0, last30DaysCents: 0, referralCount: 0 });
+          setRecentOffers(data.recentOffers ?? []);
           setProgression(data.progression ?? defaultProgression);
           setBadges(Array.isArray(data.badges) ? data.badges : []);
           setIsPrivate(false);
@@ -302,16 +281,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-end bg-black/70"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-3 sm:p-6"
       onClick={onClose}
     >
       {/* Panel */}
       <div
-        className="relative flex flex-col overflow-y-auto"
+        className="relative flex w-full max-w-[640px] max-h-[88vh] flex-col overflow-y-auto rounded-2xl border border-[#1E2133] shadow-2xl"
         style={{
-          width: "100%",
-          maxWidth: 604,
-          height: "100%",
           background: "#0D0F1E",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -715,7 +691,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, isOpen, onC
         {/* No profile */}
         {!loading && !isPrivate && !profile && (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-[#8C8FA8]">Failed to load profile</p>
+            <p className="text-[#8C8FA8]">Select a user to view profile</p>
           </div>
         )}
       </div>

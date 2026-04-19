@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Image, { StaticImageData } from "next/image";
 import { FaLaptop, FaApple, FaAndroid, FaSearch } from "react-icons/fa";
@@ -93,9 +93,13 @@ const isPartnerLogoAsset = (image: string | StaticImageData): boolean =>
     typeof image === "string" && /logo|provider|offerwall|mylead|monlix|gemiad|nortik/i.test(image);
 
 const Tasks: React.FC = () => {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const offerwallId = searchParams.get("offerwallId") || "";
     const offerwallName = searchParams.get("offerwall") || "";
+    const source = searchParams.get("source") || "";
+    const surveyCompleted = searchParams.get("surveyCompleted") === "true";
+    const canDisplayOfferwalls = source !== "survey" || surveyCompleted;
 
     const [tasks, setTasks] = useState<TaskUI[]>([]);
     const [selectedTask, setSelectedTask] = useState<TaskUI | null>(null);
@@ -142,8 +146,14 @@ const Tasks: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!canDisplayOfferwalls) {
+            setTasks([]);
+            setLoading(false);
+            return;
+        }
+
         fetchTasks();
-    }, [offerwallId, offerwallName]);
+    }, [offerwallId, offerwallName, canDisplayOfferwalls]);
 
     const filteredTasks = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -177,6 +187,26 @@ const Tasks: React.FC = () => {
     );
 
     const activeOfferwallLabel = offerwallName ? decodeURIComponent(offerwallName) : "";
+
+    if (!canDisplayOfferwalls) {
+        return (
+            <div className="w-full bg-[#0f172a] mt-5 md:p-6 px-3 py-5 rounded-lg text-white border border-[0.1px] border-[#50536F]">
+                <div className="rounded-xl border border-[#30334A] bg-[#1A1D2E] p-5 text-center">
+                    <h3 className="text-base sm:text-lg font-semibold">Complete survey to unlock offerwalls</h3>
+                    <p className="text-[#8C8FA8] text-sm mt-2">
+                        Finish your survey successfully to continue to offerwalls and tasks.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => router.push("/surveys")}
+                        className="mt-4 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:from-emerald-400 hover:to-cyan-400 transition-all"
+                    >
+                        Go to Surveys
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-[#0f172a] mt-5 md:p-6 px-3 py-5 rounded-lg text-white border border-[0.1px] border-[#50536F]">

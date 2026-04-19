@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSocket } from "@/contexts/SocketProvider";
-import UserProfileModal from "@/Components/UserProfileModal";
 import NotificationDropdown from "@/Components/HomePage/NotificationDropdown";
 import SupportChat from "@/Components/HomePage/SupportChat";
+import UserProfileModal from "@/Components/UserProfileModal";
 import { toast } from "@/utils/toast";
 import TopBar from "@/Components/Topbar";
 
@@ -26,15 +26,6 @@ interface ChatMessage {
 interface ChatRoom {
   id: string;
   name: string;
-}
-
-interface StoredUser {
-  id?: string;
-  _id?: string;
-  email?: string;
-  username?: string;
-  displayName?: string;
-  avatarUrl?: string;
 }
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -151,13 +142,12 @@ export default function ChatPage() {
   const [onlineCount, setOnlineCount] = useState(2);
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom>(defaultRooms[0]);
   const [showRoomDropdown, setShowRoomDropdown] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(LANGUAGES[0]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
@@ -169,15 +159,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     const token = getToken();
-    const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
     if (token) {
       setAuthToken(token);
-      if (userStr) {
-        try {
-          const u: StoredUser = JSON.parse(userStr);
-          setCurrentUserId(u._id || u.id || null);
-        } catch {}
-      }
     }
   }, []);
 
@@ -339,7 +322,7 @@ export default function ChatPage() {
   const handleUserClick = (userId?: string) => {
     if (userId) {
       setSelectedUserId(userId);
-      setShowProfileModal(true);
+      setShowUserProfile(true);
     }
   };
 
@@ -574,17 +557,20 @@ export default function ChatPage() {
         </button>
       </div>
 
-      <UserProfileModal
-        userId={selectedUserId}
-        isOpen={showProfileModal}
-        onClose={() => { setShowProfileModal(false); setSelectedUserId(null); }}
-      />
-
       {showNotifications && (
         <NotificationDropdown onClose={() => setShowNotifications(false)} />
       )}
 
       <SupportChat isOpen={showSupport} onClose={() => setShowSupport(false)} />
+
+      <UserProfileModal
+        userId={selectedUserId}
+        isOpen={showUserProfile}
+        onClose={() => {
+          setShowUserProfile(false);
+          setSelectedUserId(null);
+        }}
+      />
     </div>
   );
 }
