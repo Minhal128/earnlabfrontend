@@ -29,8 +29,9 @@ const PageNavigation = () => {
     { id: "live-chat", label: "Live Chat", icon: MessageCircle, onClick: () => openLiveChatPanel() },
   ];
 
-  const isActive = (item: NavItem) => {
-    if (item.href) return pathname === item.href;
+  const isActive = (itemOrHref: NavItem | string) => {
+    const href = typeof itemOrHref === "string" ? itemOrHref : itemOrHref.href;
+    if (href) return pathname === href;
     return pathname === "/chat";
   };
 
