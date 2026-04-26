@@ -123,7 +123,7 @@ const PageNavigation = () => {
           <Link
             href="/referrals"
             className={`flex flex-col items-center gap-1 px-1.5 py-2 rounded-lg transition-all flex-1 ${
-              isActive("/referrals")
+              pathname === "/referrals"
                 ? "text-emerald-400"
                 : "text-[#9CA3AF] hover:text-white"
             }`}

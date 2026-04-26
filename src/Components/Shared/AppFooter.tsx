@@ -7,10 +7,8 @@ import {
   CreditCard,
   FileText,
   Gift,
-  Globe,
   Headset,
   Home,
-  Moon,
   Shield,
   Trophy,
   UserRound,
@@ -189,7 +187,7 @@ export default function AppFooter() {
 
         {/* Desktop */}
         <div className="hidden md:block">
-          <div className="grid md:grid-cols-[1.7fr_0.85fr_0.85fr_1fr] gap-10">
+          <div className="grid md:grid-cols-[1.7fr_0.85fr_0.85fr] gap-10">
             <div>
               <Image
                 src="/landing-image-003.png"
@@ -215,10 +213,20 @@ export default function AppFooter() {
 
             <DesktopLinkGroup title="Support" items={supportLinks} />
             <DesktopLinkGroup title="Features" items={featureLinks} />
+          </div>
 
-            <div>
-              <h4 className="text-white font-semibold text-[14px] mb-3">Connect With Us</h4>
-              <div className="flex gap-2.5 mb-3">
+          <div className="border-t border-[#1A1E38] pt-5 w-full flex items-center justify-between gap-4 mt-7">
+            <p className="text-[#8F94AD] text-sm">©2026 Lab Wards, All Rights Reserved</p>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center text-[#A8AEC7] text-sm">
+                <Link href="/terms" className="hover:text-white transition-colors">Terms Of Use</Link>
+                <span className="mx-3 text-[#434A69]">|</span>
+                <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                <span className="mx-3 text-[#434A69]">|</span>
+                <Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
+              </div>
+              <div className="flex gap-2.5">
                 <SocialIconBox href={X_URL} label="Open X (Twitter)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -236,22 +244,6 @@ export default function AppFooter() {
                   </svg>
                 </SocialIconBox>
               </div>
-              <div className="flex items-center gap-2">
-                <FooterPill icon={<Globe className="w-3 h-3" />} label="English" />
-                <FooterPill icon={<Moon className="w-3 h-3" />} label="Light" />
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-[#1A1E38] pt-5 w-full flex items-center justify-between gap-4 mt-7">
-            <p className="text-[#8F94AD] text-sm">©2026 Lab Wards, All Rights Reserved</p>
-
-            <div className="flex items-center text-[#A8AEC7] text-sm">
-              <Link href="/terms" className="hover:text-white transition-colors">Terms Of Use</Link>
-              <span className="mx-3 text-[#434A69]">|</span>
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-              <span className="mx-3 text-[#434A69]">|</span>
-              <Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>

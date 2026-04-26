@@ -295,7 +295,7 @@ const TopBar: React.FC = () => {
               style={{
                 width: 40, height: 40,
                 background: "#1E2133",
-                border: "1.5px solid #30334A",
+                border: "1.5px solid #0AC07D",
                 fontFamily: "var(--font-manrope)",
                 overflow: "hidden",
               }}

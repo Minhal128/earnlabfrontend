@@ -23,10 +23,12 @@ function StatCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#30334A] bg-[#151728] p-3 sm:p-4 min-h-[110px]">
+    <div className="rounded-xl border border-[#30334A] bg-[#151728] p-3 sm:p-4 min-h-[110px] relative overflow-hidden">
       <p className="text-[#8C8FA8] text-xs sm:text-sm font-medium">{label}</p>
       <p className="text-white text-xl sm:text-2xl font-bold mt-1">{value}</p>
       {hint && <p className="text-[#6B6E8A] text-xs mt-2">{hint}</p>}
+      <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#0AC07D]/10 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0AC07D]/40 to-transparent" />
     </div>
   );
 }
