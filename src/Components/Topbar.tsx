@@ -295,7 +295,7 @@ const TopBar: React.FC = () => {
                 onClick={() => setProfileOpen((v) => !v)}
                 className="flex items-center justify-center font-bold text-white text-[20px] sm:text-[24px] rounded-[5px] transition-opacity hover:opacity-90"
                 style={{
-                  width: 37, height: 37, // Slightly smaller to account for the wrapper padding
+                  width: 37, height: 37,
                   background: "#1E2133",
                   fontFamily: "var(--font-manrope)",
                   overflow: "hidden",
