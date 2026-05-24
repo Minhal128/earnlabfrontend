@@ -53,161 +53,117 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onStart, task })
     const categoryLabel = task.raw?.metadata?.category || "App";
     const statusLabel = task.raw?.status ? String(task.raw.status) : "Not started";
 
-    return (
-        <div className="fixed inset-0 z-50 flex px-5 items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-[#1E2133] rounded-xl shadow-lg max-w-lg w-full p-6 text-white relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+     return (
+        <div className="fixed inset-0 z-50 flex px-5 items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="bg-[#0F1D24] rounded-2xl border border-[#23353E] shadow-2xl max-w-lg w-full p-6 text-white relative max-h-[90vh] overflow-y-auto custom-scrollbar">
               
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 rounded-md cursor-pointer bg-[#8C8FA8] text-2xl text-black"
-                >
-                    <IoClose />
-                </button>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#14A990]/20 flex items-center justify-center text-[#14A990]">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <h3 className="text-white text-lg font-bold">Task details</h3>
+                  </div>
+                  <button onClick={onClose} className="text-[#8C8FA8] hover:text-white transition-colors">
+                    <IoClose size={24} />
+                  </button>
+                </div>
 
-                <div className="rounded-xl border border-[#3A3E57] bg-[#151728] p-4">
-                    <h2 className="text-xl font-bold">Task details</h2>
-
-                    <p className="text-[11px] uppercase tracking-wide text-[#8C8FA8] mt-3">Provider</p>
-                    <p className="text-lg font-semibold text-[#18C3A7]">{providerName}</p>
-                    <p className="text-sm text-white/95 mt-1">{task.title}</p>
-
-                    <div className="mt-4 flex flex-col md:flex-row gap-4">
-                        <div className="w-full md:w-[45%]">
-                            {typeof task.image === "string" ? (
+                {/* Provider & Reward Section */}
+                <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-[#15242C] border border-[#23353E] flex items-center justify-center overflow-hidden">
+                            {providerLogoUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    src={task.image}
-                                    alt={task.title}
-                                    className="w-full h-40 rounded-lg object-cover border border-[#262A3A]"
-                                />
+                                <img src={providerLogoUrl} alt={providerName} className="w-10 h-10 object-contain" />
                             ) : (
-                                <Image
-                                    src={task.image}
-                                    alt={task.title}
-                                    className="w-full h-40 rounded-lg object-cover border border-[#262A3A]"
-                                    width={300}
-                                    height={160}
-                                />
+                                <div className="text-[#14A990] font-bold text-xl">{providerName.charAt(0)}</div>
                             )}
                         </div>
-
-                        <div className="flex-1 space-y-3">
-                            <div className="flex items-center gap-3 bg-[#1E2133] border border-[#30334A] rounded-lg px-3 py-2">
-                                <div className="w-14 h-14 rounded-md bg-[#11131a] border border-[#30334A] overflow-hidden flex items-center justify-center">
-                                    {providerLogoUrl ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={providerLogoUrl}
-                                            alt={providerName}
-                                            className="w-12 h-12 object-contain"
-                                        />
-                                    ) : (
-                                        <span className="text-sm font-bold text-[#18C3A7]">
-                                            {providerName.slice(0, 2).toUpperCase()}
-                                        </span>
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="text-[11px] text-[#8C8FA8] uppercase">Partner / Provider</p>
-                                    <p className="text-sm font-semibold text-white">{providerName}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-[#18C3A7] font-semibold">
-                                <Image src={CoinIcon} alt="coin" width={16} height={16} />
-                                <span>{formatPrimaryReward(task.reward)}</span>
-                            </div>
-
-                            <div className="flex gap-2 mt-1">
-                                <span className="w-7 h-7 flex items-center justify-center bg-[#30334A] rounded-full">
-                                    <FaLaptop className="text-[#03C4A4] text-sm" />
-                                </span>
-                                <span className="w-7 h-7 flex items-center justify-center bg-[#30334A] rounded-full">
-                                    <FaApple className="text-[#03C4A4] text-sm" />
-                                </span>
-                                <span className="w-7 h-7 flex items-center justify-center bg-[#30334A] rounded-full">
-                                    <FaAndroid className="text-[#03C4A4] text-sm" />
-                                </span>
-                            </div>
+                        <div>
+                            <p className="text-[#14A990] text-xs font-bold uppercase tracking-wider">{providerName}</p>
+                            <h4 className="text-white font-bold text-base leading-tight mt-0.5 truncate max-w-[200px]">{task.title}</h4>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="bg-[#1C2036] px-3 py-1.5 rounded-full text-[#14A990] text-sm font-bold border border-[#2D3142]">
+                            {formatPrimaryReward(task.reward)}
+                        </div>
+                        <div className="flex gap-1.5 mt-1">
+                            <FaApple className="text-[#8C8FA8] text-xs" />
+                            <FaAndroid className="text-[#8C8FA8] text-xs" />
+                            <FaLaptop className="text-[#8C8FA8] text-xs" />
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mt-6">
-                    <div className="bg-[#2B2F45] px-3 py-2 rounded-md border border-[#3A3E57]">
-                        <p className="text-sm text-white capitalize">{statusLabel}</p>
-                        <p className="text-[#8C8FA8] pt-0.5 text-xs font-semibold">Status</p>
-                    </div>
-                    <div className="bg-[#2B2F45] px-3 py-2 rounded-md border border-[#3A3E57]">
-                        <p className="text-sm text-gray-300">{categoryLabel}</p>
-                        <p className="text-[#8C8FA8] text-xs pt-0.5 font-semibold">Category</p>
-                    </div>
-                    <div className="bg-[#2B2F45] px-3 py-2 rounded-md border border-[#3A3E57]">
-                        <p className="text-sm text-gray-300">{providerName}</p>
-                        <p className="text-[#8C8FA8] pt-0.5 text-xs font-semibold">Provider</p>
+                {/* Hero Image */}
+                <div className="w-full h-44 rounded-2xl overflow-hidden mb-6 border border-[#23353E]">
+                    {typeof task.image === "string" ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={task.image} alt={task.title} className="w-full h-full object-cover" />
+                    ) : (
+                        <Image src={task.image} alt={task.title} className="w-full h-full object-cover" width={500} height={180} />
+                    )}
+                </div>
+
+                {/* Task Content */}
+                <div className="flex flex-col gap-2 mb-6">
+                    <h5 className="text-[#8C8FA8] text-xs font-bold uppercase tracking-wider">Task Details</h5>
+                    <div className="bg-[#15242C]/50 border border-[#23353E] rounded-xl p-4">
+                        <p className="text-white/80 text-sm leading-relaxed">
+                            {task.description || "Complete milestones in order to unlock each reward. Progress is tracked automatically once the task starts."}
+                        </p>
                     </div>
                 </div>
 
-                <div className="mt-6">
-                    <h3 className="text-sm font-semibold mb-1">Task Details</h3>
-                </div>
-
-                <div className="bg-[#2B2F45] p-3 rounded-md mt-2 border border-[#3A3E57]">
-                    <p className="text-sm text-gray-300 leading-relaxed">
-                        {task.description || "Complete milestones in order to unlock each reward. Progress is tracked automatically once the task starts."}
-                    </p>
-
-                    <div className="mt-4 space-y-2">
-                        {MOCK_TASK_DETAIL_STEPS.map((detailStep) => (
-                            <div
-                                key={detailStep.step}
-                                className="flex justify-between gap-4 items-start bg-[#1E2133] px-3 py-2 rounded-md border border-[#30334A]"
-                            >
-                                <div className="min-w-0">
-                                    <p className="text-[#E5E7EB] text-sm font-medium">{detailStep.step}</p>
-                                    <p className="text-[#8C8FA8] text-xs mt-0.5">{detailStep.note}</p>
+                {/* Milestones / Steps */}
+                <div className="flex flex-col gap-3">
+                    {MOCK_TASK_DETAIL_STEPS.map((detailStep, idx) => (
+                        <div
+                            key={idx}
+                            className="flex justify-between items-center bg-[#15242C] border border-[#23353E] px-4 py-3 rounded-xl"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 rounded-full bg-[#14A990]/20 flex items-center justify-center text-[#14A990] text-[10px] font-bold">
+                                    {idx + 1}
                                 </div>
-                                <span className="font-semibold text-sm text-[#18C3A7] whitespace-nowrap">
-                                    {detailStep.reward}
-                                </span>
+                                <p className="text-white text-sm font-semibold">{detailStep.step}</p>
                             </div>
-                        ))}
-                    </div>
+                            <span className="font-bold text-sm text-[#14A990]">
+                                {detailStep.reward}
+                            </span>
+                        </div>
+                    ))}
                 </div>
 
+                {/* Start Button */}
                 <button
                     onClick={async () => {
-                        // Try to claim the task via API, then open start modal
                         try {
                             const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
                             const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
                             if (!task.raw || !task.raw._id) {
-                                // fallback: just open
                                 onClose();
                                 onStart(task.raw ?? null);
                                 return;
                             }
-
                             const headers: any = { "Content-Type": "application/json" };
                             if (token) headers.Authorization = `Bearer ${token}`;
-
                             const res = await fetch(`${api}/api/v1/tasks/${task.raw._id}/claim`, {
                                 method: "POST",
                                 headers,
                             });
-
                             if (res.status === 401) {
                                 toast.warn("Please sign in to claim this task.");
                                 return;
                             }
-
                             if (!res.ok) {
                                 const body = await res.json().catch(() => ({}));
                                 toast.error(body?.message || "Failed to claim task");
                                 return;
                             }
-
-                            // success: parse claimed task, close and open start modal
                             const body = await res.json().catch(() => ({}));
                             const claimed = body?.task ?? null;
                             onClose();
@@ -217,28 +173,29 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onStart, task })
                             toast.error("Failed to start task. Try again later.");
                         }
                     }}
-                    className="mt-6 w-full bg-gradient-to-t cursor-pointer from-[#099F86] to-[#099F86] py-3 rounded-md font-semibold text-white"
+                    className="mt-8 w-full h-12 rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0AC07D]/10 hover:shadow-[#0AC07D]/20 transition-all active:scale-[0.98]"
                 >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     Start Task
                 </button>
-            </div>
 
-            {/* Custom Scrollbar */}
-            <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #1e2133;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background-color: #3a3e57;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #555;
-                }
-            `}</style>
+                {/* Custom Scrollbar */}
+                <style jsx>{`
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: #1e2133;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background-color: #3a3e57;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #555;
+                    }
+                `}</style>
+            </div>
         </div>
     );
 };

@@ -155,7 +155,15 @@ const GIFTCARDS: CashoutCard[] = [
   },
 ];
 
-function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodModalProps) {
+interface CashoutMethodModalProps {
+  card: CashoutCard | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  userBalance?: number;
+}
+
+function CashoutMethodModal({ card, isOpen, onClose, onSuccess, userBalance = 0 }: CashoutMethodModalProps) {
   const [amount, setAmount] = useState("");
   const [destination, setDestination] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -172,8 +180,8 @@ function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodM
     if (card.category === "crypto") {
       return {
         method: "crypto" as const,
-        destinationLabel: "Wallet address",
-        destinationPlaceholder: "Enter your wallet address",
+        destinationLabel: `${card.id === 'btc' ? 'BTC' : card.name} Address`,
+        destinationPlaceholder: "Enter address",
       };
     }
 
@@ -209,8 +217,8 @@ function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodM
       return;
     }
 
-    if (amountValue < 5) {
-      toast.error("Minimum withdrawal amount is $5");
+    if (amountValue < 0.5) {
+      toast.error("Minimum withdrawal amount is $0.5");
       return;
     }
 
@@ -267,73 +275,101 @@ function CashoutMethodModal({ card, isOpen, onClose, onSuccess }: CashoutMethodM
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-4" onClick={handleClose}>
       <div
-        className="w-full max-w-[420px] rounded-2xl border border-[#2A2D3E] bg-[#151728] p-5 shadow-2xl"
+        className="w-full max-w-[400px] rounded-2xl border border-[#23353E] bg-[#0F1D24] p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white text-xl font-bold">{card.name} Cashout</h3>
-          <button onClick={handleClose} className="w-8 h-8 rounded-lg bg-[#1E2133] text-[#9CA3AF] hover:text-white flex items-center justify-center">
-            <X size={16} />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#14A990]/20 flex items-center justify-center text-[#14A990]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <h3 className="text-white text-lg font-bold">Cashout {card.name}</h3>
+          </div>
+          <button onClick={handleClose} className="text-[#8C8FA8] hover:text-white transition-colors">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="rounded-xl bg-[#1E2133] border border-[#2A2D3E] p-4 mb-4 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-white/5 border border-[#2A2D3E] flex items-center justify-center overflow-hidden">
-            <Image 
-              src={card.logoSrc} 
-              alt={card.name} 
-              width={36} 
-              height={36} 
-              className={`object-contain ${card.id === 'worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`} 
-            />
-          </div>
-          <div>
-            <p className="text-white font-semibold">{card.name}</p>
-            <p className="text-xs text-[#9CA3AF]">{card.subtitle || "Secure withdrawal request"}</p>
-          </div>
+        {/* Info Banner */}
+        <div className="bg-[#14A990]/10 border border-[#14A990]/20 rounded-full px-4 py-2 mb-6 flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-[#14A990] flex items-center justify-center text-[10px] font-bold text-white">!</div>
+            <p className="text-[#14A990] text-xs font-semibold">The minimum withdrawal is $0.5</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">Amount (USD)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Minimum $5"
-              className="w-full bg-[#0D0F1E] border border-[#2A2D3E] rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500"
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {/* Destination Field */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[#8C8FA8] text-xs font-semibold">{methodMeta.destinationLabel}</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder={methodMeta.destinationPlaceholder}
+                className="w-full bg-[#15242C] border border-[#23353E] rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-[#14A990]/50"
+              />
+              <button 
+                type="button"
+                className="absolute right-2 top-1.5 px-3 py-1.5 bg-[#23353E] hover:bg-[#2C414C] rounded-md text-white text-[11px] font-bold transition-colors"
+              >
+                Save
+              </button>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-[#9CA3AF] mb-1">{methodMeta.destinationLabel}</label>
-            <input
-              type={methodMeta.method === "paypal" ? "email" : "text"}
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder={methodMeta.destinationPlaceholder}
-              className="w-full bg-[#0D0F1E] border border-[#2A2D3E] rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-emerald-500"
-            />
+          {/* Amount Field */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+                <label className="text-[#8C8FA8] text-xs font-semibold">Amount</label>
+                <span className="text-[#8C8FA8] text-[10px] font-medium">Your balance : ${(userBalance / 100).toFixed(2)}</span>
+            </div>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="E.g $120"
+                className="w-full bg-[#15242C] border border-[#23353E] rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-[#14A990]/50"
+              />
+              <button 
+                type="button"
+                onClick={() => setAmount((userBalance / 100).toString())}
+                className="absolute right-2 top-1.5 px-3 py-1.5 bg-[#23353E] hover:bg-[#2C414C] rounded-md text-white text-[11px] font-bold transition-colors"
+              >
+                Max
+              </button>
+            </div>
           </div>
 
-          <div className="pt-1 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="h-10 rounded-lg border border-[#2A2D3E] bg-[#1E2133] text-white text-sm font-medium hover:bg-[#252840]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="h-10 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 disabled:opacity-50"
-            >
-              {submitting ? "Submitting..." : "Request"}
-            </button>
+          {/* Transaction Details */}
+          <div className="bg-[#15242C]/50 border border-[#23353E] rounded-lg p-4 flex flex-col gap-3">
+            <p className="text-[#8C8FA8] text-[10px] font-bold uppercase tracking-wider mb-1">Transaction details</p>
+            <div className="flex items-center justify-between text-xs">
+                <span className="text-[#8C8FA8] font-medium">BTC Rate</span>
+                <span className="text-white font-bold">$68,936.37</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+                <span className="text-[#8C8FA8] font-medium">Transaction fee</span>
+                <span className="text-white font-bold">$0.20</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+                <span className="text-[#8C8FA8] font-medium">Value</span>
+                <span className="text-white font-bold">BTC 0.00003547</span>
+            </div>
           </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full h-12 rounded-lg bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#0AC07D]/10 hover:shadow-[#0AC07D]/20 transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            {submitting ? "Submitting..." : "Cashout"}
+          </button>
         </form>
       </div>
     </div>
@@ -456,6 +492,7 @@ export default function CashoutPage() {
         card={selectedCard}
         isOpen={methodModalOpen}
         onClose={() => setMethodModalOpen(false)}
+        userBalance={balanceCents}
         onSuccess={() => {
           setMethodModalOpen(false);
           setSelectedCard(null);

@@ -14,8 +14,8 @@ const ServeyWalls: React.FC = () => {
     ];
 
     return (
-        <section className="w-full mt-12 mb-20">
-            <div className="flex items-center justify-between mb-6 px-16">
+        <section className="w-full mt-12 mb-20 max-w-[1440px] mx-auto">
+            <div className="flex items-center justify-between mb-6 px-4 sm:px-6 md:px-10 lg:px-12">
                 <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-[#151728] border border-[#30334A] rounded-[10px] text-white">
                         <ClipboardList size={24} />
@@ -31,7 +31,7 @@ const ServeyWalls: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[25px] px-16">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 md:px-10 lg:px-12">
                 {providers.map((p, i) => (
                     <ProviderCard
                         key={i}

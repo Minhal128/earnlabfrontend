@@ -251,6 +251,16 @@ const SIGNINComponent = () => {
             </Link>
           </div>
 
+          {/* ── Social proof banner ── */}
+          <div className="flex items-center gap-3 bg-[#151728] border border-[#1C2033] rounded-[10px] px-4 py-2.5">
+            <div className="flex items-center shrink-0">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] shadow-sm" />
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] -ml-3 shadow-sm" />
+              <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] -ml-3 shadow-sm" />
+            </div>
+            <p className="text-[#8C9DB6] text-[13px] font-medium leading-tight">Thousands just earned — don&apos;t miss your first payout 🚀</p>
+          </div>
+
           {/* ── Email ── */}
           <div className="flex flex-col gap-1.5">
             <label className="text-white text-[14px] font-medium">Email Address</label>

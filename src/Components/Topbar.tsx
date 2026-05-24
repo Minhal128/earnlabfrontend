@@ -289,29 +289,31 @@ const TopBar: React.FC = () => {
         <div className="relative">
           <div className="flex items-center" style={{ height: 40 }}>
             {/* Avatar */}
-            <button
-              onClick={() => setProfileOpen((v) => !v)}
-              className="flex items-center justify-center font-bold text-white text-[20px] sm:text-[24px] rounded-[5px] transition-opacity hover:opacity-80"
-              style={{
-                width: 40, height: 40,
-                background: "#1E2133",
-                border: "1.5px solid #30334A",
-                fontFamily: "var(--font-manrope)",
-                overflow: "hidden",
-              }}
-            >
-              {avatarUrl && !avatarImageBroken ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarUrl}
-                  alt={username || "User"}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onError={() => setAvatarImageBroken(true)}
-                />
-              ) : (
-                <span>{initial}</span>
-              )}
-            </button>
+            {/* Avatar with Gradient Border */}
+            <div className="p-[1.5px] rounded-[7px] bg-gradient-to-r from-[#0AC07D] to-[#FFD700] hover:scale-105 transition-transform">
+              <button
+                onClick={() => setProfileOpen((v) => !v)}
+                className="flex items-center justify-center font-bold text-white text-[20px] sm:text-[24px] rounded-[5px] transition-opacity hover:opacity-90"
+                style={{
+                  width: 37, height: 37, // Slightly smaller to account for the wrapper padding
+                  background: "#1E2133",
+                  fontFamily: "var(--font-manrope)",
+                  overflow: "hidden",
+                }}
+              >
+                {avatarUrl && !avatarImageBroken ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={avatarUrl}
+                    alt={username || "User"}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={() => setAvatarImageBroken(true)}
+                  />
+                ) : (
+                  <span>{initial}</span>
+                )}
+              </button>
+            </div>
           </div>
 
           {profileOpen && (

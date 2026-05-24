@@ -224,11 +224,15 @@ const Switch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
   <button
     type="button"
     onClick={onToggle}
-    className={`relative h-6 w-10 rounded-full transition-colors ${enabled ? "bg-[#18C3A7]" : "bg-[#30334A]"}`}
+    className={`relative h-[24px] w-[44px] rounded-full transition-all duration-300 ease-in-out focus:outline-none ${
+      enabled ? "bg-[#18C3A7]" : "bg-[#2A2E3F]"
+    }`}
     aria-pressed={enabled}
   >
     <span
-      className={`absolute top-[3px] h-4 w-4 rounded-full bg-white transition-transform ${enabled ? "translate-x-[22px]" : "translate-x-[3px]"}`}
+      className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-all duration-300 ease-in-out ${
+        enabled ? "left-[23px]" : "left-[3px]"
+      }`}
     />
   </button>
 );

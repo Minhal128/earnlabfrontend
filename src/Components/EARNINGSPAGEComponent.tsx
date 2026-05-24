@@ -337,6 +337,7 @@ const PROVIDERS: Provider[] = [
     displayName: "Monlix",
     progress: 44,
     categories: ["sign-up-trial", "save-money"],
+    sourceKind: "offerwall",
   },
   {
     id: "ml",
@@ -344,6 +345,7 @@ const PROVIDERS: Provider[] = [
     displayName: "MyLead",
     progress: 38,
     categories: ["sign-up-trial", "fast-completion"],
+    sourceKind: "offerwall",
   },
   {
     id: "g1",
@@ -351,6 +353,7 @@ const PROVIDERS: Provider[] = [
     displayName: "GemiAd",
     progress: 58,
     categories: ["save-money", "sweepstake"],
+    sourceKind: "offerwall",
   },
   {
     id: "n1",
@@ -358,21 +361,40 @@ const PROVIDERS: Provider[] = [
     displayName: "Nortik",
     progress: 62,
     categories: ["casino", "sweepstake"],
+    sourceKind: "offerwall",
   },
   {
-    id: "m2",
-    type: "monlix",
-    displayName: "Monlix",
-    progress: 44,
-    categories: ["sign-up-trial", "save-money"],
+    id: "cpx1",
+    type: "cpx",
+    displayName: "CPX Research",
+    progress: 85,
+    categories: ["sweepstake", "fast-completion"],
+    sourceKind: "survey",
   },
   {
-    id: "g2",
-    type: "gemiad",
-    displayName: "GemiAd",
-    progress: 58,
-    categories: ["save-money", "fast-completion"],
+    id: "bl1",
+    type: "bitlabs",
+    displayName: "BitLabs",
+    progress: 72,
+    categories: ["sweepstake", "save-money"],
+    sourceKind: "survey",
   },
+  {
+    id: "tr1",
+    type: "theorem",
+    displayName: "TheoremReach",
+    progress: 65,
+    categories: ["sweepstake"],
+    sourceKind: "survey",
+  },
+  {
+    id: "ib1",
+    type: "inbrain",
+    displayName: "InBrain",
+    progress: 78,
+    categories: ["sweepstake", "fast-completion"],
+    sourceKind: "survey",
+  }
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -679,93 +701,114 @@ const FilterBar: React.FC<{
   onFilterChange: (filter: EarnFilterKey) => void;
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
-}> = ({ activeFilter, filterCounts, onFilterChange, searchTerm, onSearchTermChange }) => (
-  <div className="mt-4 flex flex-col gap-3 md:gap-0 md:h-[77px] md:flex-row md:items-center md:justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] p-3 md:px-4">
-    <div className="flex items-center gap-5 md:gap-7 overflow-x-auto scrollbar-hide w-full pb-1 md:pb-0">
-      <FilterTabItem
-        filter="all"
-        label="View all"
-        count={filterCounts.all}
-        active={activeFilter === "all"}
-        icon={<IcoGrid />}
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="fast-completion"
-        label="Fast completion"
-        count={filterCounts["fast-completion"]}
-        active={activeFilter === "fast-completion"}
-        icon={<IcoLightning />}
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="sign-up-trial"
-        label="Sign up trial"
-        count={filterCounts["sign-up-trial"]}
-        active={activeFilter === "sign-up-trial"}
-        icon={
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="6" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
-          <path d="M1 17C1 13.13 4.58 10 9 10C13.42 10 17 13.13 17 17" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-        </svg>
-      }
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="save-money"
-        label="Save money"
-        count={filterCounts["save-money"]}
-        active={activeFilter === "save-money"}
-        icon={
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M16 8V5A2 2 0 0 0 14 3H2A2 2 0 0 0 0 5V15A2 2 0 0 0 2 17H6" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <rect x="8" y="9" width="12" height="9" rx="2" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
-          <circle cx="14" cy="13.5" r="1.5" fill="#8C8FA8" />
-        </svg>
-      }
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="casino"
-        label="Casino"
-        count={filterCounts.casino}
-        active={activeFilter === "casino"}
-        icon={
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <circle cx="11" cy="11" r="9" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
-          <circle cx="11" cy="11" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
-          <path d="M11 2V11M11 11L17.5 6M11 11L17.5 16" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      }
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="puzzle"
-        label="Puzzle"
-        count={filterCounts.puzzle}
-        active={activeFilter === "puzzle"}
-        icon={
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M20 11.5C20 13.26 18.7 14.72 17 14.96V18C17 19.1 16.1 20 15 20H11.2V19.7C11.2 18.21 10 17 8.5 17C7 17 5.8 18.21 5.8 19.7V20H2C.89 20 0 19.1 0 18V14.2H.3C1.79 14.2 3 13 3 11.5C3 10 1.79 8.8.3 8.8H0V5C0 3.89.89 3 2 3H5.04C5.28 1.3 6.74 0 8.5 0C10.26 0 11.72 1.3 11.96 3H15C16.1 3 17 3.89 17 5V8.04C18.7 8.28 20 9.74 20 11.5ZM15 13H16.5C17.33 13 18 12.33 18 11.5C18 10.67 17.33 10 16.5 10H15V5H10V3.5C10 2.67 9.33 2 8.5 2C7.67 2 7 2.67 7 3.5V5H2V7.12C3.76 7.8 5 9.5 5 11.5C5 13.5 3.75 15.2 2 15.88V18H4.12C4.46 17.12 5.06 16.36 5.85 15.82C6.63 15.29 7.55 15 8.5 15C10.5 15 12.2 16.25 12.88 18H15V13Z" fill="#8C8FA8" />
-        </svg>
-      }
-        onClick={onFilterChange}
-      />
-      <FilterTabItem
-        filter="sweepstake"
-        label="Sweepstake"
-        count={filterCounts.sweepstake}
-        active={activeFilter === "sweepstake"}
-        icon={
-        <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
-          <path d="M12.8 4L14 5.2L7.2 12L6 10.8L12.8 4ZM2 0H18C19.1 0 20 .89 20 2V6C18.9 6 18 6.9 18 8C18 9.1 18.9 10 20 10V14C20 15.1 19.1 16 18 16H2C.89 16 0 15.1 0 14V10C1.1 10 2 9.1 2 8C2 6.9 1.1 6 0 6V2C0 .9.89 0 2 0ZM7.5 4C6.67 4 6 4.67 6 5.5C6 6.33 6.67 7 7.5 7C8.33 7 9 6.33 9 5.5C9 4.67 8.33 4 7.5 4ZM12.5 9C11.67 9 11 9.67 11 10.5C11 11.33 11.67 12 12.5 12C13.33 12 14 11.33 14 10.5C14 9.67 13.33 9 12.5 9Z" fill="#8C8FA8" />
-        </svg>
-      }
-        onClick={onFilterChange}
-      />
+  sortBy: string;
+  onSortChange: (value: string) => void;
+  selectedProvider: string;
+  onProviderChange: (value: string) => void;
+  providerList: string[];
+}> = ({ 
+  activeFilter, 
+  filterCounts, 
+  onFilterChange, 
+  searchTerm, 
+  onSearchTermChange,
+  sortBy,
+  onSortChange,
+  selectedProvider,
+  onProviderChange,
+  providerList
+}) => (
+  <div className="mt-4 flex flex-col gap-4">
+    {/* Categories Row */}
+    <div className="flex items-center justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] p-3 md:px-4">
+      <div className="flex items-center gap-5 md:gap-7 overflow-x-auto scrollbar-hide w-full pb-1 md:pb-0">
+        <FilterTabItem
+          filter="all"
+          label="View all"
+          count={filterCounts.all}
+          active={activeFilter === "all"}
+          icon={<IcoGrid />}
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="fast-completion"
+          label="Fast completion"
+          count={filterCounts["fast-completion"]}
+          active={activeFilter === "fast-completion"}
+          icon={<IcoLightning />}
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="sign-up-trial"
+          label="Sign up trial"
+          count={filterCounts["sign-up-trial"]}
+          active={activeFilter === "sign-up-trial"}
+          icon={
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="6" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
+            <path d="M1 17C1 13.13 4.58 10 9 10C13.42 10 17 13.13 17 17" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          </svg>
+        }
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="save-money"
+          label="Save money"
+          count={filterCounts["save-money"]}
+          active={activeFilter === "save-money"}
+          icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M16 8V5A2 2 0 0 0 14 3H2A2 2 0 0 0 0 5V15A2 2 0 0 0 2 17H6" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+            <rect x="8" y="9" width="12" height="9" rx="2" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
+            <circle cx="14" cy="13.5" r="1.5" fill="#8C8FA8" />
+          </svg>
+        }
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="casino"
+          label="Casino"
+          count={filterCounts.casino}
+          active={activeFilter === "casino"}
+          icon={
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="9" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
+            <circle cx="11" cy="11" r="4" stroke="#8C8FA8" strokeWidth="1.5" fill="none" />
+            <path d="M11 2V11M11 11L17.5 6M11 11L17.5 16" stroke="#8C8FA8" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        }
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="puzzle"
+          label="Puzzle"
+          count={filterCounts.puzzle}
+          active={activeFilter === "puzzle"}
+          icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M20 11.5C20 13.26 18.7 14.72 17 14.96V18C17 19.1 16.1 20 15 20H11.2V19.7C11.2 18.21 10 17 8.5 17C7 17 5.8 18.21 5.8 19.7V20H2C.89 20 0 19.1 0 18V14.2H.3C1.79 14.2 3 13 3 11.5C3 10 1.79 8.8.3 8.8H0V5C0 3.89.89 3 2 3H5.04C5.28 1.3 6.74 0 8.5 0C10.26 0 11.72 1.3 11.96 3H15C16.1 3 17 3.89 17 5V8.04C18.7 8.28 20 9.74 20 11.5ZM15 13H16.5C17.33 13 18 12.33 18 11.5C18 10.67 17.33 10 16.5 10H15V5H10V3.5C10 2.67 9.33 2 8.5 2C7.67 2 7 2.67 7 3.5V5H2V7.12C3.76 7.8 5 9.5 5 11.5C5 13.5 3.75 15.2 2 15.88V18H4.12C4.46 17.12 5.06 16.36 5.85 15.82C6.63 15.29 7.55 15 8.5 15C10.5 15 12.2 16.25 12.88 18H15V13Z" fill="#8C8FA8" />
+          </svg>
+        }
+          onClick={onFilterChange}
+        />
+        <FilterTabItem
+          filter="sweepstake"
+          label="Sweepstake"
+          count={filterCounts.sweepstake}
+          active={activeFilter === "sweepstake"}
+          icon={
+          <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+            <path d="M12.8 4L14 5.2L7.2 12L6 10.8L12.8 4ZM2 0H18C19.1 0 20 .89 20 2V6C18.9 6 18 6.9 18 8C18 9.1 18.9 10 20 10V14C20 15.1 19.1 16 18 16H2C.89 16 0 15.1 0 14V10C1.1 10 2 9.1 2 8C2 6.9 1.1 6 0 6V2C0 .9.89 0 2 0ZM7.5 4C6.67 4 6 4.67 6 5.5C6 6.33 6.67 7 7.5 7C8.33 7 9 6.33 9 5.5C9 4.67 8.33 4 7.5 4ZM12.5 9C11.67 9 11 9.67 11 10.5C11 11.33 11.67 12 12.5 12C13.33 12 14 11.33 14 10.5C14 9.67 13.33 9 12.5 9Z" fill="#8C8FA8" />
+          </svg>
+        }
+          onClick={onFilterChange}
+        />
+      </div>
     </div>
-    <div className="flex items-center gap-2 w-full md:w-auto">
-      <div className="flex flex-1 md:flex-none items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] w-full md:w-[361px]">
+
+    {/* Search & Dropdowns Row */}
+    <div className="flex flex-col md:flex-row items-center gap-3 w-full">
+      <div className="flex flex-1 items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] w-full">
         <IcoSearch />
         <input
           type="text"
@@ -774,6 +817,40 @@ const FilterBar: React.FC<{
           placeholder="Search game or provider"
           className="w-full bg-transparent text-[#B3B6C7] text-[14px] font-medium placeholder:text-[#6B6E8A] outline-none"
         />
+      </div>
+
+      <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="relative flex-1 md:flex-none">
+          <select 
+            value={sortBy}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="w-full md:w-[160px] bg-[#1E2133] border border-[#262F3E] text-[#B3B6C7] text-[14px] py-[10px] px-3 rounded-[7px] outline-none appearance-none cursor-pointer hover:border-[#0AC07D] transition-colors"
+          >
+            <option value="default">Sort by</option>
+            <option value="low-to-high">Price: Low to High</option>
+            <option value="high-to-low">Price: High to Low</option>
+            <option value="popular">Popularity</option>
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
+            <IcoChevronRightGray />
+          </div>
+        </div>
+
+        <div className="relative flex-1 md:flex-none">
+          <select 
+            value={selectedProvider}
+            onChange={(e) => onProviderChange(e.target.value)}
+            className="w-full md:w-[160px] bg-[#1E2133] border border-[#262F3E] text-[#B3B6C7] text-[14px] py-[10px] px-3 rounded-[7px] outline-none appearance-none cursor-pointer hover:border-[#0AC07D] transition-colors"
+          >
+            <option value="all">Providers</option>
+            {providerList.map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
+            <IcoChevronRightGray />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -786,11 +863,30 @@ const SectionHeader: React.FC<{
   onNext?: () => void;
   canPrev?: boolean;
   canNext?: boolean;
-}> = ({ title, onViewAll, onPrev, onNext, canPrev = false, canNext = false }) => (
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+  showFilters?: boolean;
+  sortBy?: string;
+  onSortChange?: (val: string) => void;
+  selectedProvider?: string;
+  onProviderChange?: (val: string) => void;
+  providerList?: string[];
+}> = ({ 
+  title, 
+  onViewAll, 
+  onPrev, 
+  onNext, 
+  canPrev = false, 
+  canNext = false,
+  showFilters = false,
+  sortBy,
+  onSortChange,
+  selectedProvider,
+  onProviderChange,
+  providerList = []
+}) => (
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 mt-6">
     <div className="flex items-center gap-2 sm:gap-4">
       <h2 className="text-white font-bold text-[22px] sm:text-[24px] md:text-[28px] tracking-[0.56px] leading-[34px] m-0">{title}</h2>
-      <div className="hidden md:flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-3 py-2 rounded-[5px]">
+      <div className="flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-2.5 py-1.5 rounded-[5px]">
         <IcoAndroid />
         <IcoApple />
         <svg width="17" height="10" viewBox="0 0 17 10" fill="none">
@@ -799,6 +895,29 @@ const SectionHeader: React.FC<{
       </div>
     </div>
     <div className="flex w-full sm:w-auto sm:justify-end items-center gap-3">
+      {showFilters && (
+        <div className="hidden md:flex items-center gap-2 bg-[#1E2133] border border-[#262F3E] p-1 rounded-[9px]">
+          <select 
+            value={sortBy}
+            onChange={(e) => onSortChange?.(e.target.value)}
+            className="bg-transparent text-[#B3B6C7] text-[12px] px-2 outline-none cursor-pointer appearance-none"
+          >
+            <option value="default">Sort</option>
+            <option value="low-to-high">Low</option>
+            <option value="high-to-low">High</option>
+          </select>
+          <div className="w-px h-4 bg-[#262F3E]" />
+          <select 
+            value={selectedProvider}
+            onChange={(e) => onProviderChange?.(e.target.value)}
+            className="bg-transparent text-[#B3B6C7] text-[12px] px-2 outline-none cursor-pointer appearance-none"
+          >
+            <option value="all">Provider</option>
+            {providerList.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
+      )}
+
       {(onPrev || onNext) && (
         <div className="flex items-center gap-[8px] bg-[#1E2133] border border-[#262F3E] px-2.5 py-[5px] rounded-[9px]">
           <button
@@ -826,7 +945,7 @@ const SectionHeader: React.FC<{
         type="button"
         onClick={onViewAll}
         disabled={!onViewAll}
-        className="w-full sm:w-auto px-3 py-[8px] rounded-[8px] text-white font-bold text-[14px] leading-4"
+        className="w-full sm:w-auto px-4 py-[8px] rounded-[8px] text-white font-bold text-[14px] leading-4 whitespace-nowrap transition-all hover:brightness-110 active:scale-95"
         aria-label={`View all ${title}`}
         style={{ background: "linear-gradient(135deg,#0AC07D,#14A290)", boxShadow: "0 7px 19px rgba(20,169,144,0.3)" }}
       >
@@ -879,7 +998,24 @@ const ProviderSection: React.FC<{
   providers: Provider[];
   onViewAll?: () => void;
   onProviderClick?: (provider: Provider) => void;
-}> = ({ title, providers, onViewAll, onProviderClick }) => {
+  showFilters?: boolean;
+  sortBy?: string;
+  onSortChange?: (val: string) => void;
+  selectedProvider?: string;
+  onProviderChange?: (val: string) => void;
+  providerList?: string[];
+}> = ({ 
+  title, 
+  providers, 
+  onViewAll, 
+  onProviderClick,
+  showFilters,
+  sortBy,
+  onSortChange,
+  selectedProvider,
+  onProviderChange,
+  providerList
+}) => {
   const { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState } = useHorizontalSlider();
 
   useEffect(() => {
@@ -895,6 +1031,12 @@ const ProviderSection: React.FC<{
         onNext={scrollNext}
         canPrev={canPrev}
         canNext={canNext}
+        showFilters={showFilters}
+        sortBy={sortBy}
+        onSortChange={onSortChange}
+        selectedProvider={selectedProvider}
+        onProviderChange={onProviderChange}
+        providerList={providerList}
       />
       {providers.length === 0 ? (
         <div className="rounded-[10px] border border-[#1E2133] bg-[#151728] p-6 text-[#8C8FA8] text-sm">
@@ -926,10 +1068,17 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<EarnFilterKey>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("default");
+  const [selectedProvider, setSelectedProvider] = useState("all");
   const [providers, setProviders] = useState<Provider[]>(PROVIDERS);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [profileInitial, setProfileInitial] = useState("B");
+
+  // Get unique list of providers for the dropdown
+  const providerList = useMemo(() => {
+    return Array.from(new Set(providers.map(p => p.displayName))).sort();
+  }, [providers]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1059,23 +1208,41 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const filteredGames = useMemo(() => {
-    return FEATURED_GAMES.filter((game) => {
+    let result = FEATURED_GAMES.filter((game) => {
       const passesFilter = activeFilter === "all" || game.categories.includes(activeFilter);
       const passesSearch =
         normalizedSearch.length === 0 || game.title.toLowerCase().includes(normalizedSearch);
       return passesFilter && passesSearch;
     });
-  }, [activeFilter, normalizedSearch]);
+
+    // Apply Sorting
+    if (sortBy === "low-to-high") {
+      result.sort((a, b) => parseFloat(a.price.replace("$", "")) - parseFloat(b.price.replace("$", "")));
+    } else if (sortBy === "high-to-low") {
+      result.sort((a, b) => parseFloat(b.price.replace("$", "")) - parseFloat(a.price.replace("$", "")));
+    }
+
+    return result;
+  }, [activeFilter, normalizedSearch, sortBy]);
 
   const filteredProviders = useMemo(() => {
-    return providers.filter((provider) => {
+    let result = providers.filter((provider) => {
       const passesFilter = activeFilter === "all" || provider.categories.includes(activeFilter);
       const passesSearch =
         normalizedSearch.length === 0 ||
         provider.displayName.toLowerCase().includes(normalizedSearch);
-      return passesFilter && passesSearch;
+      const passesProvider = selectedProvider === "all" || provider.displayName === selectedProvider;
+      
+      return passesFilter && passesSearch && passesProvider;
     });
-  }, [activeFilter, normalizedSearch, providers]);
+
+    // Apply Sorting
+    if (sortBy === "popular") {
+      result.sort((a, b) => b.progress - a.progress);
+    }
+
+    return result;
+  }, [activeFilter, normalizedSearch, providers, selectedProvider, sortBy]);
 
   const filteredOfferwallProviders = useMemo(
     () => filteredProviders.filter((provider) => provider.sourceKind !== "survey"),
@@ -1100,6 +1267,8 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const resetFilters = () => {
     setActiveFilter("all");
     setSearchTerm("");
+    setSortBy("default");
+    setSelectedProvider("all");
   };
 
   const openAllTasks = () => {
@@ -1128,6 +1297,14 @@ const EARNINGSPAGEComponent: React.FC = () => {
     router.push("/home");
   };
 
+  const offerwallProviderList = useMemo(() => {
+    return Array.from(new Set(providers.filter(p => p.sourceKind !== "survey").map(p => p.displayName))).sort();
+  }, [providers]);
+
+  const surveyProviderList = useMemo(() => {
+    return Array.from(new Set(providers.filter(p => p.sourceKind === "survey").map(p => p.displayName))).sort();
+  }, [providers]);
+
   return (
     <div className="bg-[#0B0D1F] min-h-screen font-sans text-white">
       <style>{TICKER_CSS}</style>
@@ -1150,6 +1327,11 @@ const EARNINGSPAGEComponent: React.FC = () => {
               onFilterChange={setActiveFilter}
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              selectedProvider={selectedProvider}
+              onProviderChange={setSelectedProvider}
+              providerList={providerList}
             />
             <FeaturedSection games={filteredGames} onViewAll={openAllTasks} />
             <ProviderSection
@@ -1157,12 +1339,24 @@ const EARNINGSPAGEComponent: React.FC = () => {
               providers={filteredOfferwallProviders}
               onViewAll={openAllTasks}
               onProviderClick={handleProviderClick}
+              showFilters={true}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              selectedProvider={selectedProvider}
+              onProviderChange={setSelectedProvider}
+              providerList={offerwallProviderList}
             />
             <ProviderSection
               title="Survey"
               providers={filteredSurveyProviders}
               onViewAll={openAllSurveys}
               onProviderClick={handleProviderClick}
+              showFilters={true}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              selectedProvider={selectedProvider}
+              onProviderChange={setSelectedProvider}
+              providerList={surveyProviderList}
             />
             <OffersSurveysRewardsDisclaimer className="mt-10" />
           </div>

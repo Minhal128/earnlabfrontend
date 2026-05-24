@@ -200,13 +200,13 @@ export default function SignUpModal({
             <div className="w-full max-w-[430px] mx-auto pt-6 md:pt-2 flex-1 flex flex-col">
               <h2 className="text-white text-[46px] font-bold leading-[1] mb-5">Sign up</h2>
 
-              <div className="flex items-center gap-3 bg-[#151728] border border-[#1C2033] rounded-[8px] px-3 py-2 mb-4">
+              <div className="flex items-center gap-3 bg-[#151728] border border-[#1C2033] rounded-[10px] px-4 py-2.5 mb-5">
                 <div className="flex items-center shrink-0">
-                  <img src="/img22.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728]" />
-                  <img src="/img23.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728] -ml-2.5" />
-                  <img src="/img24.png" alt="" className="w-8 h-8 rounded-full object-cover border-2 border-[#151728] -ml-2.5" />
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] shadow-sm" />
+                  <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] -ml-3 shadow-sm" />
+                  <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=100&h=100" alt="" className="w-9 h-9 rounded-full object-cover border-2 border-[#151728] -ml-3 shadow-sm" />
                 </div>
-                <p className="text-[#9BA0B8] text-[13px] font-medium leading-tight">Thousands just earned — don’t miss your first payout 🚀</p>
+                <p className="text-[#8C9DB6] text-[13px] font-medium leading-tight">Thousands just earned — don&apos;t miss your first payout 🚀</p>
               </div>
 
               {error && <div className="text-red-400 text-sm mb-4">{error}</div>}

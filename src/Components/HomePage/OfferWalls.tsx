@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { ArrowRight, Layers } from "lucide-react";
 import ProviderCard from "../Shared/NewProviderCard";
 
@@ -16,6 +16,7 @@ interface Offerwall {
   isActive?: boolean;
   status?: string;
   logoUrl?: string;
+  color?: string;
   metadata?: {
     logoUrl?: string;
     description?: string;
@@ -23,8 +24,89 @@ interface Offerwall {
     pointsMultiplier?: number;
     launchUrl?: string;
     offerUrl?: string;
+    amount?: string;
   };
 }
+
+const sampleOfferwalls: Offerwall[] = [
+  {
+    _id: "sample-1",
+    name: "Block Blast",
+    color: "#3BF7B1",
+    metadata: {
+      logoUrl: "/game-mocks/block-blast.png",
+      description: "Match blocks and clear lines for huge rewards",
+      amount: "$1.20",
+      rating: 4.8,
+    },
+  },
+  {
+    _id: "sample-2",
+    name: "Quest Master",
+    color: "#FFB800",
+    metadata: {
+      logoUrl: "/game-mocks/quest-master.png",
+      description: "Embark on an epic adventure and earn points",
+      amount: "$2.50",
+      rating: 4.9,
+    },
+  },
+  {
+    _id: "sample-3",
+    name: "Harvest Valley",
+    color: "#00E0FF",
+    metadata: {
+      logoUrl: "/game-mocks/harvest-valley.png",
+      description: "Build your dream farm and harvest daily cash",
+      amount: "$0.75",
+      rating: 4.5,
+    },
+  },
+  {
+    _id: "sample-4",
+    name: "Turbo Drift",
+    color: "#FF2E63",
+    metadata: {
+      logoUrl: "/game-mocks/turbo-drift.png",
+      description: "Race through the city and collect nitro coins",
+      amount: "$1.80",
+      rating: 4.7,
+    },
+  },
+  {
+    _id: "sample-5",
+    name: "Jackpot Spin",
+    color: "#B656FF",
+    metadata: {
+      logoUrl: "/game-mocks/jackpot-spin.png",
+      description: "Spin the premium reels for a chance to win big",
+      amount: "$3.00",
+      rating: 4.6,
+    },
+  },
+  {
+    _id: "sample-6",
+    name: "Star Voyage",
+    color: "#FF6B6B",
+    metadata: {
+      logoUrl: "/game-mocks/star-voyage.png",
+      description: "Explore the galaxy and find hidden space treasures",
+      amount: "$2.10",
+      rating: 4.8,
+    },
+  },
+  {
+    _id: "sample-7",
+    name: "Monster Squad",
+    color: "#72E53E",
+    metadata: {
+      logoUrl: "/img22.png",
+      description: "Collect rare monsters and battle for rewards",
+      amount: "$0.90",
+      rating: 4.4,
+    },
+  },
+];
 
 interface OfferWallsProps {
   title?: string;
@@ -35,6 +117,49 @@ interface OfferWallsProps {
   viewAllLabel?: string;
   onViewAll?: () => void;
 }
+
+const useHorizontalSlider = () => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const maxScrollLeft = element.scrollWidth - element.clientWidth;
+    setCanPrev(element.scrollLeft > 2);
+    setCanNext(element.scrollLeft < maxScrollLeft - 2);
+  }, []);
+
+  const scrollPrev = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    element.scrollBy({ left: -Math.max(260, element.clientWidth * 0.7), behavior: "smooth" });
+  }, []);
+
+  const scrollNext = useCallback(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    element.scrollBy({ left: Math.max(260, element.clientWidth * 0.7), behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    updateScrollState();
+    element.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    return () => {
+      element.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [updateScrollState]);
+
+  return { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState };
+};
 
 const OfferWalls: React.FC<OfferWallsProps> = ({
   title = "Offer Walls",
@@ -123,9 +248,15 @@ const OfferWalls: React.FC<OfferWallsProps> = ({
   const visibleProviders = sortedProviders.slice(0, Math.max(limit, 1));
   const skeletonCount = Math.max(5, Math.min(limit, 10));
 
+  const { containerRef, canPrev, canNext, scrollPrev, scrollNext, updateScrollState } = useHorizontalSlider();
+
+  useEffect(() => {
+    updateScrollState();
+  }, [visibleProviders.length, updateScrollState]);
+
   return (
-    <section className="w-full mt-8 sm:mt-10 md:mt-12">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 px-3 sm:px-6 md:px-10 lg:px-16 gap-3">
+    <section className="w-full mt-8 sm:mt-10 md:mt-12 max-w-[1440px] mx-auto">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 px-4 sm:px-6 md:px-10 lg:px-12 gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="p-2 sm:p-2.5 bg-[#151728] border border-[#30334A] rounded-[8px] sm:rounded-[10px] text-white flex-shrink-0">
             <Layers size={20} className="sm:w-6 sm:h-6" />
@@ -145,37 +276,62 @@ const OfferWalls: React.FC<OfferWallsProps> = ({
           </div>
         </div>
 
-        {showViewAll && (
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+          <div className="flex items-center gap-[8px] bg-[#1E2133] border border-[#262F3E] px-2.5 py-[8px] rounded-[9px]">
+            <button
+              type="button"
+              onClick={scrollPrev}
+              disabled={!canPrev}
+              className="w-5 h-5 flex items-center justify-center disabled:opacity-35 text-[#8C8FA8] hover:text-white transition-colors"
+              aria-label="Previous"
+            >
+              <ArrowRight size={16} className="rotate-180" />
+            </button>
+            <div className="w-px h-[16px] bg-[#30334A]" />
+            <button
+              type="button"
+              onClick={scrollNext}
+              disabled={!canNext}
+              className="w-5 h-5 flex items-center justify-center disabled:opacity-35 text-[#8C8FA8] hover:text-white transition-colors"
+              aria-label="Next"
+            >
+              <ArrowRight size={16} />
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={onViewAll}
-            className="hidden sm:flex items-center gap-2 text-[#8C8FA8] hover:text-white transition-colors"
+            className="w-full sm:w-auto px-6 py-[10px] rounded-[10px] text-white font-bold text-[14px] leading-none transition-all hover:scale-[1.02] active:scale-[0.98]"
+            style={{ 
+              background: "linear-gradient(135deg, #0AC07D 0%, #14A290 100%)",
+              boxShadow: "0 8px 20px rgba(10, 192, 125, 0.25)"
+            }}
           >
-            <span className="text-sm md:text-base font-medium">{viewAllLabel}</span>
-            <ArrowRight size={18} />
+            {viewAllLabel}
           </button>
-        )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-[25px] px-3 sm:px-6 md:px-10 lg:px-16">
+      <div 
+        ref={containerRef}
+        className="flex gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 md:px-10 lg:px-12 overflow-x-auto scrollbar-hide pb-4"
+      >
         {loading ? (
           Array(skeletonCount)
             .fill(0)
             .map((_, i) => (
-              <div key={i} className="w-full aspect-square bg-[#151728] animate-pulse rounded-[10px]" />
+              <div key={i} className="w-full aspect-square bg-[#151728] animate-pulse rounded-[18px]" />
             ))
-        ) : providers.length === 0 ? (
-          <div className="col-span-full text-center text-sm text-[#8C8FA8] py-4">
-            No offer walls available right now.
-          </div>
         ) : (
-          visibleProviders.map((p, i) => {
+          (visibleProviders.length > 0 ? visibleProviders : sampleOfferwalls.slice(0, Math.max(limit, 1))).map((p, i) => {
             const rating = getOfferwallRating(p);
             const progress = rating * 20;
             const bonus =
               p.metadata?.pointsMultiplier && p.metadata.pointsMultiplier > 1
                 ? ((p.metadata.pointsMultiplier - 1) * 100).toFixed(0)
                 : undefined;
+            const description = p.metadata?.description || "Play for 5 mins and earn rewards";
 
             return (
               <ProviderCard
@@ -186,6 +342,9 @@ const OfferWalls: React.FC<OfferWallsProps> = ({
                 bonus={bonus}
                 rating={rating}
                 reviews={Math.max(18, Math.round(progress * 2.2))}
+                description={description}
+                amount={p.metadata?.amount}
+                color={p.color}
                 onClick={() => {
                   if (!localStorage.getItem("token")) {
                     window.dispatchEvent(new CustomEvent("openSignIn"));
