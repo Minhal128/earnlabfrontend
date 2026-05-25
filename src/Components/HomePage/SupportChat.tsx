@@ -270,8 +270,8 @@ const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-[10000] flex justify-end bg-black/50" onClick={onClose} style={{ height: "100dvh" }}>
       <div
-        className="flex flex-col overflow-hidden"
-        style={{ width: "100%", maxWidth: 380, height: "100dvh", background: "#0D0F1E" }}
+        className="flex flex-col overflow-hidden w-full sm:max-w-[380px]"
+        style={{ height: "100dvh", background: "#0D0F1E" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

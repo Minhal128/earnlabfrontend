@@ -111,8 +111,8 @@ const NotificationDropdown: React.FC<Props> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div
-        className="relative flex flex-col overflow-hidden"
-        style={{ width: "100%", maxWidth: 380, height: "100%", background: "#0D0F1E" }}
+        className="relative flex flex-col overflow-hidden w-full sm:max-w-[380px]"
+        style={{ height: "100%", background: "#0D0F1E" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

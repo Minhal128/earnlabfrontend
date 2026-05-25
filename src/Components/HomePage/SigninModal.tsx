@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import GoogleImg from "../../../public/assets/g.png";
@@ -46,6 +46,30 @@ export default function SignInModal({
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [modalScale, setModalScale] = useState(1);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const updateScale = () => {
+      if (!modalRef.current) return;
+      const scaleY = (window.innerHeight * 0.95) / modalRef.current.offsetHeight;
+      const scaleX = (window.innerWidth * 0.95) / modalRef.current.offsetWidth;
+      setModalScale(Math.min(1, scaleY, scaleX));
+    };
+    const id = setTimeout(updateScale, 50);
+    window.addEventListener("resize", updateScale);
+    return () => { clearTimeout(id); window.removeEventListener("resize", updateScale); };
+  }, [isOpen]);
 
   const redirectAfter = `${typeof window !== "undefined" ? window.location.origin : ""}/home`;
 
@@ -181,8 +205,12 @@ export default function SignInModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4">
-      <div className="relative w-full max-w-[560px] md:max-w-[940px] max-h-[88vh] bg-[#0D0F1E] border border-[#1C2033] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.55)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 h-full min-h-[540px] md:min-h-[620px]">
+      <div
+        ref={modalRef}
+        style={{ transform: `scale(${modalScale})`, transformOrigin: "center center" }}
+        className="relative w-full max-w-[560px] md:max-w-[940px] bg-[#0D0F1E] border border-[#1C2033] rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[460px] md:min-h-[520px]">
           {/* Left visual panel */}
           <div className="hidden md:block relative bg-[#11172A]">
             <img
@@ -194,16 +222,16 @@ export default function SignInModal({
           </div>
 
           {/* Right form panel */}
-          <div className="relative bg-[#0D0F1E] px-5 sm:px-7 md:px-10 py-8 md:py-10 flex flex-col overflow-y-auto">
+          <div className="relative bg-[#0D0F1E] px-5 sm:px-7 md:px-10 py-4 md:py-6 flex flex-col">
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 w-7 h-7 rounded-full bg-[#1C2033] hover:bg-[#2A2E45] text-[#8C8FA8] hover:text-white transition-colors flex items-center justify-center"
+              className="absolute right-4 top-3 w-7 h-7 rounded-full bg-[#1C2033] hover:bg-[#2A2E45] text-[#8C8FA8] hover:text-white transition-colors flex items-center justify-center"
               aria-label="Close sign in modal"
             >
               <X size={14} />
             </button>
 
-            <div className="w-full max-w-[430px] mx-auto pt-6 md:pt-2 flex-1 flex flex-col">
+            <div className="w-full max-w-[430px] mx-auto pt-3 md:pt-1 flex-1 flex flex-col">
               <h2 className="text-white text-[46px] font-bold leading-[1] mb-6">Sign in</h2>
 
               {error && <div className="text-red-400 text-sm mb-4">{error}</div>}

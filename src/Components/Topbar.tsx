@@ -1,5 +1,5 @@
 "use client";
-import { Bell, Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -17,12 +17,10 @@ import {
 } from "@/store/userSlice";
 import { useSocket } from "@/contexts/SocketProvider";
 import LogoImg from "../../public/assets/logo.png";
-import { openLiveChatPanel } from "@/utils/liveChat";
 
 const TopBar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -176,59 +174,6 @@ const TopBar: React.FC = () => {
       {/* Right controls */}
       <div className="flex items-center gap-1 sm:gap-2">
 
-        {/* Desktop menu */}
-        <div className="relative hidden lg:block">
-          <button
-            onClick={() => setDesktopMenuOpen((v) => !v)}
-            className="flex items-center justify-center rounded-[5px] transition-colors hover:opacity-80"
-            style={{ width: 40, height: 40, background: "#1E2133", border: "1.5px solid #30334A" }}
-            aria-label="Open menu"
-          >
-            <Menu className="w-5 h-5 text-white" />
-          </button>
-
-          {desktopMenuOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-[10px] shadow-xl z-50 overflow-hidden" style={{ background: "#151728", border: "1px solid #1E2133" }}>
-              <div className="py-2">
-                {[
-                  { id: "rewards", href: "/rewards", label: "Rewards" },
-                  { id: "leaderboard", href: "/leaderboard", label: "Leaderboard" },
-                  { id: "referrals", href: "/referrals", label: "Referrals" },
-                  { id: "live-chat", label: "Live Chat", onClick: () => openLiveChatPanel() },
-                  { id: "support", href: "/support", label: "Support" },
-                  { id: "settings", href: "/settings", label: "Settings" },
-                ].map((item) => {
-                  if (item.onClick) {
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => {
-                          setDesktopMenuOpen(false);
-                          item.onClick();
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.id}
-                      href={item.href!}
-                      onClick={() => setDesktopMenuOpen(false)}
-                      className="block px-4 py-2.5 text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Bell */}
         <div className="relative">
@@ -317,22 +262,44 @@ const TopBar: React.FC = () => {
           </div>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-[10px] shadow-xl z-50 overflow-hidden" style={{ background: "#151728", border: "1px solid #1E2133" }}>
+            <div className="absolute right-0 mt-2 w-52 rounded-[10px] shadow-xl z-50 overflow-hidden" style={{ background: "#151728", border: "1px solid #1E2133" }}>
               <div className="flex justify-end px-3 pt-3">
                 <button onClick={() => setProfileOpen(false)} className="flex items-center justify-center rounded-[6px] text-[#8C8FA8] hover:opacity-80" style={{ width: 26, height: 26, background: "#26293E", border: "1px solid #30334A" }}>
                   <X size={14} />
                 </button>
               </div>
-              <nav className="flex flex-col gap-1 px-3 pb-3 text-sm">
+              <nav className="flex flex-col gap-0.5 px-3 pb-3 text-sm">
+                {/* Profile */}
                 <Link href="/account" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
                   <IoMdPerson size={16} /> Account
                 </Link>
-                <div style={{ height: 1, background: "#1E2133" }} />
                 <Link href="/referrals" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-white hover:bg-[#1E2133] transition-colors">
                   <Image src={AffeImg} alt="Referrals" width={16} height={16} className="object-contain" />
                   Referrals
                 </Link>
-                <div style={{ height: 1, background: "#1E2133" }} />
+
+                <div style={{ height: 1, background: "#1E2133", margin: "4px 0" }} />
+
+                {/* Navigation */}
+                <Link href="/rewards" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M12 11V22M3 7h18v4H3V7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  Rewards
+                </Link>
+                <Link href="/leaderboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3L14.5 8.5L21 9.3L16.5 13.6L17.75 20L12 16.9L6.25 20L7.5 13.6L3 9.3L9.5 8.5L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                  Leaderboard
+                </Link>
+                <Link href="/support" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 12C3 7.03 7.03 3 12 3s9 4.03 9 9v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2v-1a7 7 0 0 0-14 0v1h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  Support
+                </Link>
+                <Link href="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[#B3B6C7] hover:text-white hover:bg-[#1E2133] transition-colors">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.5"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" strokeWidth="1.5"/></svg>
+                  Settings
+                </Link>
+
+                <div style={{ height: 1, background: "#1E2133", margin: "4px 0" }} />
+
                 <button onClick={handleSignOut} className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-red-400 hover:bg-[#1E2133] transition-colors text-left w-full">
                   <FaSignOutAlt size={16} /> Sign Out
                 </button>

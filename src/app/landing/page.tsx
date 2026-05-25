@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import SignInModal from '@/Components/HomePage/SigninModal';
+import SignUpModal from '@/Components/HomePage/SignupModal';
+import ForgotPasswordModal from '@/Components/HomePage/ForgotPasswordModal';
 
 /* ───────────── FAQ Accordion ───────────── */
 const faqData = [
@@ -478,16 +481,86 @@ const REWARD_LOGOS = [
   },
 ];
 
+/* ─── Static testimonials ─── */
+const TESTIMONIALS = [
+  {
+    name: 'Leslie Alexander',
+    country: 'United Kingdom',
+    flag: '🇬🇧',
+    text: "I was skeptical at first, but after completing just a few surveys I was able to cash out directly to my PayPal. Fast, simple, and legit — I'm hooked!",
+    rating: 5,
+  },
+  {
+    name: 'Bessie Cooper',
+    country: 'United States',
+    flag: '🇺🇸',
+    text: "I honestly didn't expect much at first, but LabWards surprised me. The tasks are simple, payouts are fast, and everything works exactly as promised.",
+    rating: 4.5,
+  },
+  {
+    name: 'Brooklyn Simmons',
+    country: 'France',
+    flag: '🇫🇷',
+    text: "What I like most about LabWards is how straightforward it is. No confusing steps, no hidden tricks. I complete surveys or offers in my free time and the earnings add up quickly!",
+    rating: 4,
+  },
+  {
+    name: 'Cameron Williamson',
+    country: 'Germany',
+    flag: '🇩🇪',
+    text: "I've been using LabWards for three months and I'm consistently earning extra cash just from daily offers and surveys. Best platform I've found for making money online!",
+    rating: 5,
+  },
+  {
+    name: 'Robert Fox',
+    country: 'Canada',
+    flag: '🇨🇦',
+    text: "The payout speed is unmatched. I requested my first Bitcoin withdrawal and it arrived in under 10 minutes. Definitely recommend LabWards to anyone looking to earn online.",
+    rating: 4.5,
+  },
+];
+
+const STAR_PATH = 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z';
+const HALF_STAR_PATH = 'M12 2L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z';
+
+const StarIcon = ({ type }: { type: 'full' | 'half' | 'empty' }) => {
+  if (type === 'full') return (
+    <svg width="20" height="20" viewBox="0 0 24 24"><path d={STAR_PATH} fill="#F59E0B"/></svg>
+  );
+  if (type === 'half') return (
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path d={STAR_PATH} fill="#3A3E55"/>
+      <path d={HALF_STAR_PATH} fill="#F59E0B"/>
+    </svg>
+  );
+  return <svg width="20" height="20" viewBox="0 0 24 24"><path d={STAR_PATH} fill="#3A3E55"/></svg>;
+};
+
+const StarRating = ({ rating }: { rating: number }) => (
+  <div className="flex gap-0.5">
+    {[1, 2, 3, 4, 5].map((n) => (
+      <StarIcon
+        key={n}
+        type={n <= Math.floor(rating) ? 'full' : n - 0.5 <= rating ? 'half' : 'empty'}
+      />
+    ))}
+  </div>
+);
+
 const LANDINGPAGEComponent = () => {
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [recentActivities, setRecentActivities] = useState<LandingActivity[]>([]);
   const [totalPayout24hCents, setTotalPayout24hCents] = useState<number | null>(null);
   const [completedPayouts24hCount, setCompletedPayouts24hCount] = useState<number | null>(null);
   const [totalRewardsEarnedCents, setTotalRewardsEarnedCents] = useState<number | null>(null);
   const [averageMoneyEarnedCents, setAverageMoneyEarnedCents] = useState<number | null>(null);
   const [tasksCompletedCount, setTasksCompletedCount] = useState<number | null>(null);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -664,10 +737,10 @@ const LANDINGPAGEComponent = () => {
         </button>
         {/* Desktop buttons */}
         <div className="hidden sm:flex items-center gap-3">
-          <button onClick={() => router.push('/sigin')} className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
+          <button onClick={() => setShowSignIn(true)} className="px-6 py-3 rounded-full border border-[#3A3E57] bg-[#30334A] text-white font-bold text-sm">
             Sign in
           </button>
-          <button onClick={() => router.push('/signup')} className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+          <button onClick={() => setShowSignUp(true)} className="px-6 py-3 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-sm shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
             Sign up
           </button>
         </div>
@@ -688,10 +761,10 @@ const LANDINGPAGEComponent = () => {
           </div>
           
           <div className="flex flex-col gap-4">
-            <button onClick={() => { setIsMobileMenuOpen(false); router.push('/sigin'); }} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
+            <button onClick={() => { setIsMobileMenuOpen(false); setShowSignIn(true); }} className="w-full py-4 text-center rounded-xl border border-[#3A3E57] bg-[#30334A] text-white font-bold text-lg">
               Sign in
             </button>
-            <button onClick={() => { setIsMobileMenuOpen(false); router.push('/signup'); }} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
+            <button onClick={() => { setIsMobileMenuOpen(false); setShowSignUp(true); }} className="w-full py-4 text-center rounded-xl bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold text-lg shadow-[0_9px_24px_rgba(20,169,144,0.3)]">
               Sign up
             </button>
           </div>
@@ -749,7 +822,7 @@ const LANDINGPAGEComponent = () => {
             Complete surveys, play games, and finish quick offers to earn real
             money, crypto, and rewards.
           </p>
-          <button onClick={() => router.push('/signup')} className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
+          <button onClick={() => setShowSignUp(true)} className="mt-5 sm:mt-7 px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-[#0AC07D] to-[#14A990] text-white font-bold shadow-[0_9px_24px_rgba(20,169,144,0.3)] text-sm sm:text-base hover:scale-105 hover:shadow-[0_12px_32px_rgba(20,169,144,0.5)] transition-all duration-300">
             Start Earning Now
           </button>
         </div>
@@ -824,7 +897,7 @@ const LANDINGPAGEComponent = () => {
       </section>
 
       {/* ═══════ LIVE PAYOUTS ═══════ */}
-      <section className="max-w-[1312px] mx-auto px-4 py-10 sm:py-16">
+      <section className="max-w-[1312px] mx-auto px-4 pt-10 sm:pt-16 pb-0">
         <h2 className="text-3xl sm:text-5xl font-semibold text-center tracking-tight mb-4 sm:mb-6 animate-fadeInUp">
           Live Payouts
         </h2>
@@ -833,12 +906,21 @@ const LANDINGPAGEComponent = () => {
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Total payout */}
             <div className="bg-[#181A2C] rounded-xl p-5 sm:p-8 flex flex-col items-center justify-center gap-2 min-w-0 sm:min-w-[260px]">
-              <div className="w-11 h-11 rounded-full bg-[#099F86] flex items-center justify-center shadow-[0_9px_24px_rgba(20,169,144,0.3)] animate-pulse-glow">
-                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                  <path
-                    d="M13 2C7.48 2 3 6.48 3 12s4.48 10 10 10 10-4.48 10-10S18.52 2 13 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                    fill="white"
-                  />
+              <div
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-[0_12px_32px_rgba(10,175,135,0.45)]"
+                style={{ background: 'linear-gradient(150deg, #18D4A8 0%, #0FB88E 40%, #099F86 100%)' }}
+              >
+                <svg width="44" height="44" viewBox="0 0 56 52" fill="white">
+                  {/* Bag body */}
+                  <circle cx="20" cy="30" r="18"/>
+                  {/* Bag neck */}
+                  <rect x="14" y="11" width="12" height="8" rx="6"/>
+                  {/* Bag knot */}
+                  <circle cx="20" cy="7" r="5.5"/>
+                  {/* Coin stack */}
+                  <ellipse cx="44" cy="44" rx="11" ry="5" opacity="0.5"/>
+                  <ellipse cx="44" cy="37" rx="11" ry="5" opacity="0.72"/>
+                  <ellipse cx="44" cy="30" rx="11" ry="5"/>
                 </svg>
               </div>
               <h3 className="text-[#0AC07D] text-3xl font-bold">
@@ -918,10 +1000,22 @@ const LANDINGPAGEComponent = () => {
         </div>
       </section>
 
-
+      {/* ═══════ PARTNER NETWORKS ═══════ */}
+      <section className="w-full overflow-hidden" style={{ height: '460px' }}>
+        <div className="max-w-[1312px] mx-auto px-4 h-full">
+          <img
+            src="/updated2.png"
+            alt="Partner networks"
+            className="w-full h-full object-cover block"
+            style={{ objectPosition: 'center center' }}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </section>
 
       {/* ═══════ EARN BY COMPLETING TASKS ═══════ */}
-      <section className="max-w-[1312px] mx-auto px-4 py-10 sm:py-16">
+      <section className="max-w-[1312px] mx-auto px-4 pt-0 pb-10 sm:pb-16">
         <h2 className="text-3xl sm:text-5xl font-semibold text-center tracking-tight mb-8 sm:mb-10 animate-fadeInUp">
           Earn by Completing{' '}
           <span className="text-[#18C2A3]">Simple Tasks</span>
@@ -966,30 +1060,84 @@ const LANDINGPAGEComponent = () => {
       </section>
 
       {/* ═══════ TESTIMONIALS ═══════ */}
-      <section className="bg-[#111324] py-12 sm:py-20">
+      <section className="py-14 sm:py-20" style={{ background: '#0D0F1E' }}>
         <div className="max-w-[1312px] mx-auto px-4">
-          <h2 className="text-2xl sm:text-5xl font-semibold text-center tracking-tight mb-8 sm:mb-12 animate-fadeIn">
+          <h2 className="text-3xl sm:text-5xl font-semibold text-center tracking-tight mb-10 sm:mb-14">
             What people are saying{' '}
             <span className="text-[#18C2A3]">about us</span>
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-            {activitiesForTestimonials.length > 0 && (
-              activitiesForTestimonials.slice(0, 8).map((activity, index) => (
+
+          {/* Cards — 3 visible at once on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-10 sm:mb-12">
+            {[0, 1, 2].map((offset) => {
+              const t = TESTIMONIALS[(testimonialIdx + offset) % TESTIMONIALS.length];
+              return (
                 <div
-                  key={`testimonial-activity-${activity.username}-${activity.timestamp}-${index}`}
-                  className="h-full"
+                  key={`${t.name}-${offset}`}
+                  className="rounded-2xl border border-[#252840] p-6 sm:p-7 flex flex-col gap-4"
+                  style={{ background: '#161828' }}
                 >
-                  <TestimonialCard
-                    avatarUrl={activity.avatarUrl || null}
-                    name={activity.username || 'User'}
-                    country={formatCountryLabel(activity)}
-                    text={formatActivitySummary(activity)}
-                    amount={formatCurrencyFromCents(activity.amount)}
-                    activityDate={formatActivityDate(activity.timestamp)}
-                  />
+                  {/* Avatar + name */}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center text-white text-sm font-bold ring-2 ring-white/10"
+                      style={{ background: getGeneratedAvatarBackground(t.name) }}
+                    >
+                      {t.name.split(' ').map((n) => n[0]).join('')}
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold text-[15px] leading-tight">{t.name}</p>
+                      <p className="text-[#8C8FA8] text-[13px] mt-0.5">{t.flag} {t.country}</p>
+                    </div>
+                  </div>
+                  {/* Review text */}
+                  <p className="text-[#B3B6C7] text-sm leading-6 flex-1">{t.text}</p>
+                  {/* Stars */}
+                  <StarRating rating={t.rating} />
                 </div>
-              ))
-            )}
+              );
+            })}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-5">
+            {/* Prev */}
+            <button
+              onClick={() => setTestimonialIdx((p) => (p - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
+              className="w-10 h-10 rounded-full border border-[#2A2D40] flex items-center justify-center text-white hover:border-[#0AC07D] hover:text-[#0AC07D] transition-colors duration-200"
+              style={{ background: '#1A1D2E' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Dots */}
+            <div className="flex items-center gap-2">
+              {TESTIMONIALS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setTestimonialIdx(i)}
+                  className="rounded-full transition-all duration-300"
+                  style={{
+                    width: i === testimonialIdx ? '28px' : '10px',
+                    height: '10px',
+                    background: i === testimonialIdx ? '#0AC07D' : '#2A2D40',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => setTestimonialIdx((p) => (p + 1) % TESTIMONIALS.length)}
+              className="w-10 h-10 rounded-full border border-[#2A2D40] flex items-center justify-center text-white hover:border-[#0AC07D] hover:text-[#0AC07D] transition-colors duration-200"
+              style={{ background: '#1A1D2E' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       </section>
@@ -1088,22 +1236,13 @@ const LANDINGPAGEComponent = () => {
           One Platform,{' '}
           <span className="text-[#18C2A3]">multiple Rewards</span>
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 w-full mx-auto place-items-center">
-          {REWARD_LOGOS.map((logo) => (
-            <div
-              key={logo.id}
-              className="w-full min-h-[72px] sm:min-h-[96px] flex items-center justify-center"
-            >
-              <img
-                src={logo.src}
-                alt={`${logo.name} logo`}
-                className={`w-auto max-w-[92%] h-10 sm:h-14 md:h-16 object-contain ${logo.id === 'worldcoin' ? 'invert brightness-200 mix-blend-screen' : ''}`}
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          ))}
-        </div>
+        <img
+          src="/updated.png"
+          alt="Multiple reward platforms"
+          className="w-full h-auto object-contain rounded-2xl"
+          loading="lazy"
+          decoding="async"
+        />
       </section>
 
       {/* ═══════ CTA SECTION ═══════ */}
@@ -1123,7 +1262,7 @@ const LANDINGPAGEComponent = () => {
               answering surveys to earn real cash and rewards. It only takes a
               few minutes to get started.
             </p>
-            <button onClick={() => router.push('/signup')} className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
+            <button onClick={() => setShowSignUp(true)} className="inline-block px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-white text-[#0D0F1E] font-bold text-sm sm:text-base hover:bg-[#18C2A3] hover:text-white transition-colors duration-300 hover:shadow-[0_0_30px_rgba(24,194,163,0.4)]">
               Get Started
             </button>
           </div>
@@ -1131,6 +1270,23 @@ const LANDINGPAGEComponent = () => {
       </section>
 
       {/* Shared footer is rendered globally from src/app/layout.tsx */}
+
+      {/* ═══════ AUTH MODALS ═══════ */}
+      <SignInModal
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onForgotPassword={() => { setShowSignIn(false); setShowForgotPassword(true); }}
+        onSignUp={() => { setShowSignIn(false); setShowSignUp(true); }}
+      />
+      <SignUpModal
+        isOpen={showSignUp}
+        onClose={() => setShowSignUp(false)}
+        onSignIn={() => { setShowSignUp(false); setShowSignIn(true); }}
+      />
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
 
       {/* ═══════ MOBILE BOTTOM NAV ═══════ */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-[#111324] border-t border-[#1C1E32] flex items-center justify-around py-2 z-50">
@@ -1140,19 +1296,19 @@ const LANDINGPAGEComponent = () => {
           </svg>
           <span className="text-[10px] font-medium">Home</span>
         </button>
-        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => setShowSignUp(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
           <span className="text-[10px]">Earn</span>
         </button>
-        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => setShowSignUp(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/>
           </svg>
           <span className="text-[10px]">Tasks</span>
         </button>
-        <button onClick={() => router.push('/signup')} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
+        <button onClick={() => setShowSignUp(true)} className="flex flex-col items-center gap-0.5 text-[#6B6E8A]">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>

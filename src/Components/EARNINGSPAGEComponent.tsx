@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation";
 import OffersSurveysRewardsDisclaimer from "@/Components/Shared/OffersSurveysRewardsDisclaimer";
 import NotificationDropdown from "@/Components/HomePage/NotificationDropdown";
+import EarnSideMenu from "@/Components/EARNINGSPAGEComponent/EarnSideMenu";
 import { FaAndroid, FaApple } from "react-icons/fa";
 
 // ─── Ticker animation injected once ─────────────────────────────────────────
@@ -87,18 +88,6 @@ const IcoThumbDown = () => (
   </svg>
 );
 
-const IcoViews = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path
-      d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z"
-      stroke="#8C8FA8"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="12" cy="12" r="3" fill="#8C8FA8" />
-  </svg>
-);
 
 const IcoChevronLeftGray = () => (
   <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
@@ -224,7 +213,6 @@ interface Provider {
   displayName: string;
   progress: number;
   likes?: string;
-  views?: string;
   logoUrl?: string;
   launchUrl?: string;
   sourceKind?: "survey" | "offerwall";
@@ -452,17 +440,19 @@ const FilterTabItem: React.FC<{
   <button
     type="button"
     onClick={() => onClick(filter)}
-    className="relative flex flex-col items-center gap-[2px] flex-shrink-0 bg-transparent border-0 p-0 cursor-pointer"
+    className="flex flex-col items-center gap-[5px] flex-shrink-0 bg-transparent border-0 p-0 px-1 cursor-pointer"
   >
-    <div className="flex flex-col items-center gap-[2px]">
-      <div className="w-6 h-6 flex items-center justify-center">{icon}</div>
-      <p className={`text-[13px] font-medium leading-5 text-center ${active ? "text-white" : "text-[#8C8FA8]"}`}>
-        <span className="whitespace-nowrap">{label}</span>
-      </p>
+    {/* Icon area with badge */}
+    <div className="relative">
+      <div className="w-7 h-7 flex items-center justify-center">{icon}</div>
+      <div className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[16px] px-[4px] bg-[rgba(126,129,147,0.25)] rounded-[4px] flex items-center justify-center">
+        <span className="text-[9px] font-bold text-white leading-none">{count}</span>
+      </div>
     </div>
-    <div className="absolute -top-0.5 -right-3 w-4 h-4 bg-[rgba(126,129,147,0.2)] rounded-[5px] flex items-center justify-center">
-      <span className="text-[9px] font-medium text-white">{count}</span>
-    </div>
+    {/* Label */}
+    <p className={`text-[12px] font-medium text-center whitespace-nowrap leading-none ${active ? "text-white" : "text-[#8C8FA8]"}`}>
+      {label}
+    </p>
   </button>
 );
 
@@ -473,7 +463,7 @@ const GameCard: React.FC<{
   highlighted?: boolean;
 }> = ({ image, title, price, highlighted = false }) => (
   <div
-    className="relative rounded-[10px] overflow-visible bg-[#151728] flex-shrink-0 min-w-[220px] sm:min-w-[240px] md:min-w-0 md:flex-1"
+    className="relative rounded-[10px] overflow-visible bg-[#151728] flex-shrink-0 min-w-[42vw] sm:min-w-[220px] md:min-w-0 md:flex-1"
     style={{
       border: highlighted ? "1.5px solid #4DD6C1" : "1px solid #1E2133",
     }}
@@ -497,60 +487,79 @@ const ProviderCard: React.FC<{
   displayName: string;
   progress: number;
   likes?: string;
-  views?: string;
   logoUrl?: string;
   onClick?: () => void;
-}> = ({ type, displayName, progress, likes = "2.6K", views = "10K", logoUrl, onClick }) => {
-  const Logo = LOGO_MAP[type] ?? MonlixLogo;
+}> = ({ type, displayName, progress, likes = "2.6K", logoUrl, onClick }) => {
+  const Logo = LOGO_MAP[type];
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="relative rounded-[10px] bg-[#151728] flex flex-col overflow-hidden text-left transition-colors cursor-pointer flex-shrink-0 min-w-[220px] sm:min-w-[240px] md:min-w-0 md:flex-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4DD6C1]"
-      style={{ border: "1px solid #1E2133" }}
+      className="relative rounded-[16px] overflow-hidden text-left cursor-pointer flex-shrink-0 min-w-[44vw] sm:min-w-[240px] md:min-w-0 md:flex-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4DD6C1]"
+      style={{
+        background: "linear-gradient(150deg, #0C0F1E 0%, #10132A 100%)",
+        border: "1px solid #1E2240",
+      }}
       aria-label={`Open ${displayName} offers`}
     >
-      <div className="h-[135px] w-full flex items-center justify-center bg-[#0F111E] relative">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={`${displayName} logo`}
-            className="max-w-[150px] max-h-[80px] object-contain px-2"
-          />
-        ) : (
-          <Logo />
-        )}
-        <div className="absolute top-[10px] right-[10px] w-[31px] h-[28px] bg-black/20 rounded-[5px] flex items-center justify-center">
-          <IcoApple />
-        </div>
+      {/* Watermark brand name */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden pb-16 sm:pb-20">
+        <span
+          className="font-black text-white whitespace-nowrap"
+          style={{ fontSize: "clamp(52px, 8vw, 82px)", opacity: 0.07, letterSpacing: "-2px" }}
+        >
+          {displayName}
+        </span>
       </div>
-      <div className="px-3 pt-3 pb-3 flex flex-col gap-[8px]">
-        <div className="w-full h-[5px] rounded-full bg-[#1E2133]">
-          <div
-            className="h-full rounded-full bg-[#0AC07D]"
-            style={{ width: `${progress}%` }}
-          />
+
+      {/* Glassmorphism Apple icon — top right */}
+      <div
+        className="absolute top-3 right-3 w-[46px] h-[46px] rounded-[13px] flex items-center justify-center"
+        style={{
+          background: "rgba(255,255,255,0.07)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.13)",
+        }}
+      >
+        <svg width="20" height="24" viewBox="0 0 24 28" fill="white">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+        </svg>
+      </div>
+
+      {/* Image (when from API) or blank space (watermark only) */}
+      {logoUrl ? (
+        <div className="relative h-[120px] sm:h-[170px] overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoUrl} alt={displayName} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/25" />
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className="w-full flex items-center justify-between bg-[#151728] border border-[#37417B] px-2 py-[6px] rounded-[8px]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-[3px]">
-                <IcoThumbUp />
-                <span className="text-[11px] text-[#B3B6C7]">{likes}</span>
-              </div>
-              <div className="flex items-center gap-[3px]">
-                <IcoViews />
-                <span className="text-[11px] text-[#B3B6C7]">{views}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-[3px]">
-              <IcoThumbDown />
-            </div>
+      ) : (
+        <div className="h-[120px] sm:h-[170px]" />
+      )}
+
+      {/* Stats box */}
+      <div
+        className="mx-3 mb-3 rounded-[12px] px-3 pt-3 pb-3"
+        style={{
+          background: "rgba(4, 6, 18, 0.85)",
+          border: "1px solid #252A5A",
+        }}
+      >
+        {/* Likes / dislikes */}
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <IcoThumbUp />
+            <span className="text-[13px] text-[#B3B6C7] font-medium">{likes}</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <IcoThumbDown />
+            <span className="text-[13px] text-[#B3B6C7] font-medium">1.0K</span>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="w-full h-[5px] rounded-full bg-[#252A5A]">
+          <div className="h-full rounded-full bg-[#0AC07D]" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </button>
@@ -718,10 +727,10 @@ const FilterBar: React.FC<{
   onProviderChange,
   providerList
 }) => (
-  <div className="mt-4 flex flex-col gap-4">
-    {/* Categories Row */}
-    <div className="flex items-center justify-between bg-[#151728] border border-[#1E2133] rounded-[10px] p-3 md:px-4">
-      <div className="flex items-center gap-5 md:gap-7 overflow-x-auto scrollbar-hide w-full pb-1 md:pb-0">
+  <div className="mt-4 flex flex-col xl:flex-row items-stretch gap-3">
+    {/* Categories — left */}
+    <div className="flex items-center bg-[#151728] border border-[#1E2133] rounded-[10px] px-5 py-3 overflow-x-auto scrollbar-hide min-w-0 flex-1">
+      <div className="flex items-center gap-7 md:gap-9">
         <FilterTabItem
           filter="all"
           label="View all"
@@ -806,48 +815,50 @@ const FilterBar: React.FC<{
       </div>
     </div>
 
-    {/* Search & Dropdowns Row */}
-    <div className="flex flex-col md:flex-row items-center gap-3 w-full">
-      <div className="flex flex-1 items-center gap-2 bg-[#1E2133] border border-[#262F3E] px-3 py-[10px] rounded-[7px] w-full">
+    {/* Search + Sort + Providers — stacks on mobile, row on xl */}
+    <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:flex-shrink-0">
+      {/* Search — full width */}
+      <div className="flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-3 py-[11px] rounded-[10px] w-full xl:w-[280px]">
         <IcoSearch />
         <input
           type="text"
           value={searchTerm}
           onChange={(event) => onSearchTermChange(event.target.value)}
           placeholder="Search game or provider"
-          className="w-full bg-transparent text-[#B3B6C7] text-[14px] font-medium placeholder:text-[#6B6E8A] outline-none"
+          className="w-full bg-transparent text-[#B3B6C7] text-[13px] placeholder:text-[#6B6E8A] outline-none"
         />
       </div>
 
-      <div className="flex items-center gap-3 w-full md:w-auto">
-        <div className="relative flex-1 md:flex-none">
-          <select 
+      {/* Sort + Providers — always side by side */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
-            className="w-full md:w-[160px] bg-[#1E2133] border border-[#262F3E] text-[#B3B6C7] text-[14px] py-[10px] px-3 rounded-[7px] outline-none appearance-none cursor-pointer hover:border-[#0AC07D] transition-colors"
+            className="w-full xl:w-[130px] bg-[#151728] border border-[#1E2133] text-[#8C8FA8] text-[13px] py-[11px] pl-3 pr-8 rounded-[10px] outline-none appearance-none cursor-pointer"
           >
             <option value="default">Sort by</option>
             <option value="low-to-high">Price: Low to High</option>
             <option value="high-to-low">Price: High to Low</option>
             <option value="popular">Popularity</option>
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
             <IcoChevronRightGray />
           </div>
         </div>
 
-        <div className="relative flex-1 md:flex-none">
-          <select 
+        <div className="relative flex-1">
+          <select
             value={selectedProvider}
             onChange={(e) => onProviderChange(e.target.value)}
-            className="w-full md:w-[160px] bg-[#1E2133] border border-[#262F3E] text-[#B3B6C7] text-[14px] py-[10px] px-3 rounded-[7px] outline-none appearance-none cursor-pointer hover:border-[#0AC07D] transition-colors"
+            className="w-full xl:w-[130px] bg-[#151728] border border-[#1E2133] text-[#8C8FA8] text-[13px] py-[11px] pl-3 pr-8 rounded-[10px] outline-none appearance-none cursor-pointer"
           >
             <option value="all">Providers</option>
             {providerList.map(p => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C8FA8]">
             <IcoChevronRightGray />
           </div>
         </div>
@@ -858,6 +869,7 @@ const FilterBar: React.FC<{
 
 const SectionHeader: React.FC<{
   title: string;
+  showPlatformIcons?: boolean;
   onViewAll?: () => void;
   onPrev?: () => void;
   onNext?: () => void;
@@ -869,12 +881,13 @@ const SectionHeader: React.FC<{
   selectedProvider?: string;
   onProviderChange?: (val: string) => void;
   providerList?: string[];
-}> = ({ 
-  title, 
-  onViewAll, 
-  onPrev, 
-  onNext, 
-  canPrev = false, 
+}> = ({
+  title,
+  showPlatformIcons = false,
+  onViewAll,
+  onPrev,
+  onNext,
+  canPrev = false,
   canNext = false,
   showFilters = false,
   sortBy,
@@ -886,13 +899,15 @@ const SectionHeader: React.FC<{
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 mt-6">
     <div className="flex items-center gap-2 sm:gap-4">
       <h2 className="text-white font-bold text-[22px] sm:text-[24px] md:text-[28px] tracking-[0.56px] leading-[34px] m-0">{title}</h2>
-      <div className="flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-2.5 py-1.5 rounded-[5px]">
-        <IcoAndroid />
-        <IcoApple />
-        <svg width="17" height="10" viewBox="0 0 17 10" fill="none">
-          <path d="M1 1H7.5V5H1V1ZM1 6H7.5V9H1V6ZM9 1H16V9H9V1Z" stroke="#B3B6C7" strokeWidth="1.3" fill="none" />
-        </svg>
-      </div>
+      {showPlatformIcons && (
+        <div className="flex items-center gap-2 bg-[#151728] border border-[#1E2133] px-2.5 py-1.5 rounded-[5px]">
+          <IcoAndroid />
+          <IcoApple />
+          <svg width="17" height="10" viewBox="0 0 17 10" fill="none">
+            <path d="M1 1H7.5V5H1V1ZM1 6H7.5V9H1V6ZM9 1H16V9H9V1Z" stroke="#B3B6C7" strokeWidth="1.3" fill="none" />
+          </svg>
+        </div>
+      )}
     </div>
     <div className="flex w-full sm:w-auto sm:justify-end items-center gap-3">
       {showFilters && (
@@ -965,7 +980,8 @@ const FeaturedSection: React.FC<{ games: FeaturedGame[]; onViewAll?: () => void 
   return (
     <div className="mt-8 flex flex-col gap-3">
       <SectionHeader
-        title="Featured offers"
+        title="Featured"
+        showPlatformIcons
         onViewAll={onViewAll}
         onPrev={scrollPrev}
         onNext={scrollNext}
@@ -1051,7 +1067,6 @@ const ProviderSection: React.FC<{
               displayName={p.displayName}
               progress={p.progress}
               likes={p.likes}
-              views={p.views}
               logoUrl={p.logoUrl}
               onClick={() => onProviderClick?.(p)}
             />
@@ -1072,6 +1087,7 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState("all");
   const [providers, setProviders] = useState<Provider[]>(PROVIDERS);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [profileInitial, setProfileInitial] = useState("B");
 
@@ -1150,7 +1166,6 @@ const EARNINGSPAGEComponent: React.FC = () => {
             displayName,
             progress,
             likes: "2.6K",
-            views: "10K",
             logoUrl: ow.metadata?.logoUrl || ow.logoUrl,
             launchUrl: ow.callbackUrl || ow.metadata?.launchUrl || ow.metadata?.offerUrl,
             sourceKind: /survey/i.test(kindHint) ? "survey" : "offerwall",
@@ -1290,7 +1305,7 @@ const EARNINGSPAGEComponent: React.FC = () => {
   };
 
   const openAccount = () => {
-    router.push("/account");
+    setShowProfileMenu(true);
   };
 
   const openHome = () => {
@@ -1365,6 +1380,10 @@ const EARNINGSPAGEComponent: React.FC = () => {
       {showNotifications && (
         <NotificationDropdown onClose={() => setShowNotifications(false)} />
       )}
+      <EarnSideMenu
+        isOpen={showProfileMenu}
+        onClose={() => setShowProfileMenu(false)}
+      />
     </div>
   );
 };
