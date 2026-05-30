@@ -79,7 +79,7 @@ export default function AppFooter() {
     <footer className="relative w-full bg-[#0D0F1E] border-t border-[#1E2133] pt-10 pb-8 overflow-hidden mb-[70px] md:mb-0">
       {/* Watermark */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 select-none pointer-events-none">
-        <h2 className="text-[130px] sm:text-[160px] md:text-[200px] font-black leading-none whitespace-nowrap text-white opacity-[0.04]">
+        <h2 className="text-[60px] sm:text-[72px] md:text-[88px] font-black leading-none whitespace-nowrap text-white opacity-[0.04]">
           LAB WARDS
         </h2>
       </div>
@@ -112,7 +112,7 @@ export default function AppFooter() {
             <div className="flex flex-col gap-0.5">
               <h4 className="text-white font-bold text-sm mb-2">User Center</h4>
               <MobileLink href="/account"      icon={<User size={13} />}        label="Account" />
-              <MobileLink href="/transactions" icon={<FileText size={13} />}    label="Transactions" />
+              <MobileLink href="/wallet" icon={<FileText size={13} />}    label="Transactions" />
               <MobileLink href="/faq"          icon={<HelpCircle size={13} />}  label="FAQ" />
               <MobileLink href="/contact"      icon={<Headphones size={13} />}  label="Support" />
             </div>
@@ -170,7 +170,7 @@ export default function AppFooter() {
             <h4 className="text-white font-bold text-lg">User Center</h4>
             <ul className="flex flex-col gap-4">
               <li><Link href="/account"      className="text-[#8C9DB6] hover:text-white transition-colors text-sm font-medium">Account</Link></li>
-              <li><Link href="/transactions" className="text-[#8C9DB6] hover:text-white transition-colors text-sm font-medium">Transactions</Link></li>
+              <li><Link href="/wallet" className="text-[#8C9DB6] hover:text-white transition-colors text-sm font-medium">Transactions</Link></li>
               <li><Link href="/faq"          className="text-[#8C9DB6] hover:text-white transition-colors text-sm font-medium">FAQ</Link></li>
               <li><Link href="/contact"      className="text-[#8C9DB6] hover:text-white transition-colors text-sm font-medium">Support</Link></li>
             </ul>
