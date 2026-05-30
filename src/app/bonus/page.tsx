@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Play, Disc } from "lucide-react";
 import TopBar from "@/Components/Topbar";
 import TickerBar from "@/Components/Shared/TickerBar";
-import Footer from "@/Components/Shared/Footer";
 
 const REWARDS = [
   { id: 1, amount: "$0.25", color: "text-[#14A990]" },
@@ -102,7 +101,6 @@ export default function BonusPage() {
         </div>
       </main>
 
-      <Footer />
 
       {/* Floating Support Button */}
       <div className="fixed bottom-8 right-8 z-40">

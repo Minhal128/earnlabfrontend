@@ -571,6 +571,7 @@ const ProviderCard: React.FC<{
 const EarnLegacyTopControls: React.FC<{
   notificationCount: number;
   profileInitial: string;
+  walletDisplay: string;
   onHomeClick: () => void;
   onBellClick: () => void;
   onWalletClick: () => void;
@@ -579,6 +580,7 @@ const EarnLegacyTopControls: React.FC<{
 }> = ({
   notificationCount,
   profileInitial,
+  walletDisplay,
   onHomeClick,
   onBellClick,
   onWalletClick,
@@ -618,8 +620,7 @@ const EarnLegacyTopControls: React.FC<{
           className="h-[42px] sm:h-[44px] rounded-[8px] bg-[#1E2133] border border-[#30334A] px-2 sm:px-4 flex items-center gap-1.5 sm:gap-2 transition-opacity hover:opacity-90"
           aria-label="Open wallet"
         >
-          <span className="text-[#B3B6C7] text-[14px] leading-none font-bold">$</span>
-          <span className="text-white font-bold text-[20px] sm:text-[22px] leading-none">120</span>
+          <span className="text-white font-bold text-[18px] sm:text-[20px] leading-none">{walletDisplay}</span>
           <span className="hidden sm:inline text-[#B3B6C7] text-[14px] leading-none">USD</span>
         </button>
 
@@ -1090,6 +1091,7 @@ const EARNINGSPAGEComponent: React.FC = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [profileInitial, setProfileInitial] = useState("B");
+  const [walletBalanceCents, setWalletBalanceCents] = useState<number | null>(null);
 
   // Get unique list of providers for the dropdown
   const providerList = useMemo(() => {
@@ -1114,6 +1116,23 @@ const EARNINGSPAGEComponent: React.FC = () => {
     if (!token) return;
 
     const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+    fetch(`${api}/api/v1/user/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data?.profile?.balanceCents === "number") {
+          setWalletBalanceCents(data.profile.balanceCents);
+        }
+        if (data?.profile) {
+          const p = data.profile;
+          const initial = (p.displayName || p.username || p.email || "B").charAt(0).toUpperCase();
+          if (initial) setProfileInitial(initial);
+        }
+      })
+      .catch(() => {});
+
     fetch(`${api}/api/v1/user/notifications`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -1326,6 +1345,7 @@ const EARNINGSPAGEComponent: React.FC = () => {
       <EarnLegacyTopControls
         notificationCount={notificationCount}
         profileInitial={profileInitial}
+        walletDisplay={walletBalanceCents !== null ? `$${(walletBalanceCents / 100).toFixed(2)}` : "$0.00"}
         onHomeClick={openHome}
         onBellClick={() => setShowNotifications((prev) => !prev)}
         onWalletClick={openWallet}

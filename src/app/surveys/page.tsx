@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/utils/toast";
-import AppFooter from "@/Components/Shared/AppFooter";
 
 /* ── CSS ─────────────────────────────────────────────────────────── */
 const TICKER_CSS = `
@@ -380,10 +379,6 @@ export default function SurveysPage() {
         <IcoHeadset />
       </button>
 
-      {/* ── Footer (hidden on mobile) ────────────────────────────── */}
-      <div className="hidden md:block">
-        <AppFooter />
-      </div>
     </div>
   );
 }

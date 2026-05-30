@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useSocket } from "@/contexts/SocketProvider";
 import { toast } from "@/utils/toast";
 import LogoImg from "../../../public/assets/logo.png";
-import AppFooter from "@/Components/Shared/AppFooter";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -525,8 +524,6 @@ export default function SupportPage() {
         </div>
       </main>
 
-      {/* ── Footer ──────────────────────────────────────────────── */}
-      <AppFooter />
     </div>
   );
 }
