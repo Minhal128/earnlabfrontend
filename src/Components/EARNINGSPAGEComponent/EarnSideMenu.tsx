@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -64,10 +64,19 @@ const SUPPORT_ICON = (active: boolean) => (
   </svg>
 );
 
-const TOURNAMENTS = [
-  { id: 1, name: "mYADS", img: "/img3.png", status: "Coming soon" },
-  { id: 2, name: "mYADS", img: "/img4.png", status: "Coming soon" },
-  { id: 3, name: "mYADS", img: "/img5.png", status: "Coming soon" },
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+interface Tournament {
+  _id: string;
+  name: string;
+  imageUrl?: string;
+  status: "active" | "coming_soon" | "ended";
+}
+
+const FALLBACK_TOURNAMENTS: Tournament[] = [
+  { _id: "t1", name: "mYADS", imageUrl: "/img3.png", status: "coming_soon" },
+  { _id: "t2", name: "mYADS", imageUrl: "/img4.png", status: "coming_soon" },
+  { _id: "t3", name: "mYADS", imageUrl: "/img5.png", status: "coming_soon" },
 ];
 
 interface Props {
@@ -78,6 +87,18 @@ interface Props {
 const EarnSideMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const [tournaments, setTournaments] = useState<Tournament[]>(FALLBACK_TOURNAMENTS);
+
+  useEffect(() => {
+    fetch(`${API}/api/v1/tournaments`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d?.tournaments) && d.tournaments.length > 0) {
+          setTournaments(d.tournaments);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   if (!isOpen) return null;
 
@@ -174,22 +195,30 @@ const EarnSideMenu: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto px-4 pb-6">
           <div className="flex items-center justify-between mb-3">
             <span className="text-white font-bold text-[17px]">Tournaments</span>
-            <span className="text-[#0AC07D] text-[13px] font-semibold">3 Ongoing</span>
+            <span className="text-[#0AC07D] text-[13px] font-semibold">
+              {tournaments.filter((t) => t.status === "active").length} Ongoing
+            </span>
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {TOURNAMENTS.map((t) => (
-              <div key={t.id} className="flex-shrink-0 w-[130px] rounded-[12px] overflow-hidden bg-[#151728] border border-[#1E2133]">
+            {tournaments.map((t) => (
+              <div key={t._id} className="flex-shrink-0 w-[130px] rounded-[12px] overflow-hidden bg-[#151728] border border-[#1E2133]">
                 <div className="relative h-[80px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.img} alt={t.name} className="absolute inset-0 w-full h-full object-cover" />
+                  <img
+                    src={t.imageUrl || "/img3.png"}
+                    alt={t.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
                   <div className="absolute inset-0 bg-black/30" />
                   <span className="absolute top-2 left-2 text-white text-[11px] font-bold bg-black/50 px-1.5 py-0.5 rounded">
                     {t.name}
                   </span>
                 </div>
                 <div className="px-2 py-2">
-                  <p className="text-[#8C9DB6] text-[12px] font-medium">{t.status}</p>
+                  <p className="text-[#8C9DB6] text-[12px] font-medium">
+                    {t.status === "active" ? "Active" : t.status === "coming_soon" ? "Coming soon" : "Ended"}
+                  </p>
                 </div>
               </div>
             ))}

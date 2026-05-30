@@ -43,7 +43,7 @@ const isContainerNearBottom = (container: HTMLDivElement, threshold = 72): boole
 
 const defaultRooms: ChatRoom[] = [
   { id: "general", name: "General" },
-  { id: "support", name: "Support" },
+  { id: "community", name: "Community" },
 ];
 
 interface Language {

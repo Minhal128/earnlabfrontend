@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setProfile } from "@/store/userSlice";
@@ -72,11 +73,19 @@ function StatCard({
   );
 }
 
-/* ─── Hardcoded offer cards ─── */
-const HARDCODED_OFFERS = [
-  { id: "o1", title: "Farm Lobby",    img: "/img3.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
-  { id: "o2", title: "Turbo Charge",  img: "/img4.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
-  { id: "o3", title: "Pres mark",     img: "/img5.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
+interface HomepageOffer {
+  id: string;
+  title: string;
+  img: string;
+  amount: string;
+  desc: string;
+  trackingUrl?: string;
+}
+
+const FALLBACK_OFFERS: HomepageOffer[] = [
+  { id: "o1", title: "Farm Lobby",   img: "/img3.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
+  { id: "o2", title: "Turbo Charge", img: "/img4.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
+  { id: "o3", title: "Pres mark",    img: "/img5.png", amount: "$0.8", desc: "Play for 5 Mins and earn up to $3" },
 ];
 
 function getOrdinal(n: number) {
@@ -85,15 +94,21 @@ function getOrdinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function OfferCard({ title, img, amount, desc }: { title: string; img: string; amount: string; desc: string }) {
+function OfferCard({ title, img, amount, desc, trackingUrl }: { title: string; img: string; amount: string; desc: string; trackingUrl?: string }) {
+  const router = useRouter();
+  const handleClick = () => {
+    if (trackingUrl) {
+      window.open(trackingUrl, "_blank", "noopener,noreferrer");
+    } else {
+      router.push("/earn");
+    }
+  };
   return (
     <div className="rounded-[16px] overflow-hidden cursor-pointer hover:-translate-y-1 transition-transform duration-300 bg-[#0C1120] border border-[#1E2133]">
       {/* Card top — full bg image + centred square icon */}
       <div className="relative h-[200px] overflow-hidden">
-        {/* Background: same image blurred + darkened */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover scale-110 blur-[2px] brightness-50" />
-        {/* Centred square game icon */}
         <div className="absolute inset-0 flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -114,6 +129,7 @@ function OfferCard({ title, img, amount, desc }: { title: string; img: string; a
         </div>
         <p className="text-[#8C9DB6] text-[13px] leading-relaxed">{desc}</p>
         <button
+          onClick={handleClick}
           className="w-full py-[11px] rounded-full text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
           style={{
             background: "linear-gradient(135deg, #0AC07D 0%, #0BBFA0 100%)",
@@ -137,6 +153,7 @@ const HOMEPAGEComponent = () => {
   const [streakDays, setStreakDays] = useState(0);
   const [dailyBonusCents, setDailyBonusCents] = useState(0);
   const [rank, setRank] = useState<number | null>(null);
+  const [offers, setOffers] = useState<HomepageOffer[]>(FALLBACK_OFFERS);
 
   useEffect(() => {
     const token = storeToken || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
@@ -161,6 +178,24 @@ const HOMEPAGEComponent = () => {
     fetch(`${API}/api/v1/leaderboard/rank`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((d) => { if (typeof d?.rank === "number") setRank(d.rank); })
+      .catch(() => {});
+
+    // Fetch homepage offers from backend (admin-managed)
+    fetch(`${API}/api/v1/offerwalls/premium?surface=home&limit=3`)
+      .then((r) => r.json())
+      .then((d) => {
+        const raw: any[] = d?.offers || [];
+        if (raw.length > 0) {
+          setOffers(raw.map((o: any, i: number) => ({
+            id: o._id || `api-${i}`,
+            title: o.title || "Offer",
+            img: o.imageUrl || `/img${3 + i}.png`,
+            amount: o.rewardCents != null ? `$${(o.rewardCents / 100).toFixed(2)}` : "$0.00",
+            desc: o.description || "Complete this offer and earn rewards",
+            trackingUrl: o.trackingUrl || undefined,
+          })));
+        }
+      })
       .catch(() => {});
   }, [dispatch, storeToken]);
 
@@ -212,8 +247,8 @@ const HOMEPAGEComponent = () => {
         <section className="mt-8 sm:mt-10">
           <h2 className="text-white text-[20px] sm:text-[22px] font-bold mb-4 sm:mb-6">Offers available</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-            {HARDCODED_OFFERS.map((o) => (
-              <OfferCard key={o.id} title={o.title} img={o.img} amount={o.amount} desc={o.desc} />
+            {offers.map((o) => (
+              <OfferCard key={o.id} title={o.title} img={o.img} amount={o.amount} desc={o.desc} trackingUrl={o.trackingUrl} />
             ))}
           </div>
         </section>
