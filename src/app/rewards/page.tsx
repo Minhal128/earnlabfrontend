@@ -5,7 +5,6 @@ import TopBar from "@/Components/Topbar";
 import OffersSurveysRewardsDisclaimer from "@/Components/Shared/OffersSurveysRewardsDisclaimer";
 import TickerBar from "../../Components/Shared/TickerBar";
 import BonusSection from "@/Components/HomePage/BonusSection";
-import Footer from "@/Components/Shared/Footer";
 
 export default function RewardsPage() {
   return (
@@ -18,7 +17,6 @@ export default function RewardsPage() {
         <OffersSurveysRewardsDisclaimer className="mt-6" />
       </main>
 
-      <Footer />
 
       {/* Floating Support Button */}
       <div className="fixed bottom-8 right-8 z-40">

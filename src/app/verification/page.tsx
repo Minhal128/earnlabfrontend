@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Twitter, Disc } from "lucide-react";
 import TopBar from "@/Components/Topbar";
 import TickerBar from "@/Components/Shared/TickerBar";
-import Footer from "@/Components/Shared/Footer";
 
 interface VerificationCardProps {
   title: string;
@@ -93,7 +92,6 @@ export default function VerificationPage() {
         </div>
       </main>
 
-      <Footer />
 
       {/* Floating Support Button */}
       <div className="fixed bottom-8 right-8 z-40">
